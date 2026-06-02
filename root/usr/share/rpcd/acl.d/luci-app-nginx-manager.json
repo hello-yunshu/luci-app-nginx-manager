@@ -1,0 +1,50 @@
+{
+	"luci-app-nginx-manager": {
+		"description": "Grant access to Nginx Manager",
+		"read": {
+			"uci": [ "nginx_manager" ],
+			"ubus": {
+				"nginx_manager": [
+					"status",
+					"check_env",
+					"list_sites",
+					"get_site",
+					"render_site",
+					"test_config",
+					"list_certs",
+					"get_cert",
+					"check_cert_expiry",
+					"get_logs",
+					"get_core_config",
+					"get_nginx_T",
+					"get_file_readonly",
+					"list_backups",
+					"diff_backup"
+				]
+			}
+		},
+		"write": {
+			"uci": [ "nginx_manager" ],
+			"ubus": {
+				"nginx_manager": [
+					"set_site",
+					"delete_site",
+					"enable_site",
+					"disable_site",
+					"reload_nginx",
+					"restart_nginx",
+					"set_cert",
+					"delete_cert",
+					"upload_cert",
+					"issue_self_signed",
+					"acme_issue",
+					"acme_renew",
+					"set_core_config_safe",
+					"set_file_dangerous",
+					"create_backup",
+					"restore_backup"
+				]
+			}
+		}
+	}
+}

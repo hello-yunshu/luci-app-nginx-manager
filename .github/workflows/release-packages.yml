@@ -1,0 +1,162 @@
+name: Release Packages
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  check-version:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.check.outputs.should_release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Extract version
+        id: version
+        run: |
+          PKG_VERSION=$(sed -n 's/^PKG_VERSION:=\(.*\)/\1/p' Makefile)
+          PKG_RELEASE=$(sed -n 's/^PKG_RELEASE:=\(.*\)/\1/p' Makefile)
+          echo "tag=v${PKG_VERSION}-${PKG_RELEASE}" >> "$GITHUB_OUTPUT"
+      - name: Check if tag exists
+        id: check
+        run: |
+          if git rev-parse "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Create and push tag
+        if: steps.check.outputs.should_release == 'true'
+        run: |
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
+  build:
+    name: Build ${{ matrix.arch }} @ ${{ matrix.version }}
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            version: "24.10"
+            target: x86/64
+            pkg_manager: ipk
+          - arch: x86_64
+            version: snapshot
+            target: x86/64
+            pkg_manager: apk
+          - arch: aarch64_cortex-a53
+            version: "24.10"
+            target: mediatek/filogic
+            pkg_manager: ipk
+          - arch: aarch64_cortex-a53
+            version: snapshot
+            target: mediatek/filogic
+            pkg_manager: apk
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build with OpenWrt SDK
+        uses: openwrt/gh-action-sdk@v1
+        env:
+          ARCH: ${{ matrix.arch }}-${{ matrix.version == 'snapshot' && 'main' || format('openwrt-{0}', matrix.version) }}
+          PACKAGES: luci-app-nginx-manager
+          BUILD_LOG: 1
+          INDEX: 1
+
+      - name: Collect packages
+        run: |
+          mkdir -p release-artifacts
+          find bin/packages -name '*.ipk' -exec cp {} release-artifacts/ \;
+          find bin/packages -name '*.apk' -exec cp {} release-artifacts/ \;
+
+      - name: Generate build info
+        run: |
+          cat > "release-artifacts/buildinfo_${{ matrix.version }}_${{ matrix.arch }}.txt" <<EOF
+          Git Commit: ${{ github.sha }}
+          Git Tag: ${{ github.ref_name }}
+          OpenWrt Version: ${{ matrix.version }}
+          SDK Arch: ${{ matrix.arch }}
+          Package Manager: ${{ matrix.pkg_manager }}
+          Build Time: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          Built Package Filenames:
+          $(find release-artifacts -maxdepth 1 \( -name '*.ipk' -o -name '*.apk' \) -exec basename {} \;)
+          EOF
+
+      - name: Generate SHA256 checksums
+        working-directory: release-artifacts
+        run: |
+          sha256sum ./*.ipk ./*.apk ./buildinfo_*.txt > sha256sums.txt
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.arch }}-${{ matrix.version }}
+          path: release-artifacts/
+          retention-days: 30
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-artifacts
+          pattern: release-*
+
+      - name: Collect all release files
+        run: |
+          mkdir -p release-final
+          find all-artifacts -type f \( -name '*.ipk' -o -name '*.apk' -o -name 'buildinfo_*.txt' \) -exec cp {} release-final/ \;
+          cat all-artifacts/release-*/sha256sums.txt > release-final/sha256sums.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-final/**
+          generate_release_notes: true
+          body: |
+            ## luci-app-nginx-manager ${{ github.ref_name }}
+
+            ### Installation
+            Download the appropriate package for your OpenWrt version and architecture:
+
+            - `.ipk` files for OpenWrt 24.10.x (opkg)
+            - `.apk` files for OpenWrt 25.12+ / snapshot (apk)
+
+            Install with:
+            ```sh
+            opkg install luci-app-nginx-manager_*.ipk
+            # or
+            apk add luci-app-nginx-manager_*.apk
+            ```
+
+            Verify checksums with:
+            ```sh
+            sha256sum -c sha256sums.txt
+            ```

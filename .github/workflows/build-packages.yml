@@ -1,0 +1,63 @@
+name: Build Packages
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.arch }} @ ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            version: "24.10"
+            target: x86/64
+            pkg_manager: ipk
+          - arch: x86_64
+            version: snapshot
+            target: x86/64
+            pkg_manager: apk
+          - arch: aarch64_cortex-a53
+            version: "24.10"
+            target: mediatek/filogic
+            pkg_manager: ipk
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build with OpenWrt SDK
+        uses: openwrt/gh-action-sdk@v1
+        env:
+          ARCH: ${{ matrix.arch }}-${{ matrix.version == 'snapshot' && 'main' || format('openwrt-{0}', matrix.version) }}
+          PACKAGES: luci-app-nginx-manager
+          BUILD_LOG: 1
+          INDEX: 1
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages-${{ matrix.arch }}-${{ matrix.version }}
+          path: |
+            bin/packages/**/*.ipk
+            bin/packages/**/*.apk
+          retention-days: 7
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-${{ matrix.arch }}-${{ matrix.version }}
+          path: |
+            logs/
+            bin/packages/**/build.log
+          retention-days: 7

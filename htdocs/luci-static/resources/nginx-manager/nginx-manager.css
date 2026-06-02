@@ -1,0 +1,236 @@
+.nginx-manager-page {
+	padding: 0;
+}
+
+.nginx-manager-overview {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	gap: 12px;
+	margin-bottom: 20px;
+}
+
+.nginx-manager-card {
+	background: var(--background-color, #fff);
+	border: 1px solid var(--border-color, #ddd);
+	border-radius: 6px;
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.nginx-manager-card-title {
+	font-size: 0.85rem;
+	color: var(--text-color-secondary, #888);
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+
+.nginx-manager-card-value {
+	font-size: 1.5rem;
+	font-weight: 600;
+	color: var(--text-color, #333);
+}
+
+.nginx-manager-status {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.85rem;
+	font-weight: 500;
+	padding: 2px 8px;
+	border-radius: 10px;
+}
+
+.nginx-manager-status::before {
+	content: "";
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+}
+
+.nginx-manager-status-success {
+	color: #2d7d46;
+	background: #e6f4ea;
+}
+
+.nginx-manager-status-success::before {
+	background: #34a853;
+}
+
+.nginx-manager-status-warning {
+	color: #b36b00;
+	background: #fef7e0;
+}
+
+.nginx-manager-status-warning::before {
+	background: #f9ab00;
+}
+
+.nginx-manager-status-error {
+	color: #c5221f;
+	background: #fce8e6;
+}
+
+.nginx-manager-status-error::before {
+	background: #ea4335;
+}
+
+.nginx-manager-status-disabled {
+	color: #777;
+	background: #f0f0f0;
+}
+
+.nginx-manager-status-disabled::before {
+	background: #999;
+}
+
+.nginx-manager-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 12px 0;
+}
+
+.nginx-manager-actions .btn {
+	margin: 0;
+}
+
+.nginx-manager-danger-zone {
+	border: 2px solid #ea4335;
+	border-radius: 6px;
+	padding: 16px;
+	margin: 16px 0;
+}
+
+.nginx-manager-danger-zone h3 {
+	color: #c5221f;
+	margin: 0 0 8px 0;
+	font-size: 1rem;
+}
+
+.nginx-manager-danger-zone p {
+	color: #666;
+	font-size: 0.9rem;
+	margin: 0 0 12px 0;
+}
+
+.nginx-manager-code-block {
+	background: var(--background-color-alt, #f5f5f5);
+	border: 1px solid var(--border-color, #ddd);
+	border-radius: 4px;
+	padding: 12px;
+	font-family: monospace;
+	font-size: 0.85rem;
+	white-space: pre-wrap;
+	word-break: break-all;
+	max-height: 400px;
+	overflow-y: auto;
+}
+
+.nginx-manager-site-list .cbi-section-table-row {
+	cursor: default;
+}
+
+.nginx-manager-log-viewer .nginx-manager-code-block {
+	max-height: 600px;
+}
+
+.nginx-manager-log-controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+	margin-bottom: 12px;
+}
+
+.nginx-manager-log-controls select,
+.nginx-manager-log-controls input {
+	max-width: 200px;
+}
+
+@media (max-width: 600px) {
+	.nginx-manager-overview {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.nginx-manager-card-value {
+		font-size: 1.2rem;
+	}
+}
+
+.nginx-manager-card {
+	background: color-mix(in srgb, var(--main-color, #09c) 8%, transparent);
+}
+
+.nm-env-section {
+	margin-top: 1.5em;
+}
+
+.nm-env-section h3 {
+	margin-bottom: 0.5em;
+	font-size: 1.1em;
+}
+
+.nm-env-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+	gap: 0.75em;
+}
+
+.nm-env-item {
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+	padding: 0.5em 0.75em;
+	border-radius: 4px;
+	background: var(--background-color, #f5f5f5);
+}
+
+.nm-env-item .nm-env-icon {
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.9em;
+	font-weight: bold;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+
+.nm-env-item .nm-env-icon.pass {
+	background: #4caf50;
+	color: #fff;
+}
+
+.nm-env-item .nm-env-icon.fail {
+	background: #ea4335;
+	color: #fff;
+}
+
+.nm-env-item .nm-env-label {
+	flex: 1;
+	font-size: 0.9em;
+}
+
+.nm-env-item .nm-env-value {
+	font-size: 0.8em;
+	color: var(--subtext-color, #888);
+}
+
+.nm-env-meta {
+	display: flex;
+	gap: 1.5em;
+	margin-bottom: 0.75em;
+	flex-wrap: wrap;
+}
+
+.nm-env-meta-item {
+	font-size: 0.9em;
+}
+
+.nm-env-meta-item span {
+	font-weight: bold;
+}
