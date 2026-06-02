@@ -10,54 +10,83 @@ on:
 permissions:
   contents: read
 
+env:
+  SDKDIR: /builder
+  REPO_NAME: luci-app-nginx-manager
+  PKG_NAME: luci-app-nginx-manager
+
 jobs:
   build:
-    name: Build ${{ matrix.arch }} @ ${{ matrix.version }}
+    name: Build ${{ matrix.pkgtype }} (${{ matrix.branch }})
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/openwrt/sdk:${{ matrix.arch }}-${{ matrix.branch }}
+      options: --user root
     strategy:
       fail-fast: false
       matrix:
         include:
-          - arch: x86_64
-            version: "24.10"
-            target: x86/64
-            pkg_manager: ipk
-          - arch: x86_64
-            version: snapshot
-            target: x86/64
-            pkg_manager: apk
-          - arch: aarch64_cortex-a53
-            version: "24.10"
-            target: mediatek/filogic
-            pkg_manager: ipk
+          - branch: v24.10.5
+            pkgtype: ipk
+            arch: x86_64
+          - branch: v25.12.0
+            pkgtype: apk
+            arch: x86_64
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          path: ${{ env.REPO_NAME }}
 
-      - name: Build with OpenWrt SDK
-        uses: openwrt/gh-action-sdk@v1
-        env:
-          ARCH: ${{ matrix.arch }}-${{ matrix.version == 'snapshot' && 'main' || format('openwrt-{0}', matrix.version) }}
-          PACKAGES: luci-app-nginx-manager
-          BUILD_LOG: 1
-          INDEX: 1
+      - name: Fix SDK paths
+        run: |
+          mkdir -p "$SDKDIR/shared-workdir"
+          rm -rf "$SDKDIR/shared-workdir/build"
+          ln -sf "$SDKDIR" "$SDKDIR/shared-workdir/build"
+
+      - name: Update feeds
+        working-directory: ${{ env.SDKDIR }}
+        run: |
+          ./scripts/feeds update base packages luci
+          ./scripts/feeds install luci-base nginx-ssl nginx-util rpcd rpcd-mod-file openssl-util
+
+      - name: Prepare package source
+        working-directory: ${{ env.SDKDIR }}
+        run: |
+          rm -rf "./package/$PKG_NAME"
+          mkdir -p "./package/$PKG_NAME"
+          cp -a "$GITHUB_WORKSPACE/$REPO_NAME/." "./package/$PKG_NAME/"
+
+      - name: Configure
+        working-directory: ${{ env.SDKDIR }}
+        run: |
+          echo "CONFIG_PACKAGE_${PKG_NAME}=y" >> .config
+          make defconfig
+
+      - name: Build package
+        working-directory: ${{ env.SDKDIR }}
+        run: |
+          make "package/$PKG_NAME/compile" V=sc
+
+      - name: Collect package
+        working-directory: ${{ env.SDKDIR }}
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/output"
+          package_files="$(find ./bin/ -type f -name "${PKG_NAME}*.${{ matrix.pkgtype }}")"
+          if [ -z "$package_files" ]; then
+            echo "::error::No ${PKG_NAME} .${{ matrix.pkgtype }} package was produced"
+            find ./bin/ -type f -name "*.${{ matrix.pkgtype }}" -print
+            exit 1
+          fi
+          printf '%s\n' "$package_files" | while IFS= read -r file; do
+            cp "$file" "$GITHUB_WORKSPACE/output/"
+          done
+          ls -la "$GITHUB_WORKSPACE/output/"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: packages-${{ matrix.arch }}-${{ matrix.version }}
-          path: |
-            bin/packages/**/*.ipk
-            bin/packages/**/*.apk
-          retention-days: 7
-
-      - name: Upload build log on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log-${{ matrix.arch }}-${{ matrix.version }}
-          path: |
-            logs/
-            bin/packages/**/build.log
+          name: ${{ matrix.pkgtype }}
+          path: output/
           retention-days: 7
