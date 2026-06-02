@@ -1,0 +1,1145 @@
+#!/bin/sh
+# SPDX-License-Identifier: AGPL-3.0-only
+
+. /usr/share/libubox/jshn.sh
+. /lib/functions.sh
+
+NGINX_MANAGER_CONFIG="/etc/config/nginx_manager"
+MANAGED_DIR=""
+CERT_DIR=""
+BACKUP_DIR=""
+NGINX_MANAGER_GEN="/usr/sbin/nginx-manager-gen"
+
+load_global_config() {
+	MANAGED_DIR="$(uci -q get nginx_manager.global.managed_dir)" || MANAGED_DIR="/etc/nginx/conf.d/luci-manager"
+	CERT_DIR="$(uci -q get nginx_manager.global.cert_dir)" || CERT_DIR="/etc/nginx/certs/luci-manager"
+	BACKUP_DIR="$(uci -q get nginx_manager.global.backup_dir)" || BACKUP_DIR="/etc/nginx-manager/backups"
+}
+
+validate_name() {
+	echo "$1" | grep -qE '^[a-zA-Z0-9._-]+$'
+}
+
+validate_domain() {
+	echo "$1" | grep -qE '^[a-zA-Z0-9._*-]+$'
+}
+
+validate_listen() {
+	echo "$1" | grep -qE '^[0-9A-Za-z_.:\[\]= -]+$'
+}
+
+run_apply_or_error() {
+	local apply_result
+	apply_result="$("${NGINX_MANAGER_GEN}" apply 2>&1)"
+	local apply_exit=$?
+
+	if [ "${apply_exit}" -ne 0 ]; then
+		json_init
+		json_add_string "error" "apply failed"
+		json_add_string "detail" "${apply_result}"
+		json_dump
+		return 1
+	fi
+
+	return 0
+}
+
+get_cert_expiry() {
+	local cert_path="$1"
+	[ -f "${cert_path}" ] || return 1
+	local end_date
+	end_date="$(openssl x509 -enddate -noout -in "${cert_path}" 2>/dev/null | cut -d= -f2)"
+	[ -z "${end_date}" ] && return 1
+	local end_epoch now_epoch
+	end_epoch="$(date -d "${end_date}" +%s 2>/dev/null)" || return 1
+	now_epoch="$(date +%s)"
+	echo "$(( (end_epoch - now_epoch) / 86400 ))"
+}
+
+handle_list_sites() {
+	config_load nginx_manager
+
+	json_init
+	json_add_array "sites"
+
+	config_foreach _list_site site
+
+	json_close_array
+	json_dump
+}
+
+_list_site() {
+	local section="$1"
+	local name mode server_name enabled ssl_cert
+
+	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
+	mode="$(uci -q get "nginx_manager.${section}.mode")" || mode="reverse_proxy"
+	server_name="$(uci -q get "nginx_manager.${section}.server_name")" || server_name=""
+	enabled="$(uci -q get "nginx_manager.${section}.enabled")" || enabled="1"
+	ssl_cert="$(uci -q get "nginx_manager.${section}.ssl_cert")" || ssl_cert=""
+
+	json_add_object ""
+	json_add_string "id" "${section}"
+	json_add_string "name" "${name}"
+	json_add_string "mode" "${mode}"
+	json_add_string "server_name" "${server_name}"
+	json_add_string "enabled" "${enabled}"
+	json_add_string "ssl_cert" "${ssl_cert}"
+
+	if [ "${mode}" = "reverse_proxy" ]; then
+		local proxy_pass
+		proxy_pass="$(uci -q get "nginx_manager.${section}.proxy_pass")" || proxy_pass=""
+		json_add_string "proxy_pass" "${proxy_pass}"
+	elif [ "${mode}" = "static" ]; then
+		local root
+		root="$(uci -q get "nginx_manager.${section}.root")" || root=""
+		json_add_string "root" "${root}"
+	fi
+
+	local has_ssl="0"
+	if [ -n "${ssl_cert}" ]; then
+		has_ssl="1"
+	fi
+	json_add_string "has_ssl" "${has_ssl}"
+
+	json_close_object
+}
+
+handle_get_site() {
+	local site_id
+	json_get_var site_id "id"
+	[ -z "${site_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+
+	config_load nginx_manager
+
+	local exists
+	exists="$(uci -q get "nginx_manager.${site_id}")" || {
+		json_init
+		json_add_string "error" "site not found"
+		json_dump
+		return
+	}
+
+	json_init
+	json_add_string "id" "${site_id}"
+
+	local opt
+	for opt in name mode server_name proxy_pass root index websocket redirect_https \
+		proxy_host proxy_xff proxy_xfp proxy_xri ssl_cert access_log error_log \
+		custom_server_block redirect_target enabled; do
+		local val
+		val="$(uci -q get "nginx_manager.${site_id}.${opt}")" || continue
+		json_add_string "${opt}" "${val}"
+	done
+
+	local listen_vals=""
+	local listen_found="0"
+	config_list_foreach "${site_id}" listen _collect_listen
+	if [ "${listen_found}" = "1" ]; then
+		json_add_string "listen" "${listen_vals}"
+	fi
+
+	json_dump
+}
+
+_collect_listen() {
+	if [ "${listen_found}" = "1" ]; then
+		listen_vals="${listen_vals},$1"
+	else
+		listen_vals="$1"
+		listen_found="1"
+	fi
+}
+
+handle_set_site() {
+	local site_id name mode server_name proxy_pass root index
+	local websocket redirect_https proxy_host proxy_xff proxy_xfp proxy_xri
+	local ssl_cert access_log error_log custom_server_block redirect_target enabled
+	local listen
+
+	json_get_var site_id "id"
+	json_get_var name "name"
+	json_get_var mode "mode"
+	json_get_var server_name "server_name"
+	json_get_var listen "listen"
+	json_get_var proxy_pass "proxy_pass"
+	json_get_var root "root"
+	json_get_var index "index"
+	json_get_var websocket "websocket"
+	json_get_var redirect_https "redirect_https"
+	json_get_var proxy_host "proxy_host"
+	json_get_var proxy_xff "proxy_xff"
+	json_get_var proxy_xfp "proxy_xfp"
+	json_get_var proxy_xri "proxy_xri"
+	json_get_var ssl_cert "ssl_cert"
+	json_get_var access_log "access_log"
+	json_get_var error_log "error_log"
+	json_get_var custom_server_block "custom_server_block"
+	json_get_var redirect_target "redirect_target"
+	json_get_var enabled "enabled"
+
+	[ -z "${site_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_name "${site_id}" || { json_init; json_add_string "error" "invalid site id"; json_dump; return; }
+	[ -z "${name}" ] && name="${site_id}"
+	validate_name "${name}" || { json_init; json_add_string "error" "invalid name"; json_dump; return; }
+
+	if [ -n "${server_name}" ]; then
+		validate_domain "${server_name}" || { json_init; json_add_string "error" "invalid server_name"; json_dump; return; }
+	fi
+
+	if [ "${mode}" = "reverse_proxy" ] && [ -n "${proxy_pass}" ]; then
+		case "${proxy_pass}" in
+			http://*|https://*|unix:*) ;;
+			*) { json_init; json_add_string "error" "invalid proxy_pass"; json_dump; return; } ;;
+		esac
+	fi
+
+	if [ -n "${root}" ]; then
+		case "${root}" in
+			/www/*) ;;
+			*) { json_init; json_add_string "error" "invalid root path"; json_dump; return; } ;;
+		esac
+	fi
+
+	if [ -n "${listen}" ]; then
+		local old_ifs listen_val
+		old_ifs="${IFS}"
+		IFS=","
+		# shellcheck disable=SC2086
+		set -- ${listen}
+		IFS="${old_ifs}"
+		for listen_val in "$@"; do
+			listen_val="$(echo "${listen_val}" | sed 's/^ *//;s/ *$//')"
+			[ -z "${listen_val}" ] && continue
+			validate_listen "${listen_val}" || { json_init; json_add_string "error" "invalid listen"; json_dump; return; }
+		done
+	fi
+
+	uci set "nginx_manager.${site_id}=site"
+	uci set "nginx_manager.${site_id}.name=${name}"
+	[ -n "${mode}" ] && uci set "nginx_manager.${site_id}.mode=${mode}"
+	[ -n "${server_name}" ] && uci set "nginx_manager.${site_id}.server_name=${server_name}"
+	[ -n "${proxy_pass}" ] && uci set "nginx_manager.${site_id}.proxy_pass=${proxy_pass}"
+	[ -n "${root}" ] && uci set "nginx_manager.${site_id}.root=${root}"
+	[ -n "${index}" ] && uci set "nginx_manager.${site_id}.index=${index}"
+	[ -n "${websocket}" ] && uci set "nginx_manager.${site_id}.websocket=${websocket}"
+	[ -n "${redirect_https}" ] && uci set "nginx_manager.${site_id}.redirect_https=${redirect_https}"
+	[ -n "${proxy_host}" ] && uci set "nginx_manager.${site_id}.proxy_host=${proxy_host}"
+	[ -n "${proxy_xff}" ] && uci set "nginx_manager.${site_id}.proxy_xff=${proxy_xff}"
+	[ -n "${proxy_xfp}" ] && uci set "nginx_manager.${site_id}.proxy_xfp=${proxy_xfp}"
+	[ -n "${proxy_xri}" ] && uci set "nginx_manager.${site_id}.proxy_xri=${proxy_xri}"
+	[ -n "${ssl_cert}" ] && uci set "nginx_manager.${site_id}.ssl_cert=${ssl_cert}"
+	[ -n "${access_log}" ] && uci set "nginx_manager.${site_id}.access_log=${access_log}"
+	[ -n "${error_log}" ] && uci set "nginx_manager.${site_id}.error_log=${error_log}"
+	[ -n "${custom_server_block}" ] && uci set "nginx_manager.${site_id}.custom_server_block=${custom_server_block}"
+	[ -n "${redirect_target}" ] && uci set "nginx_manager.${site_id}.redirect_target=${redirect_target}"
+	[ -n "${enabled}" ] && uci set "nginx_manager.${site_id}.enabled=${enabled}"
+	uci -q delete "nginx_manager.${site_id}.listen"
+	if [ -n "${listen}" ]; then
+		local old_ifs listen_val
+		old_ifs="${IFS}"
+		IFS=","
+		# shellcheck disable=SC2086
+		set -- ${listen}
+		IFS="${old_ifs}"
+		for listen_val in "$@"; do
+			listen_val="$(echo "${listen_val}" | sed 's/^ *//;s/ *$//')"
+			[ -z "${listen_val}" ] && continue
+			uci add_list "nginx_manager.${site_id}.listen=${listen_val}"
+		done
+	fi
+
+	uci commit nginx_manager
+
+	local apply_result
+	apply_result="$("${NGINX_MANAGER_GEN}" apply 2>&1)"
+	local apply_exit=$?
+
+	if [ "${apply_exit}" -ne 0 ]; then
+		json_init
+		json_add_string "error" "apply failed"
+		json_add_string "detail" "${apply_result}"
+		json_dump
+		return
+	fi
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
+handle_delete_site() {
+	local site_id
+	json_get_var site_id "id"
+	[ -z "${site_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_name "${site_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+
+	uci -q get "nginx_manager.${site_id}" >/dev/null 2>&1 || {
+		json_init
+		json_add_string "error" "site not found"
+		json_dump
+		return
+	}
+
+	uci delete "nginx_manager.${site_id}"
+	uci commit nginx_manager
+
+	run_apply_or_error || return
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
+handle_enable_site() {
+	local site_id
+	json_get_var site_id "id"
+	[ -z "${site_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+
+	uci -q get "nginx_manager.${site_id}" >/dev/null 2>&1 || {
+		json_init
+		json_add_string "error" "site not found"
+		json_dump
+		return
+	}
+
+	uci set "nginx_manager.${site_id}.enabled=1"
+	uci commit nginx_manager
+
+	run_apply_or_error || return
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
+handle_disable_site() {
+	local site_id
+	json_get_var site_id "id"
+	[ -z "${site_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+
+	uci -q get "nginx_manager.${site_id}" >/dev/null 2>&1 || {
+		json_init
+		json_add_string "error" "site not found"
+		json_dump
+		return
+	}
+
+	uci set "nginx_manager.${site_id}.enabled=0"
+	uci commit nginx_manager
+
+	run_apply_or_error || return
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
+handle_render_site() {
+	local site_id
+	json_get_var site_id "id"
+	[ -z "${site_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+
+	local rendered
+	rendered="$("${NGINX_MANAGER_GEN}" render "${site_id}" 2>&1)"
+
+	json_init
+	json_add_string "config" "${rendered}"
+	json_dump
+}
+
+handle_list_certs() {
+	load_global_config
+
+	json_init
+	json_add_array "certs"
+
+	config_load nginx_manager
+	config_foreach _list_cert cert
+
+	json_close_array
+	json_dump
+}
+
+_list_cert() {
+	local section="$1"
+	local name type cert_path key_path domain auto_renew
+
+	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
+	type="$(uci -q get "nginx_manager.${section}.type")" || type="manual"
+	cert_path="$(uci -q get "nginx_manager.${section}.cert_path")" || cert_path=""
+	key_path="$(uci -q get "nginx_manager.${section}.key_path")" || key_path=""
+	domain="$(uci -q get "nginx_manager.${section}.domain")" || domain=""
+	auto_renew="$(uci -q get "nginx_manager.${section}.auto_renew")" || auto_renew="0"
+
+	json_add_object ""
+	json_add_string "id" "${section}"
+	json_add_string "name" "${name}"
+	json_add_string "type" "${type}"
+	json_add_string "cert_path" "${cert_path}"
+	json_add_string "key_path" "${key_path}"
+	json_add_string "domain" "${domain}"
+	json_add_string "auto_renew" "${auto_renew}"
+
+	local status="valid"
+	if [ -n "${cert_path}" ] && [ ! -f "${cert_path}" ]; then
+		status="missing"
+	elif [ -n "${cert_path}" ] && [ -f "${cert_path}" ]; then
+		local days
+		days="$(get_cert_expiry "${cert_path}")" || days="-1"
+		if [ "${days}" -lt 0 ]; then
+			status="expired"
+		elif [ "${days}" -lt 30 ]; then
+			status="expiring"
+		fi
+	fi
+	json_add_string "status" "${status}"
+
+	json_close_object
+}
+
+handle_get_cert() {
+	local cert_id
+	json_get_var cert_id "id"
+	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+
+	config_load nginx_manager
+
+	local exists
+	exists="$(uci -q get "nginx_manager.${cert_id}")" || {
+		json_init
+		json_add_string "error" "cert not found"
+		json_dump
+		return
+	}
+
+	json_init
+	json_add_string "id" "${cert_id}"
+
+	local opt
+	for opt in name type cert_path key_path domain auto_renew; do
+		local val
+		val="$(uci -q get "nginx_manager.${cert_id}.${opt}")" || continue
+		json_add_string "${opt}" "${val}"
+	done
+
+	json_dump
+}
+
+handle_set_cert() {
+	local cert_id name type cert_path key_path domain auto_renew
+
+	json_get_var cert_id "id"
+	json_get_var name "name"
+	json_get_var type "type"
+	json_get_var cert_path "cert_path"
+	json_get_var key_path "key_path"
+	json_get_var domain "domain"
+	json_get_var auto_renew "auto_renew"
+
+	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_name "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+
+	uci set "nginx_manager.${cert_id}=cert"
+	[ -n "${name}" ] && uci set "nginx_manager.${cert_id}.name=${name}"
+	[ -n "${type}" ] && uci set "nginx_manager.${cert_id}.type=${type}"
+	[ -n "${cert_path}" ] && uci set "nginx_manager.${cert_id}.cert_path=${cert_path}"
+	[ -n "${key_path}" ] && uci set "nginx_manager.${cert_id}.key_path=${key_path}"
+	[ -n "${domain}" ] && uci set "nginx_manager.${cert_id}.domain=${domain}"
+	[ -n "${auto_renew}" ] && uci set "nginx_manager.${cert_id}.auto_renew=${auto_renew}"
+
+	uci commit nginx_manager
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
+handle_delete_cert() {
+	local cert_id
+	json_get_var cert_id "id"
+	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+
+	uci -q get "nginx_manager.${cert_id}" >/dev/null 2>&1 || {
+		json_init
+		json_add_string "error" "cert not found"
+		json_dump
+		return
+	}
+
+	uci delete "nginx_manager.${cert_id}"
+	uci commit nginx_manager
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
+handle_upload_cert() {
+	local cert_id name cert_content key_content domain
+
+	json_get_var cert_id "id"
+	json_get_var name "name"
+	json_get_var cert_content "cert_content"
+	json_get_var key_content "key_content"
+	json_get_var domain "domain"
+
+	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_name "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+	[ -z "${cert_content}" ] && { json_init; json_add_string "error" "missing cert_content"; json_dump; return; }
+	[ -z "${key_content}" ] && { json_init; json_add_string "error" "missing key_content"; json_dump; return; }
+
+	load_global_config
+
+	local cert_subdir="${CERT_DIR}/${cert_id}"
+	mkdir -p "${cert_subdir}"
+
+	printf '%s' "${cert_content}" > "${cert_subdir}/fullchain.pem"
+	printf '%s' "${key_content}" > "${cert_subdir}/privkey.pem"
+	chmod 600 "${cert_subdir}/privkey.pem"
+
+	uci set "nginx_manager.${cert_id}=cert"
+	uci set "nginx_manager.${cert_id}.name=${name:-${cert_id}}"
+	uci set "nginx_manager.${cert_id}.type=manual"
+	uci set "nginx_manager.${cert_id}.cert_path=${cert_subdir}/fullchain.pem"
+	uci set "nginx_manager.${cert_id}.key_path=${cert_subdir}/privkey.pem"
+	[ -n "${domain}" ] && uci set "nginx_manager.${cert_id}.domain=${domain}"
+	uci set "nginx_manager.${cert_id}.auto_renew=0"
+	uci commit nginx_manager
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
+handle_issue_self_signed() {
+	local cert_id name domain
+
+	json_get_var cert_id "id"
+	json_get_var name "name"
+	json_get_var domain "domain"
+
+	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_name "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+	[ -z "${domain}" ] && { json_init; json_add_string "error" "missing domain"; json_dump; return; }
+
+	load_global_config
+
+	local cert_subdir="${CERT_DIR}/${cert_id}"
+	mkdir -p "${cert_subdir}"
+
+	openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+		-keyout "${cert_subdir}/privkey.pem" \
+		-out "${cert_subdir}/fullchain.pem" \
+		-subj "/CN=${domain}" 2>/dev/null
+
+	[ $? -ne 0 ] && { json_init; json_add_string "error" "openssl failed"; json_dump; return; }
+
+	chmod 600 "${cert_subdir}/privkey.pem"
+
+	uci set "nginx_manager.${cert_id}=cert"
+	uci set "nginx_manager.${cert_id}.name=${name:-${cert_id}}"
+	uci set "nginx_manager.${cert_id}.type=self_signed"
+	uci set "nginx_manager.${cert_id}.cert_path=${cert_subdir}/fullchain.pem"
+	uci set "nginx_manager.${cert_id}.key_path=${cert_subdir}/privkey.pem"
+	uci set "nginx_manager.${cert_id}.domain=${domain}"
+	uci set "nginx_manager.${cert_id}.auto_renew=0"
+	uci commit nginx_manager
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
+handle_check_cert_expiry() {
+	load_global_config
+
+	json_init
+	json_add_array "certificates"
+
+	config_load nginx_manager
+	config_foreach _check_cert_expiry cert
+
+	json_close_array
+	json_dump
+}
+
+_check_cert_expiry() {
+	local section="$1"
+	local cert_path name
+
+	cert_path="$(uci -q get "nginx_manager.${section}.cert_path")" || return 0
+	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
+
+	[ -f "${cert_path}" ] || return 0
+
+	local days
+	days="$(get_cert_expiry "${cert_path}")" || days="-1"
+
+	json_add_object ""
+	json_add_string "id" "${section}"
+	json_add_string "name" "${name}"
+	json_add_string "days_remaining" "${days}"
+	json_close_object
+}
+
+handle_get_logs() {
+	local log_type lines filter site
+
+	json_get_var log_type "type"
+	json_get_var lines "lines"
+	json_get_var filter "filter"
+	json_get_var site "site"
+
+	[ -z "${lines}" ] && lines="200"
+	echo "${lines}" | grep -qE '^[0-9]+$' || lines="200"
+	[ "${lines}" -gt 500 ] && lines="500"
+
+	local log_path
+	case "${log_type}" in
+		error)
+			if [ -n "${site}" ]; then
+				log_path="/var/log/nginx/${site}.error.log"
+			else
+				log_path="/var/log/nginx/error.log"
+			fi
+			;;
+		access)
+			if [ -n "${site}" ]; then
+				log_path="/var/log/nginx/${site}.access.log"
+			else
+				log_path="/var/log/nginx/access.log"
+			fi
+			;;
+		*)
+			json_init
+			json_add_string "error" "invalid log type"
+			json_dump
+			return
+			;;
+	esac
+
+	if [ ! -f "${log_path}" ]; then
+		json_init
+		json_add_string "error" "log file not found"
+		json_add_string "path" "${log_path}"
+		json_dump
+		return
+	fi
+
+	local content
+	if [ -n "${filter}" ]; then
+		content="$(tail -n "${lines}" "${log_path}" | grep -F "${filter}")"
+	else
+		content="$(tail -n "${lines}" "${log_path}")"
+	fi
+
+	json_init
+	json_add_string "content" "${content}"
+	json_add_string "path" "${log_path}"
+	json_dump
+}
+
+handle_get_core_config() {
+	load_global_config
+
+	json_init
+	json_add_string "client_max_body_size" "$(uci -q get nginx_manager.global.client_max_body_size || echo '')"
+	json_add_string "keepalive_timeout" "$(uci -q get nginx_manager.global.keepalive_timeout || echo '')"
+	json_add_string "gzip" "$(uci -q get nginx_manager.global.gzip || echo '')"
+	json_add_string "server_tokens" "$(uci -q get nginx_manager.global.server_tokens || echo '')"
+	json_add_string "sendfile" "$(uci -q get nginx_manager.global.sendfile || echo '')"
+	json_add_string "access_log" "$(uci -q get nginx_manager.global.access_log || echo '')"
+	json_add_string "error_log" "$(uci -q get nginx_manager.global.error_log || echo '')"
+	json_add_string "ssl_protocols" "$(uci -q get nginx_manager.global.ssl_protocols || echo '')"
+	json_add_string "ssl_ciphers" "$(uci -q get nginx_manager.global.ssl_ciphers || echo '')"
+	json_add_string "advanced_mode" "$(uci -q get nginx_manager.global.advanced_mode || echo '0')"
+	json_add_string "dangerous_core_edit" "$(uci -q get nginx_manager.global.dangerous_core_edit || echo '0')"
+	json_dump
+}
+
+handle_set_core_config_safe() {
+	local dangerous
+	dangerous="$(uci -q get nginx_manager.global.dangerous_core_edit)" || dangerous="0"
+	[ "${dangerous}" = "1" ] && {
+		json_init
+		json_add_string "error" "dangerous_core_edit is enabled, use advanced editor instead"
+		json_dump
+		return
+	}
+
+	local max_body keepalive gzip
+	local server_tokens sendfile access_log error_log ssl_protocols ssl_ciphers
+
+	json_get_var max_body "client_max_body_size"
+	json_get_var keepalive "keepalive_timeout"
+	json_get_var gzip "gzip"
+	json_get_var server_tokens "server_tokens"
+	json_get_var sendfile "sendfile"
+	json_get_var access_log "access_log"
+	json_get_var error_log "error_log"
+	json_get_var ssl_protocols "ssl_protocols"
+	json_get_var ssl_ciphers "ssl_ciphers"
+
+	[ -n "${max_body}" ] && uci set "nginx_manager.global.client_max_body_size=${max_body}"
+	[ -n "${keepalive}" ] && uci set "nginx_manager.global.keepalive_timeout=${keepalive}"
+	[ -n "${gzip}" ] && uci set "nginx_manager.global.gzip=${gzip}"
+	[ -n "${server_tokens}" ] && uci set "nginx_manager.global.server_tokens=${server_tokens}"
+	[ -n "${sendfile}" ] && uci set "nginx_manager.global.sendfile=${sendfile}"
+	[ -n "${access_log}" ] && uci set "nginx_manager.global.access_log=${access_log}"
+	[ -n "${error_log}" ] && uci set "nginx_manager.global.error_log=${error_log}"
+	[ -n "${ssl_protocols}" ] && uci set "nginx_manager.global.ssl_protocols=${ssl_protocols}"
+	[ -n "${ssl_ciphers}" ] && uci set "nginx_manager.global.ssl_ciphers=${ssl_ciphers}"
+
+	uci commit nginx_manager
+
+	run_apply_or_error || return
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
+handle_get_nginx_T() {
+	local output
+	output="$(nginx -T 2>&1)" || true
+
+	json_init
+	json_add_string "content" "${output}"
+	json_dump
+}
+
+handle_get_file_readonly() {
+	local file_path
+	json_get_var file_path "path"
+	[ -z "${file_path}" ] && { json_init; json_add_string "error" "missing path"; json_dump; return; }
+
+	case "${file_path}" in
+		/etc/nginx/uci.conf.template|/etc/nginx/nginx.conf|/etc/nginx/uci.conf)
+			;;
+		/etc/nginx/conf.d/luci-manager/*)
+			;;
+		/etc/config/nginx|/etc/config/nginx_manager)
+			;;
+		*)
+			json_init
+			json_add_string "error" "path not allowed"
+			json_dump
+			return
+			;;
+	esac
+
+	if [ ! -f "${file_path}" ]; then
+		json_init
+		json_add_string "error" "file not found"
+		json_dump
+		return
+	fi
+
+	local content
+	content="$(cat "${file_path}" 2>/dev/null)"
+
+	json_init
+	json_add_string "content" "${content}"
+	json_add_string "path" "${file_path}"
+	json_dump
+}
+
+handle_set_file_dangerous() {
+	local file_path content
+	json_get_var file_path "path"
+	json_get_var content "content"
+
+	[ -z "${file_path}" ] && { json_init; json_add_string "error" "missing path"; json_dump; return; }
+	[ -z "${content}" ] && { json_init; json_add_string "error" "missing content"; json_dump; return; }
+
+	local dangerous
+	dangerous="$(uci -q get nginx_manager.global.dangerous_core_edit)" || dangerous="0"
+	[ "${dangerous}" = "1" ] || {
+		json_init
+		json_add_string "error" "dangerous_core_edit not enabled"
+		json_dump
+		return
+	}
+
+	case "${file_path}" in
+		/etc/nginx/uci.conf.template|/etc/nginx/nginx.conf)
+			;;
+		/etc/nginx/conf.d/luci-manager/*)
+			;;
+		*)
+			json_init
+			json_add_string "error" "path not allowed"
+			json_dump
+			return
+			;;
+	esac
+
+	load_global_config
+	local timestamp
+	timestamp="$(date '+%Y-%m-%d-%H%M%S')"
+	local backup_path="${BACKUP_DIR}/${timestamp}"
+	mkdir -p "${backup_path}/nginx"
+	[ -d /etc/nginx ] && cp -a /etc/nginx/* "${backup_path}/nginx/" 2>/dev/null
+	[ -f /etc/config/nginx ] && cp -a /etc/config/nginx "${backup_path}/config-nginx"
+	[ -f "${NGINX_MANAGER_CONFIG}" ] && cp -a "${NGINX_MANAGER_CONFIG}" "${backup_path}/config-nginx-manager"
+
+	printf '%s' "${content}" > "${file_path}"
+
+	local test_output
+	test_output="$(nginx -t 2>&1)"
+	if [ $? -ne 0 ]; then
+		local backup_file="${backup_path}/nginx/${file_path#/etc/nginx/}"
+		if [ -f "${backup_file}" ]; then
+			cp "${backup_file}" "${file_path}"
+		fi
+		nginx -t >/dev/null 2>&1
+		/etc/init.d/nginx reload >/dev/null 2>&1
+
+		json_init
+		json_add_string "error" "nginx -t failed after write"
+		json_add_string "detail" "${test_output}"
+		json_add_string "rolled_back" "1"
+		json_dump
+		return
+	fi
+
+	/etc/init.d/nginx reload >/dev/null 2>&1
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
+handle_list_backups() {
+	load_global_config
+
+	json_init
+	json_add_array "backups"
+
+	for backup_dir in "${BACKUP_DIR}"/20*; do
+		[ -d "${backup_dir}" ] || continue
+		local backup_name
+		backup_name="$(basename "${backup_dir}")"
+
+		json_add_object ""
+		json_add_string "id" "${backup_name}"
+		json_add_string "timestamp" "${backup_name}"
+
+		if [ -f "${backup_dir}/manifest.json" ]; then
+			local source
+			source="$(jsonfilter -i "${backup_dir}/manifest.json" -e '@.source' 2>/dev/null)" || source="unknown"
+			json_add_string "source" "${source}"
+		fi
+
+		json_close_object
+	done
+
+	json_close_array
+	json_dump
+}
+
+handle_create_backup() {
+	load_global_config
+
+	"${NGINX_MANAGER_GEN}" backup >/dev/null 2>&1
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
+handle_restore_backup() {
+	local backup_id
+	json_get_var backup_id "id"
+	[ -z "${backup_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+
+	load_global_config
+
+	local backup_path="${BACKUP_DIR}/${backup_id}"
+	[ -d "${backup_path}" ] || {
+		json_init
+		json_add_string "error" "backup not found"
+		json_dump
+		return
+	}
+
+	local timestamp
+	timestamp="$(date '+%Y-%m-%d-%H%M%S')"
+	local pre_restore_path="${BACKUP_DIR}/${timestamp}-pre-restore"
+	mkdir -p "${pre_restore_path}/nginx"
+	[ -d /etc/nginx ] && cp -a /etc/nginx/* "${pre_restore_path}/nginx/" 2>/dev/null
+	[ -f /etc/config/nginx ] && cp -a /etc/config/nginx "${pre_restore_path}/config-nginx"
+	[ -f "${NGINX_MANAGER_CONFIG}" ] && cp -a "${NGINX_MANAGER_CONFIG}" "${pre_restore_path}/config-nginx-manager"
+
+	if [ -d "${backup_path}/nginx" ]; then
+		rm -rf "${MANAGED_DIR:?}"/*
+		cp -a "${backup_path}/nginx/conf.d/luci-manager/"* "${MANAGED_DIR}/" 2>/dev/null
+	fi
+
+	[ -f "${backup_path}/config-nginx-manager" ] && cp -a "${backup_path}/config-nginx-manager" "${NGINX_MANAGER_CONFIG}"
+
+	local test_output
+	test_output="$(nginx -t 2>&1)"
+	if [ $? -ne 0 ]; then
+		rm -rf "${MANAGED_DIR:?}"/*
+		cp -a "${pre_restore_path}/nginx/conf.d/luci-manager/"* "${MANAGED_DIR}/" 2>/dev/null
+		cp -a "${pre_restore_path}/config-nginx-manager" "${NGINX_MANAGER_CONFIG}"
+		nginx -t >/dev/null 2>&1
+		/etc/init.d/nginx reload >/dev/null 2>&1
+
+		json_init
+		json_add_string "error" "nginx -t failed after restore"
+		json_add_string "detail" "${test_output}"
+		json_add_string "rolled_back" "1"
+		json_dump
+		return
+	fi
+
+	/etc/init.d/nginx reload >/dev/null 2>&1
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
+handle_diff_backup() {
+	local backup_id
+	json_get_var backup_id "id"
+	[ -z "${backup_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+
+	load_global_config
+
+	local backup_path="${BACKUP_DIR}/${backup_id}"
+	[ -d "${backup_path}" ] || {
+		json_init
+		json_add_string "error" "backup not found"
+		json_dump
+		return
+	}
+
+	local diff_output=""
+	if [ -d "${backup_path}/nginx/conf.d/luci-manager" ] && [ -d "${MANAGED_DIR}" ]; then
+		diff_output="$(diff -ruN "${backup_path}/nginx/conf.d/luci-manager" "${MANAGED_DIR}" 2>/dev/null || true)"
+	fi
+
+	json_init
+	json_add_string "diff" "${diff_output}"
+	json_dump
+}
+
+handle_acme_issue() {
+	json_init
+	json_add_string "error" "not implemented"
+	json_dump
+}
+
+handle_acme_renew() {
+	json_init
+	json_add_string "error" "not implemented"
+	json_dump
+}
+
+case "$1" in
+	list)
+		json_init
+		json_add_object "status"
+		json_close_object
+
+		json_add_object "check_env"
+		json_close_object
+
+		json_add_object "list_sites"
+		json_close_object
+
+		json_add_object "get_site"
+		json_add_string "id" ""
+		json_close_object
+
+		json_add_object "set_site"
+		json_add_string "id" ""
+		json_add_string "name" ""
+		json_add_string "mode" ""
+		json_add_string "server_name" ""
+		json_add_string "listen" ""
+		json_add_string "proxy_pass" ""
+		json_add_string "root" ""
+		json_add_string "index" ""
+		json_add_string "websocket" ""
+		json_add_string "redirect_https" ""
+		json_add_string "proxy_host" ""
+		json_add_string "proxy_xff" ""
+		json_add_string "proxy_xfp" ""
+		json_add_string "proxy_xri" ""
+		json_add_string "ssl_cert" ""
+		json_add_string "access_log" ""
+		json_add_string "error_log" ""
+		json_add_string "custom_server_block" ""
+		json_add_string "redirect_target" ""
+		json_add_string "enabled" ""
+		json_close_object
+
+		json_add_object "delete_site"
+		json_add_string "id" ""
+		json_close_object
+
+		json_add_object "enable_site"
+		json_add_string "id" ""
+		json_close_object
+
+		json_add_object "disable_site"
+		json_add_string "id" ""
+		json_close_object
+
+		json_add_object "render_site"
+		json_add_string "id" ""
+		json_close_object
+
+		json_add_object "test_config"
+		json_close_object
+
+		json_add_object "reload_nginx"
+		json_close_object
+
+		json_add_object "restart_nginx"
+		json_close_object
+
+		json_add_object "list_certs"
+		json_close_object
+
+		json_add_object "get_cert"
+		json_add_string "id" ""
+		json_close_object
+
+		json_add_object "set_cert"
+		json_add_string "id" ""
+		json_add_string "name" ""
+		json_add_string "type" ""
+		json_add_string "cert_path" ""
+		json_add_string "key_path" ""
+		json_add_string "domain" ""
+		json_add_string "auto_renew" ""
+		json_close_object
+
+		json_add_object "delete_cert"
+		json_add_string "id" ""
+		json_close_object
+
+		json_add_object "upload_cert"
+		json_add_string "id" ""
+		json_add_string "name" ""
+		json_add_string "cert_content" ""
+		json_add_string "key_content" ""
+		json_add_string "domain" ""
+		json_close_object
+
+		json_add_object "issue_self_signed"
+		json_add_string "id" ""
+		json_add_string "name" ""
+		json_add_string "domain" ""
+		json_close_object
+
+		json_add_object "acme_issue"
+		json_add_string "id" ""
+		json_add_string "domain" ""
+		json_close_object
+
+		json_add_object "acme_renew"
+		json_add_string "id" ""
+		json_close_object
+
+		json_add_object "check_cert_expiry"
+		json_close_object
+
+		json_add_object "get_logs"
+		json_add_string "type" ""
+		json_add_string "lines" ""
+		json_add_string "filter" ""
+		json_add_string "site" ""
+		json_close_object
+
+		json_add_object "get_core_config"
+		json_close_object
+
+		json_add_object "set_core_config_safe"
+		json_add_string "client_max_body_size" ""
+		json_add_string "keepalive_timeout" ""
+		json_add_string "gzip" ""
+		json_add_string "server_tokens" ""
+		json_add_string "sendfile" ""
+		json_add_string "access_log" ""
+		json_add_string "error_log" ""
+		json_add_string "ssl_protocols" ""
+		json_add_string "ssl_ciphers" ""
+		json_close_object
+
+		json_add_object "get_nginx_T"
+		json_close_object
+
+		json_add_object "get_file_readonly"
+		json_add_string "path" ""
+		json_close_object
+
+		json_add_object "set_file_dangerous"
+		json_add_string "path" ""
+		json_add_string "content" ""
+		json_close_object
+
+		json_add_object "list_backups"
+		json_close_object
+
+		json_add_object "create_backup"
+		json_close_object
+
+		json_add_object "restore_backup"
+		json_add_string "id" ""
+		json_close_object
+
+		json_add_object "diff_backup"
+		json_add_string "id" ""
+		json_close_object
+
+		json_dump
+		;;
+	call)
+		METHOD="$2"
+		[ -z "$METHOD" ] && exit 1
+
+		json_load "$(cat)" 2>/dev/null
+
+		case "${METHOD}" in
+			status)             "${NGINX_MANAGER_GEN}" --status ;;
+			check_env)          "${NGINX_MANAGER_GEN}" --check-env ;;
+			test_config)        "${NGINX_MANAGER_GEN}" --test-config ;;
+			reload_nginx)       "${NGINX_MANAGER_GEN}" --reload ;;
+			restart_nginx)      "${NGINX_MANAGER_GEN}" --restart ;;
+			list_sites)         handle_list_sites ;;
+			get_site)           handle_get_site ;;
+			set_site)           handle_set_site ;;
+			delete_site)        handle_delete_site ;;
+			enable_site)        handle_enable_site ;;
+			disable_site)       handle_disable_site ;;
+			render_site)        handle_render_site ;;
+			list_certs)         handle_list_certs ;;
+			get_cert)           handle_get_cert ;;
+			set_cert)           handle_set_cert ;;
+			delete_cert)        handle_delete_cert ;;
+			upload_cert)        handle_upload_cert ;;
+			issue_self_signed)  handle_issue_self_signed ;;
+			acme_issue)         handle_acme_issue ;;
+			acme_renew)         handle_acme_renew ;;
+			check_cert_expiry)  handle_check_cert_expiry ;;
+			get_logs)           handle_get_logs ;;
+			get_core_config)    handle_get_core_config ;;
+			set_core_config_safe) handle_set_core_config_safe ;;
+			get_nginx_T)        handle_get_nginx_T ;;
+			get_file_readonly)  handle_get_file_readonly ;;
+			set_file_dangerous) handle_set_file_dangerous ;;
+			list_backups)       handle_list_backups ;;
+			create_backup)      handle_create_backup ;;
+			restore_backup)     handle_restore_backup ;;
+			diff_backup)        handle_diff_backup ;;
+			*)                  json_init; json_add_string "error" "unknown method"; json_dump ;;
+		esac
+		;;
+esac

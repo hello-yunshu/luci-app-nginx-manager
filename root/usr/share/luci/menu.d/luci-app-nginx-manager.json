@@ -1,0 +1,71 @@
+{
+	"admin/services/nginx-manager": {
+		"title": "Nginx Manager",
+		"order": 60,
+		"action": {
+			"type": "view",
+			"path": "nginx-manager/overview"
+		},
+		"depends": {
+			"acl": [ "luci-app-nginx-manager" ],
+			"uci": { "nginx_manager": true }
+		}
+	},
+	"admin/services/nginx-manager/sites": {
+		"title": "Sites",
+		"order": 10,
+		"action": {
+			"type": "view",
+			"path": "nginx-manager/sites"
+		}
+	},
+	"admin/services/nginx-manager/sites/edit": {
+		"title": "Edit Site",
+		"order": 11,
+		"action": {
+			"type": "view",
+			"path": "nginx-manager/site-edit"
+		},
+		"wildcard": true
+	},
+	"admin/services/nginx-manager/certificates": {
+		"title": "Certificates",
+		"order": 20,
+		"action": {
+			"type": "view",
+			"path": "nginx-manager/certificates"
+		}
+	},
+	"admin/services/nginx-manager/logs": {
+		"title": "Logs",
+		"order": 30,
+		"action": {
+			"type": "view",
+			"path": "nginx-manager/logs"
+		}
+	},
+	"admin/services/nginx-manager/core-config": {
+		"title": "Core Config",
+		"order": 40,
+		"action": {
+			"type": "view",
+			"path": "nginx-manager/core-config"
+		}
+	},
+	"admin/services/nginx-manager/backups": {
+		"title": "Backups",
+		"order": 50,
+		"action": {
+			"type": "view",
+			"path": "nginx-manager/backups"
+		}
+	},
+	"admin/services/nginx-manager/advanced": {
+		"title": "Advanced",
+		"order": 60,
+		"action": {
+			"type": "view",
+			"path": "nginx-manager/advanced"
+		}
+	}
+}
