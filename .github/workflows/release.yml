@@ -92,11 +92,22 @@ jobs:
           mixkey: ${{ matrix.branch }}
           prefix: ${{ env.SDKDIR }}
 
-      - name: Update feeds
+      - name: Cache feeds
+        id: cache-feeds
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.SDKDIR }}/feeds
+          key: feeds-${{ matrix.branch }}-${{ hashFiles('feeds.conf') }}
+          restore-keys: |
+            feeds-${{ matrix.branch }}-
+
+      - name: Update and install feeds
         working-directory: ${{ env.SDKDIR }}
         run: |
-          ./scripts/feeds update base packages luci
-          ./scripts/feeds install luci-base nginx-ssl nginx-util rpcd rpcd-mod-file openssl-util
+          if [ "${{ steps.cache-feeds.outputs.cache-hit }}" != "true" ]; then
+            ./scripts/feeds update base packages luci
+          fi
+          ./scripts/feeds install luci-base nginx-ssl rpcd rpcd-mod-file openssl-util
 
       - name: Prepare package source
         working-directory: ${{ env.SDKDIR }}
