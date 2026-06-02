@@ -139,9 +139,9 @@ luci-base  nginx-ssl  nginx-util  rpcd  rpcd-mod-file  openssl-util
 
 To directly modify nginx configuration files:
 
-1. Enable **Dangerous Edit Mode** on the **Core Config** page
-2. Navigate to the **Advanced** page
-3. Select the file to edit (nginx.conf, templates, managed configs)
+1. Go to the **Core Config** page
+2. Enable **Dangerous Edit Mode**
+3. A file editor will appear at the bottom of the page for editing `nginx.conf` and `uci.conf.template`
 4. Save — the system auto-tests and rolls back on failure
 
 > ⚠️ When Dangerous Edit Mode is enabled, the visual Core Config editor is disabled.
@@ -168,9 +168,8 @@ htdocs/luci-static/resources/
     ├── site-edit.js                            # Site edit form
     ├── certificates.js                         # Certificate management
     ├── logs.js                                 # Log viewer
-    ├── core-config.js                          # Core config editor
-    ├── backups.js                              # Backup & restore
-    └── advanced.js                             # Advanced file editor
+    ├── core-config.js                          # Core config editor (incl. dangerous edit)
+    └── backups.js                              # Backup & restore
 ```
 
 ## Architecture
@@ -178,7 +177,7 @@ htdocs/luci-static/resources/
 ```
 ┌──────────────┐     ubus/rpcd     ┌──────────────────┐     UCI      ┌──────────────┐
 │  LuCI Frontend│ ──────────────→  │  rpcd Backend     │ ──────────→ │  UCI Config   │
-│  (8 JS views) │ ←──────────────  │  (30 API methods) │ ←──────────  │  nginx_manager│
+│  (7 JS views) │ ←──────────────  │  (30 API methods) │ ←──────────  │  nginx_manager│
 └──────────────┘     JSON response └──────────────────┘              └──────┬───────┘
                                                                             │
                                                               nginx-manager-gen

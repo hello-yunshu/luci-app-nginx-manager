@@ -25,6 +25,12 @@ var callIssueSelfSigned = rpc.declare({
 	expect: {}
 });
 
+var callUploadCert = rpc.declare({
+	object: 'nginx_manager',
+	method: 'upload_cert',
+	expect: {}
+});
+
 function certStatusLabel(status) {
 	switch (status) {
 		case 'valid': return _('Valid');
@@ -37,11 +43,11 @@ function certStatusLabel(status) {
 
 function certStatusClass(status) {
 	switch (status) {
-		case 'valid': return 'nginx-manager-status-success';
-		case 'expiring': return 'nginx-manager-status-warning';
-		case 'expired': return 'nginx-manager-status-error';
-		case 'missing': return 'nginx-manager-status-error';
-		default: return 'nginx-manager-status-disabled';
+		case 'valid': return 'nm-badge success';
+		case 'expiring': return 'nm-badge warning';
+		case 'expired': return 'nm-badge error';
+		case 'missing': return 'nm-badge error';
+		default: return 'nm-badge disabled';
 	}
 }
 
@@ -53,18 +59,19 @@ return view.extend({
 	render: function(data) {
 		var certs = (data && data.certs) || [];
 
-		var page = E('div', { 'class': 'nginx-manager-page' });
+		var container = E('div', { 'class': 'cbi-map' });
 
-		page.appendChild(E('link', {
+		container.appendChild(E('link', {
 			'rel': 'stylesheet',
 			'href': L.resource('nginx-manager/nginx-manager.css')
 		}));
 
-		page.appendChild(E('h3', {}, _('Certificates')));
+		container.appendChild(E('h2', { 'class': 'cbi-map-title' }, _('Certificates')));
 
-		var addBtn = E('button', {
-			'class': 'btn cbi-button-action',
-			'style': 'margin-bottom: 12px;',
+		var headerSection = E('div', { 'class': 'cbi-section' });
+
+		headerSection.appendChild(E('button', {
+			'class': 'cbi-button cbi-button-apply',
 			'click': function() {
 				ui.showModal(_('Add Certificate'), [
 					E('div', { 'class': 'cbi-value' }, [
@@ -86,7 +93,7 @@ return view.extend({
 						E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 						' ',
 						E('button', {
-							'class': 'btn cbi-button-action',
+							'class': 'cbi-button cbi-button-apply',
 							'click': function() {
 								var certName = document.getElementById('new-cert-name').value.trim();
 								var certType = document.getElementById('new-cert-type').value;
@@ -110,7 +117,7 @@ return view.extend({
 										if (result && result.error) {
 											ui.addNotification(null, E('p', {}, result.error), 'error');
 										} else {
-											ui.addNotification(null, E('p', {}, _('Self-signed certificate generated')), 'success');
+											ui.addNotification(null, E('p', {}, _('Self-signed certificate generated')), 'info');
 											setTimeout(function() { location.reload(); }, 500);
 										}
 									});
@@ -128,7 +135,7 @@ return view.extend({
 											E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 											' ',
 											E('button', {
-												'class': 'btn cbi-button-action',
+												'class': 'cbi-button cbi-button-apply',
 												'click': function() {
 													var certPem = document.getElementById('cert-pem').value;
 													var keyPem = document.getElementById('key-pem').value;
@@ -137,67 +144,63 @@ return view.extend({
 														return;
 													}
 													ui.hideModal();
-													rpc.declare({
-														object: 'nginx_manager',
-														method: 'upload_cert',
-														expect: {}
-													})({ id: certName, name: certName, cert_content: certPem, key_content: keyPem, domain: certDomain }).then(function(result) {
+													callUploadCert({ id: certName, name: certName, cert_content: certPem, key_content: keyPem, domain: certDomain }).then(function(result) {
 														if (result && result.error) {
 															ui.addNotification(null, E('p', {}, result.error), 'error');
 														} else {
-															ui.addNotification(null, E('p', {}, _('Certificate uploaded')), 'success');
+															ui.addNotification(null, E('p', {}, _('Certificate uploaded')), 'info');
 															setTimeout(function() { location.reload(); }, 500);
 														}
 													});
 												}
-											}, _('Upload'))
+											}, '\u271A ' + _('Upload'))
 										])
 									]);
 								}
 							}
-						}, _('Create'))
+						}, '\u271A ' + _('Create'))
 					])
 				]);
 			}
-		}, _('Add Certificate'));
+		}, '\u271A ' + _('Add Certificate')));
 
-		page.appendChild(addBtn);
+		container.appendChild(headerSection);
 
 		if (certs.length === 0) {
-			page.appendChild(E('div', { 'class': 'cbi-section' }, [
-				E('p', { 'style': 'text-align: center; color: #888; padding: 20px;' },
+			container.appendChild(E('div', { 'class': 'cbi-section' }, [
+				E('p', { 'class': 'nm-empty-state' },
 					_('No certificates configured.'))
 			]));
-			return page;
+			return container;
 		}
 
-		var table = E('table', { 'class': 'table cbi-section-table' });
+		var table = E('table', { 'class': 'table' });
 		var thead = E('thead');
-		var headerRow = E('tr', { 'class': 'cbi-section-table-titles' });
+		var headerRow = E('tr');
 		[_('Name'), _('Type'), _('Domain'), _('Status'), _('Actions')].forEach(function(title) {
-			headerRow.appendChild(E('th', { 'class': 'cbi-section-table-cell' }, title));
+			headerRow.appendChild(E('th', {}, title));
 		});
 		thead.appendChild(headerRow);
 		table.appendChild(thead);
 
-		var tbody = E('tbody');
-
 		certs.forEach(function(cert) {
-			var row = E('tr', { 'class': 'cbi-section-table-row' });
-			row.appendChild(E('td', { 'class': 'cbi-section-table-cell' }, cert.name || '-'));
-			row.appendChild(E('td', { 'class': 'cbi-section-table-cell' }, cert.type || '-'));
+			var row = E('tr');
 
-			var domainCell = E('td', { 'class': 'cbi-section-table-cell' });
+			row.appendChild(E('td', {}, cert.name || '-'));
+			row.appendChild(E('td', {}, cert.type || '-'));
+
+			var domainCell = E('td');
 			domainCell.textContent = cert.domain || '-';
 			row.appendChild(domainCell);
 
-			var statusCell = E('td', { 'class': 'cbi-section-table-cell' });
-			statusCell.appendChild(E('span', { 'class': 'nginx-manager-status ' + certStatusClass(cert.status) }, certStatusLabel(cert.status)));
+			var statusCell = E('td');
+			statusCell.appendChild(E('span', { 'class': certStatusClass(cert.status) }, certStatusLabel(cert.status)));
 			row.appendChild(statusCell);
 
-			var actionsCell = E('td', { 'class': 'cbi-section-table-cell' });
+			var actionsCell = E('td');
+
 			actionsCell.appendChild(E('button', {
-				'class': 'btn cbi-button-negative',
+				'class': 'cbi-button cbi-button-reset',
 				'click': function() {
 					ui.showModal(_('Confirm Delete'), [
 						E('p', {}, _('Are you sure you want to delete this certificate?')),
@@ -205,32 +208,31 @@ return view.extend({
 							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 							' ',
 							E('button', {
-								'class': 'btn cbi-button-negative',
+								'class': 'cbi-button cbi-button-reset',
 								'click': function() {
 									ui.hideModal();
 									callDeleteCert(cert.id).then(function(result) {
 										if (result && result.error) {
 											ui.addNotification(null, E('p', {}, result.error), 'error');
 										} else {
-											ui.addNotification(null, E('p', {}, _('Certificate deleted')), 'success');
+											ui.addNotification(null, E('p', {}, _('Certificate deleted')), 'info');
 											setTimeout(function() { location.reload(); }, 500);
 										}
 									});
 								}
-							}, _('Delete'))
+							}, '\u2718 ' + _('Delete'))
 						])
 					]);
 				}
-			}, _('Delete')));
+			}, '\u2718 ' + _('Delete')));
 
 			row.appendChild(actionsCell);
-			tbody.appendChild(row);
+			table.appendChild(row);
 		});
 
-		table.appendChild(tbody);
-		page.appendChild(E('div', { 'class': 'cbi-section' }, [table]));
+		container.appendChild(E('div', { 'class': 'cbi-section' }, [table]));
 
-		return page;
+		return container;
 	},
 
 	handleSave: null,

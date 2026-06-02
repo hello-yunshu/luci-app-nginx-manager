@@ -39,9 +39,10 @@ var callRenderSite = rpc.declare({
 	expect: {}
 });
 
-var callTestConfig = rpc.declare({
+var callSetSite = rpc.declare({
 	object: 'nginx_manager',
-	method: 'test_config',
+	method: 'set_site',
+	params: ['id', 'name', 'mode', 'enabled'],
 	expect: {}
 });
 
@@ -63,19 +64,19 @@ return view.extend({
 	render: function(data) {
 		var sites = (data && data.sites) || [];
 
-		var page = E('div', { 'class': 'nginx-manager-page' });
+		var container = E('div', { 'class': 'cbi-map' });
 
-		page.appendChild(E('link', {
+		container.appendChild(E('link', {
 			'rel': 'stylesheet',
 			'href': L.resource('nginx-manager/nginx-manager.css')
 		}));
 
-		var header = E('div', { 'class': 'cbi-section' });
-		header.appendChild(E('h3', {}, _('Sites')));
+		container.appendChild(E('h2', { 'class': 'cbi-map-title' }, _('Sites')));
 
-		var addBtn = E('button', {
-			'class': 'btn cbi-button-action',
-			'style': 'margin-bottom: 12px;',
+		var headerSection = E('div', { 'class': 'cbi-section' });
+
+		headerSection.appendChild(E('button', {
+			'class': 'cbi-button cbi-button-apply',
 			'click': function() {
 				ui.showModal(_('Add Site'), [
 					E('div', { 'class': 'cbi-value' }, [
@@ -97,13 +98,10 @@ return view.extend({
 						])
 					]),
 					E('div', { 'class': 'right' }, [
-						E('button', {
-							'class': 'btn',
-							'click': function() { ui.hideModal(); }
-						}, _('Cancel')),
+						E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 						' ',
 						E('button', {
-							'class': 'btn cbi-button-action',
+							'class': 'cbi-button cbi-button-apply',
 							'click': function() {
 								var name = document.getElementById('new-site-name').value.trim();
 								var mode = document.getElementById('new-site-mode').value;
@@ -117,12 +115,7 @@ return view.extend({
 								}
 								ui.hideModal();
 								ui.showModal(_('Creating site...'), [E('p', {}, _('Please wait...'))]);
-								rpc.declare({
-									object: 'nginx_manager',
-									method: 'set_site',
-									params: ['id', 'name', 'mode', 'enabled'],
-									expect: {}
-								})(name, name, mode, '1').then(function(result) {
+								callSetSite(name, name, mode, '1').then(function(result) {
 									ui.hideModal();
 									if (result && result.error) {
 										ui.addNotification(null, E('p', {}, result.error), 'error');
@@ -139,60 +132,50 @@ return view.extend({
 					])
 				]);
 			}
-		}, _('Add Site'));
+		}, '\u271A ' + _('Add Site')));
 
-		header.appendChild(addBtn);
-		page.appendChild(header);
+		container.appendChild(headerSection);
 
 		if (sites.length === 0) {
-			page.appendChild(E('div', { 'class': 'cbi-section' }, [
-				E('p', { 'style': 'text-align: center; color: #888; padding: 20px;' },
+			container.appendChild(E('div', { 'class': 'cbi-section' }, [
+				E('p', { 'class': 'nm-empty-state' },
 					_('No sites configured. Click "Add Site" to create one.'))
 			]));
-			return page;
+			return container;
 		}
 
-		var table = E('table', { 'class': 'table cbi-section-table' });
+		var table = E('table', { 'class': 'table' });
 		var thead = E('thead');
-		var headerRow = E('tr', { 'class': 'cbi-section-table-titles' });
+		var headerRow = E('tr');
 		[_('Enabled'), _('Name'), _('Domain'), _('Type'), _('SSL'), _('Backend / Root'), _('Actions')].forEach(function(title) {
-			headerRow.appendChild(E('th', { 'class': 'cbi-section-table-cell' }, title));
+			headerRow.appendChild(E('th', {}, title));
 		});
 		thead.appendChild(headerRow);
 		table.appendChild(thead);
 
-		var tbody = E('tbody');
-
 		sites.forEach(function(site) {
-			var row = E('tr', { 'class': 'cbi-section-table-row' });
+			var row = E('tr');
 
-			var enabledCell = E('td', { 'class': 'cbi-section-table-cell' });
-			if (site.enabled === '1') {
-				enabledCell.appendChild(E('span', { 'class': 'nginx-manager-status nginx-manager-status-success' }, _('Enabled')));
-			} else {
-				enabledCell.appendChild(E('span', { 'class': 'nginx-manager-status nginx-manager-status-disabled' }, _('Disabled')));
-			}
+			var enabledCell = E('td');
+			enabledCell.appendChild(E('span', { 'class': 'nm-badge ' + (site.enabled === '1' ? 'success' : 'disabled') },
+				site.enabled === '1' ? _('Enabled') : _('Disabled')));
 			row.appendChild(enabledCell);
 
-			row.appendChild(E('td', { 'class': 'cbi-section-table-cell' }, site.name || '-'));
-			row.appendChild(E('td', { 'class': 'cbi-section-table-cell' }, site.server_name || '-'));
-			row.appendChild(E('td', { 'class': 'cbi-section-table-cell' }, modeLabel(site.mode)));
+			row.appendChild(E('td', {}, site.name || '-'));
+			row.appendChild(E('td', {}, site.server_name || '-'));
+			row.appendChild(E('td', {}, modeLabel(site.mode)));
 
-			var sslCell = E('td', { 'class': 'cbi-section-table-cell' });
-			if (site.has_ssl === '1') {
-				sslCell.appendChild(E('span', { 'class': 'nginx-manager-status nginx-manager-status-success' }, 'SSL'));
-			} else {
-				sslCell.appendChild(E('span', { 'class': 'nginx-manager-status nginx-manager-status-disabled' }, '-'));
-			}
+			var sslCell = E('td');
+			sslCell.appendChild(E('span', { 'class': 'nm-badge ' + (site.has_ssl === '1' ? 'success' : 'disabled') },
+				site.has_ssl === '1' ? _('SSL') : '-'));
 			row.appendChild(sslCell);
 
-			var backend = site.proxy_pass || site.root || '-';
-			row.appendChild(E('td', { 'class': 'cbi-section-table-cell' }, backend));
+			row.appendChild(E('td', {}, site.proxy_pass || site.root || '-'));
 
-			var actionsCell = E('td', { 'class': 'cbi-section-table-cell' });
+			var actionsCell = E('td');
 
 			actionsCell.appendChild(E('button', {
-				'class': 'btn cbi-button-action',
+				'class': 'cbi-button',
 				'style': 'margin-right: 4px;',
 				'click': function() {
 					location.href = L.url('admin/services/nginx-manager/sites/edit', site.id);
@@ -200,17 +183,14 @@ return view.extend({
 			}, _('Edit')));
 
 			actionsCell.appendChild(E('button', {
-				'class': 'btn cbi-button',
+				'class': 'cbi-button',
 				'style': 'margin-right: 4px;',
 				'click': function() {
 					callRenderSite(site.id).then(function(result) {
 						ui.showModal(_('Generated Config'), [
-							E('div', { 'class': 'nginx-manager-code-block' }, (result && result.config) || ''),
-							E('div', { 'class': 'right', 'style': 'margin-top: 8px;' }, [
-								E('button', {
-									'class': 'btn',
-									'click': function() { ui.hideModal(); }
-								}, _('Close'))
+							E('pre', { 'class': 'nm-code-block' }, (result && result.config) || ''),
+							E('div', { 'class': 'right' }, [
+								E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
 							])
 						]);
 					});
@@ -219,22 +199,22 @@ return view.extend({
 
 			if (site.enabled === '1') {
 				actionsCell.appendChild(E('button', {
-					'class': 'btn cbi-button',
+					'class': 'cbi-button cbi-button-reset',
 					'style': 'margin-right: 4px;',
 					'click': function() {
 						callDisableSite(site.id).then(function() {
-							ui.addNotification(null, E('p', {}, _('Site disabled')), 'success');
+							ui.addNotification(null, E('p', {}, _('Site disabled')), 'info');
 							setTimeout(function() { location.reload(); }, 500);
 						});
 					}
 				}, _('Disable')));
 			} else {
 				actionsCell.appendChild(E('button', {
-					'class': 'btn cbi-button',
+					'class': 'cbi-button cbi-button-apply',
 					'style': 'margin-right: 4px;',
 					'click': function() {
 						callEnableSite(site.id).then(function() {
-							ui.addNotification(null, E('p', {}, _('Site enabled')), 'success');
+							ui.addNotification(null, E('p', {}, _('Site enabled')), 'info');
 							setTimeout(function() { location.reload(); }, 500);
 						});
 					}
@@ -242,25 +222,22 @@ return view.extend({
 			}
 
 			actionsCell.appendChild(E('button', {
-				'class': 'btn cbi-button-negative',
+				'class': 'cbi-button cbi-button-reset',
 				'click': function() {
 					ui.showModal(_('Confirm Delete'), [
 						E('p', {}, _('Are you sure you want to delete this site?')),
 						E('div', { 'class': 'right' }, [
-							E('button', {
-								'class': 'btn',
-								'click': function() { ui.hideModal(); }
-							}, _('Cancel')),
+							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 							' ',
 							E('button', {
-								'class': 'btn cbi-button-negative',
+								'class': 'cbi-button cbi-button-reset',
 								'click': function() {
 									ui.hideModal();
 									callDeleteSite(site.id).then(function(result) {
 										if (result && result.error) {
 											ui.addNotification(null, E('p', {}, result.error), 'error');
 										} else {
-											ui.addNotification(null, E('p', {}, _('Site deleted successfully')), 'success');
+											ui.addNotification(null, E('p', {}, _('Site deleted successfully')), 'info');
 											setTimeout(function() { location.reload(); }, 500);
 										}
 									});
@@ -272,13 +249,12 @@ return view.extend({
 			}, _('Delete')));
 
 			row.appendChild(actionsCell);
-			tbody.appendChild(row);
+			table.appendChild(row);
 		});
 
-		table.appendChild(tbody);
-		page.appendChild(E('div', { 'class': 'cbi-section' }, [table]));
+		container.appendChild(E('div', { 'class': 'cbi-section' }, [table]));
 
-		return page;
+		return container;
 	},
 
 	handleSave: null,

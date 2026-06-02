@@ -41,31 +41,11 @@ var callCheckEnv = rpc.declare({
 	expect: {}
 });
 
-function createCard(title, value, statusClass) {
-	var card = E('div', { 'class': 'nginx-manager-card' });
-	card.appendChild(E('div', { 'class': 'nginx-manager-card-title' }, title));
-	var valEl = E('div', { 'class': 'nginx-manager-card-value' });
-	if (statusClass) {
-		valEl.appendChild(E('span', { 'class': 'nginx-manager-status ' + statusClass }, value));
-	} else {
-		valEl.textContent = value;
-	}
-	card.appendChild(valEl);
-	return card;
-}
-
-function statusClassForRunning(running) {
-	return running === '1' ? 'nginx-manager-status-success' : 'nginx-manager-status-error';
-}
-
-function statusTextForRunning(running) {
-	return running === '1' ? _('Running') : _('Stopped');
-}
-
-function statusClassForTest(result) {
-	if (!result || result === 'unknown') return 'nginx-manager-status-disabled';
-	return result.startsWith('pass') ? 'nginx-manager-status-success' : 'nginx-manager-status-error';
-}
+var callGetNginxT = rpc.declare({
+	object: 'nginx_manager',
+	method: 'get_nginx_T',
+	expect: {}
+});
 
 function safeApply(fn) {
 	return fn().catch(function(err) {
@@ -79,18 +59,52 @@ function safeApply(fn) {
 
 function setBusy(btn) {
 	btn.disabled = true;
-	btn.dataset.origText = btn.textContent;
-	btn.textContent = '...';
+	btn.setAttribute('data-original-title', btn.textContent);
+	btn.textContent = _('Loading...');
 }
 
 function resetBusy(btn) {
 	btn.disabled = false;
-	btn.textContent = btn.dataset.origText || btn.textContent;
+	btn.textContent = btn.getAttribute('data-original-title') || btn.textContent;
+	btn.removeAttribute('data-original-title');
 }
 
 function reloadSoon(ms) {
-	setTimeout(function() { location.reload(); }, ms || 1500);
+	setTimeout(function() { location.reload(); }, ms || 1200);
 }
+
+var css = `
+	.nm-status-banner {
+		display: flex; align-items: center; gap: 1.2em;
+		padding: 1.5em; margin-bottom: 1.5em;
+	}
+	.nm-status-banner.running { border-left: 5px solid var(--success-color, #3aa657); }
+	.nm-status-banner.stopped { border-left: 5px solid var(--danger-color, #d94b4b); }
+	.nm-status-icon { font-size: 2.5em; line-height: 1; }
+	.nm-status-icon.running { color: var(--success-color, #3aa657); }
+	.nm-status-icon.stopped { color: var(--danger-color, #d94b4b); }
+	.nm-status-text h3 { margin: 0 0 0.2em 0; font-size: 1.3em; }
+	.nm-status-text h3.running { color: var(--success-color, #3aa657); }
+	.nm-status-text h3.stopped { color: var(--danger-color, #d94b4b); }
+	.nm-status-text p { margin: 0; color: var(--subtext-color, #666); font-size: 0.9em; }
+	.nm-stats-grid {
+		display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+		gap: 1em; margin-bottom: 1.5em;
+	}
+	.nm-stat-card {
+		padding: 1em 1.2em; border-radius: 8px; text-align: center;
+	}
+	.nm-stat-card .nm-stat-value {
+		font-size: 1.8em; font-weight: bold; line-height: 1.2;
+		color: var(--main-color, #0069d9);
+	}
+	.nm-stat-card .nm-stat-value.green { color: var(--success-color, #3aa657); }
+	.nm-stat-card .nm-stat-value.red { color: var(--danger-color, #d94b4b); }
+	.nm-stat-card .nm-stat-value.orange { color: var(--warning-color, #c68014); }
+	.nm-stat-card .nm-stat-label {
+		font-size: 0.85em; color: var(--subtext-color, #666); margin-top: 0.3em;
+	}
+`;
 
 return view.extend({
 	load: function() {
@@ -105,72 +119,170 @@ return view.extend({
 		var status = data[0] || {};
 		var certExpiry = data[1] || { certificates: [] };
 		var envData = data[2] || {};
+		var running = status.running === '1';
 
-		var page = E('div', { 'class': 'nginx-manager-page' });
+		var container = E('div', { 'class': 'cbi-map' });
+		container.appendChild(E('style', {}, css));
 
-		page.appendChild(E('link', {
+		container.appendChild(E('link', {
 			'rel': 'stylesheet',
 			'href': L.resource('nginx-manager/nginx-manager.css')
 		}));
 
-		var overview = E('div', { 'class': 'nginx-manager-overview' });
+		container.appendChild(E('h2', { 'class': 'cbi-map-title' }, _('Nginx Manager')));
 
-		overview.appendChild(createCard(
-			_('Nginx Status'),
-			statusTextForRunning(status.running),
-			statusClassForRunning(status.running)
-		));
+		/* Status Banner */
+		var banner = E('div', {
+			'class': 'cbi-section nm-status-banner ' + (running ? 'running' : 'stopped')
+		});
+		banner.appendChild(E('div', {
+			'class': 'nm-status-icon ' + (running ? 'running' : 'stopped')
+		}, running ? '\u25CF' : '\u25CB'));
+		var bannerText = E('div', { 'class': 'nm-status-text' });
+		bannerText.appendChild(E('h3', { 'class': running ? 'running' : 'stopped' },
+			running ? _('Nginx is running') : _('Nginx is stopped')));
+		bannerText.appendChild(E('p', {},
+			running ? _('Nginx service is active and serving requests.')
+				: _('Nginx service is not running. Click Start or Reload to begin.')));
+		banner.appendChild(bannerText);
+		container.appendChild(banner);
 
-		overview.appendChild(createCard(
-			_('Version'),
-			status.version || '-'
-		));
+		/* Stats Grid */
+		var statsGrid = E('div', { 'class': 'nm-stats-grid' });
 
-		overview.appendChild(createCard(
-			_('SSL Module'),
-			status.ssl_module === '1' ? _('Enabled') : _('Disabled'),
-			status.ssl_module === '1' ? 'nginx-manager-status-success' : 'nginx-manager-status-warning'
-		));
+		var managedCount = parseInt(status.managed_sites) || 0;
+		statsGrid.appendChild(E('div', { 'class': 'cbi-section nm-stat-card' }, [
+			E('div', { 'class': 'nm-stat-value' + (managedCount > 0 ? ' green' : '') }, String(managedCount)),
+			E('div', { 'class': 'nm-stat-label' }, _('Managed Sites'))
+		]));
 
-		overview.appendChild(createCard(
-			_('Listening Ports'),
-			status.listening_ports || '-'
-		));
+		var nonManagedCount = parseInt(status.non_managed_configs) || 0;
+		statsGrid.appendChild(E('div', { 'class': 'cbi-section nm-stat-card' }, [
+			E('div', { 'class': 'nm-stat-value' + (nonManagedCount > 0 ? ' orange' : '') }, String(nonManagedCount)),
+			E('div', { 'class': 'nm-stat-label' }, _('Non-Managed Configs'))
+		]));
 
-		overview.appendChild(createCard(
-			_('Managed Sites'),
-			status.managed_sites || '0'
-		));
+		var sslLabel = status.ssl_module === '1' ? _('Enabled') : _('Disabled');
+		var sslClass = status.ssl_module === '1' ? 'nm-stat-value green' : 'nm-stat-value orange';
+		statsGrid.appendChild(E('div', { 'class': 'cbi-section nm-stat-card' }, [
+			E('div', { 'class': sslClass }, sslLabel),
+			E('div', { 'class': 'nm-stat-label' }, _('SSL Module'))
+		]));
 
-		overview.appendChild(createCard(
-			_('Non-Managed Configs'),
-			status.non_managed_configs || '0'
-		));
+		var testResultRaw = (status.last_test_result || '').split('\n')[0];
+		var testResult = !testResultRaw || testResultRaw === 'unknown' ? _('Unknown') : testResultRaw;
+		var testClass = (!testResultRaw || testResultRaw === 'unknown') ? 'nm-stat-value' :
+			(testResultRaw.indexOf('pass') === 0 ? 'nm-stat-value green' : 'nm-stat-value red');
+		statsGrid.appendChild(E('div', { 'class': 'cbi-section nm-stat-card' }, [
+			E('div', { 'class': testClass }, testResult),
+			E('div', { 'class': 'nm-stat-label' }, _('Last Config Test'))
+		]));
 
-		overview.appendChild(createCard(
-			_('Last Config Test'),
-			(status.last_test_result || 'unknown').split('\n')[0],
-			statusClassForTest(status.last_test_result)
-		));
+		container.appendChild(statsGrid);
 
-		overview.appendChild(createCard(
-			_('Last Reload'),
-			status.last_reload || '-'
-		));
+		/* Service Control */
+		var controlSection = E('div', { 'class': 'cbi-section' });
+		controlSection.appendChild(E('h3', {}, _('Service Control')));
 
-		page.appendChild(overview);
+		var btnGroup = E('div', { 'class': 'nm-btn-group' });
 
-		var envSection = E('div', { 'class': 'nm-env-section' });
+		btnGroup.appendChild(E('button', {
+			'class': 'cbi-button cbi-button-apply',
+			'click': function() {
+				var btn = this;
+				setBusy(btn);
+				return safeApply(callReloadNginx).then(function() {
+					resetBusy(btn);
+					reloadSoon();
+				});
+			}
+		}, '\u21BB ' + _('Reload')));
+
+		btnGroup.appendChild(E('button', {
+			'class': 'cbi-button cbi-button-apply',
+			'click': function() {
+				var btn = this;
+				setBusy(btn);
+				return safeApply(callRestartNginx).then(function() {
+					resetBusy(btn);
+					reloadSoon();
+				});
+			}
+		}, '\u21BB ' + _('Restart')));
+
+		btnGroup.appendChild(E('button', {
+			'class': 'cbi-button',
+			'click': function() {
+				var btn = this;
+				setBusy(btn);
+				return safeApply(callTestConfig).then(function() {
+					resetBusy(btn);
+					reloadSoon();
+				});
+			}
+		}, _('Test Config')));
+
+		btnGroup.appendChild(E('button', {
+			'class': 'cbi-button',
+			'click': function() {
+				return callGetNginxT().then(function(result) {
+					ui.showModal(_('View Full Config'), [
+						E('pre', { 'class': 'nm-code-block' }, (result && result.content) || ''),
+						E('div', { 'class': 'right' }, [
+							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
+						])
+					]);
+				});
+			}
+		}, _('View Full Config')));
+
+		controlSection.appendChild(btnGroup);
+		container.appendChild(controlSection);
+
+		/* Service Information */
+		var infoSection = E('div', { 'class': 'cbi-section' });
+		infoSection.appendChild(E('h3', {}, _('Service Information')));
+
+		var infoTable = E('table', { 'class': 'table' });
+
+		infoTable.appendChild(E('tr', { 'class': 'tr' }, [
+			E('th', { 'class': 'th' }, _('Version')),
+			E('td', { 'class': 'td' }, status.version || '-')
+		]));
+
+		infoTable.appendChild(E('tr', { 'class': 'tr' }, [
+			E('th', { 'class': 'th' }, _('Listening Ports')),
+			E('td', { 'class': 'td' }, status.listening_ports || '-')
+		]));
+
+		infoTable.appendChild(E('tr', { 'class': 'tr' }, [
+			E('th', { 'class': 'th' }, _('Last Reload')),
+			E('td', { 'class': 'td' }, status.last_reload || '-')
+		]));
+
+		infoSection.appendChild(infoTable);
+		container.appendChild(infoSection);
+
+		/* Environment Detection */
+		var envSection = E('div', { 'class': 'cbi-section' });
 		envSection.appendChild(E('h3', {}, _('Environment Detection')));
 
-		var envMeta = E('div', { 'class': 'nm-env-meta' });
-		envMeta.appendChild(E('div', { 'class': 'nm-env-meta-item' },
-			_('OpenWrt') + ': ' + E('span', {}, envData.openwrt_version || '-').outerHTML));
-		envMeta.appendChild(E('div', { 'class': 'nm-env-meta-item' },
-			_('Package Manager') + ': ' + E('span', {}, envData.package_manager || '-').outerHTML));
-		envMeta.appendChild(E('div', { 'class': 'nm-env-meta-item' },
-			_('Plugin Version') + ': ' + E('span', {}, envData.version || '-').outerHTML));
-		envSection.appendChild(envMeta);
+		var envTable = E('table', { 'class': 'table' });
+
+		envTable.appendChild(E('tr', { 'class': 'tr' }, [
+			E('th', { 'class': 'th' }, _('OpenWrt')),
+			E('td', { 'class': 'td' }, envData.openwrt_version || '-')
+		]));
+
+		envTable.appendChild(E('tr', { 'class': 'tr' }, [
+			E('th', { 'class': 'th' }, _('Package Manager')),
+			E('td', { 'class': 'td' }, envData.package_manager || '-')
+		]));
+
+		envTable.appendChild(E('tr', { 'class': 'tr' }, [
+			E('th', { 'class': 'th' }, _('Plugin Version')),
+			E('td', { 'class': 'td' }, envData.version || '-')
+		]));
 
 		var depChecks = [
 			{ key: 'nginx_ssl', label: 'nginx-ssl' },
@@ -181,98 +293,41 @@ return view.extend({
 			{ key: 'uci_template', label: 'uci.conf.template' }
 		];
 
-		var envGrid = E('div', { 'class': 'nm-env-grid' });
 		depChecks.forEach(function(dep) {
 			var passed = envData[dep.key] === 1 || envData[dep.key] === '1';
-			var iconClass = passed ? 'pass' : 'fail';
-			var iconText = passed ? '\u2713' : '\u2717';
-			var item = E('div', { 'class': 'nm-env-item' });
-			item.appendChild(E('span', { 'class': 'nm-env-icon ' + iconClass }, iconText));
-			item.appendChild(E('span', { 'class': 'nm-env-label' }, dep.label));
-			envGrid.appendChild(item);
+			var badge = E('span', { 'class': 'nm-badge ' + (passed ? 'success' : 'error') },
+				(passed ? '\u2714 ' : '\u2718 ') + (passed ? _('OK') : _('Missing')));
+			envTable.appendChild(E('tr', { 'class': 'tr' }, [
+				E('th', { 'class': 'th' }, dep.label),
+				E('td', { 'class': 'td' }, badge)
+			]));
 		});
-		envSection.appendChild(envGrid);
 
-		page.appendChild(envSection);
+		envSection.appendChild(envTable);
+		container.appendChild(envSection);
 
+		/* Certificate Expiry Warning */
 		if (certExpiry.certificates && certExpiry.certificates.length > 0) {
 			var expiring = certExpiry.certificates.filter(function(c) {
 				return c.days_remaining !== undefined && parseInt(c.days_remaining) < 30;
 			});
 			if (expiring.length > 0) {
-				var warnings = E('div', { 'class': 'nginx-manager-danger-zone' });
-				warnings.appendChild(E('h3', {}, _('Certificate Expiry')));
+				var certSection = E('div', { 'class': 'cbi-section' });
+				certSection.appendChild(E('h3', {}, _('Certificate Expiry')));
+				var certAlert = E('div', { 'class': 'alert-message warning' });
 				expiring.forEach(function(cert) {
 					var days = parseInt(cert.days_remaining);
-					var msg = cert.name + ': ' + days + ' ' + _('days remaining');
-					if (days < 0) {
-						msg = cert.name + ': ' + _('Expired');
-					}
-					warnings.appendChild(E('p', {}, msg));
+					var msg = days < 0
+						? cert.name + ': ' + _('Expired')
+						: cert.name + ': ' + days + ' ' + _('days remaining');
+					certAlert.appendChild(E('p', {}, msg));
 				});
-				page.appendChild(warnings);
+				certSection.appendChild(certAlert);
+				container.appendChild(certSection);
 			}
 		}
 
-		var actions = E('div', { 'class': 'nginx-manager-actions' });
-
-		actions.appendChild(E('button', {
-			'class': 'btn cbi-button-action',
-			'click': ui.createHandlerFn(this, function() {
-				setBusy(this);
-				return safeApply(callReloadNginx).then(function() {
-					resetBusy(this);
-					reloadSoon();
-				}.bind(this));
-			})
-		}, _('Reload')));
-
-		actions.appendChild(E('button', {
-			'class': 'btn cbi-button-action',
-			'click': ui.createHandlerFn(this, function() {
-				setBusy(this);
-				return safeApply(callRestartNginx).then(function() {
-					resetBusy(this);
-					reloadSoon();
-				}.bind(this));
-			})
-		}, _('Restart')));
-
-		actions.appendChild(E('button', {
-			'class': 'btn cbi-button',
-			'click': ui.createHandlerFn(this, function() {
-				setBusy(this);
-				return safeApply(callTestConfig).then(function() {
-					resetBusy(this);
-					reloadSoon();
-				}.bind(this));
-			})
-		}, _('Test Config')));
-
-		actions.appendChild(E('button', {
-			'class': 'btn cbi-button',
-			'click': ui.createHandlerFn(this, function() {
-				return rpc.declare({
-					object: 'nginx_manager',
-					method: 'get_nginx_T',
-					expect: {}
-				})().then(function(result) {
-					ui.showModal(_('View Full Config'), [
-						E('div', { 'class': 'nginx-manager-code-block' }, (result && result.content) || ''),
-						E('div', { 'class': 'right' }, [
-							E('button', {
-								'class': 'btn',
-								'click': ui.createHandlerFn(this, function() { ui.hideModal(); })
-							}, _('Close'))
-						])
-					]);
-				});
-			})
-		}, _('View Full Config')));
-
-		page.appendChild(actions);
-
-		return page;
+		return container;
 	},
 
 	handleSave: null,

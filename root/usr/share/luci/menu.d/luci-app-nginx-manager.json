@@ -11,6 +11,14 @@
 			"uci": { "nginx_manager": true }
 		}
 	},
+	"admin/services/nginx-manager/overview": {
+		"title": "Overview",
+		"order": 1,
+		"action": {
+			"type": "view",
+			"path": "nginx-manager/overview"
+		}
+	},
 	"admin/services/nginx-manager/sites": {
 		"title": "Sites",
 		"order": 10,
@@ -20,7 +28,7 @@
 		}
 	},
 	"admin/services/nginx-manager/sites/edit": {
-		"title": "Edit Site",
+		"title": "",
 		"order": 11,
 		"action": {
 			"type": "view",
@@ -58,14 +66,6 @@
 		"action": {
 			"type": "view",
 			"path": "nginx-manager/backups"
-		}
-	},
-	"admin/services/nginx-manager/advanced": {
-		"title": "Advanced",
-		"order": 60,
-		"action": {
-			"type": "view",
-			"path": "nginx-manager/advanced"
 		}
 	}
 }

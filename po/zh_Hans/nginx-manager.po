@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: luci-app-nginx-manager\n"
-"PO-Revision-Date: 2026-06-02 00:00+0000\n"
+"PO-Revision-Date: 2026-06-03 00:00+0000\n"
 "Last-Translator: yunshu\n"
 "Language-Team: Chinese (Simplified)\n"
 "Language: zh_Hans\n"
@@ -9,197 +9,47 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "Nginx Manager"
-msgstr "Nginx 管理器"
+msgid "-- None --"
+msgstr "-- 无 --"
 
-msgid "Sites"
-msgstr "网站"
-
-msgid "Certificates"
-msgstr "证书"
-
-msgid "Logs"
-msgstr "日志"
-
-msgid "Core Config"
-msgstr "核心配置"
-
-msgid "Backups"
-msgstr "备份"
-
-msgid "Overview"
-msgstr "概览"
-
-msgid "Nginx Status"
-msgstr "Nginx 状态"
-
-msgid "Running"
-msgstr "运行中"
-
-msgid "Stopped"
-msgstr "已停止"
-
-msgid "Version"
-msgstr "版本"
-
-msgid "SSL Module"
-msgstr "SSL 模块"
-
-msgid "Listening Ports"
-msgstr "监听端口"
-
-msgid "Managed Sites"
-msgstr "管理站点数"
-
-msgid "Non-Managed Configs"
-msgstr "非管理配置数"
-
-msgid "Certificate Expiry"
-msgstr "证书到期"
-
-msgid "Last Config Test"
-msgstr "最近配置测试"
-
-msgid "Last Reload"
-msgstr "最近 Reload"
-
-msgid "Start"
-msgstr "启动"
-
-msgid "Stop"
-msgstr "停止"
-
-msgid "Restart"
-msgstr "重启"
-
-msgid "Reload"
-msgstr "重新加载"
-
-msgid "Test Config"
-msgstr "测试配置"
-
-msgid "View Full Config"
-msgstr "查看完整配置"
-
-msgid "Add Site"
-msgstr "添加站点"
-
-msgid "Edit"
-msgstr "编辑"
-
-msgid "Delete"
-msgstr "删除"
-
-msgid "Enable"
-msgstr "启用"
-
-msgid "Disable"
-msgstr "禁用"
-
-msgid "Copy"
-msgstr "复制"
-
-msgid "Site Name"
-msgstr "站点名称"
-
-msgid "Domain"
-msgstr "域名"
-
-msgid "Type"
-msgstr "类型"
-
-msgid "Listen"
-msgstr "监听"
-
-msgid "SSL"
-msgstr "SSL"
-
-msgid "Backend / Root"
-msgstr "后端 / 根目录"
-
-msgid "Status"
-msgstr "状态"
-
-msgid "Actions"
-msgstr "操作"
-
-msgid "Reverse Proxy"
-msgstr "反向代理"
-
-msgid "Static Website"
-msgstr "静态网站"
-
-msgid "Custom Server Block"
-msgstr "自定义 Server Block"
-
-msgid "Redirect"
-msgstr "重定向"
-
-msgid "Basic Settings"
-msgstr "基础设置"
-
-msgid "Listen & Domain"
-msgstr "监听与域名"
-
-msgid "SSL Certificate"
-msgstr "SSL 证书"
-
-msgid "Proxy Settings"
-msgstr "代理设置"
-
-msgid "Log Settings"
-msgstr "日志设置"
-
-msgid "Advanced Settings"
-msgstr "高级设置"
-
-msgid "Server Name"
-msgstr "服务器名称"
-
-msgid "Mode"
-msgstr "模式"
-
-msgid "Listen Port"
-msgstr "监听端口"
-
-msgid "HTTP to HTTPS Redirect"
-msgstr "HTTP 跳转 HTTPS"
-
-msgid "Proxy Pass"
-msgstr "代理地址"
-
-msgid "WebSocket"
-msgstr "WebSocket"
-
-msgid "SSL Certificate Path"
-msgstr "SSL 证书路径"
-
-msgid "SSL Key Path"
-msgstr "SSL 私钥路径"
+msgid "/etc/nginx/uci.conf.template"
+msgstr "/etc/nginx/uci.conf.template"
 
 msgid "Access Log"
 msgstr "访问日志"
 
-msgid "Error Log"
-msgstr "错误日志"
+msgid "Actions"
+msgstr "操作"
 
-msgid "Root Directory"
-msgstr "根目录"
+msgid "Add Certificate"
+msgstr "添加证书"
 
-msgid "Index File"
-msgstr "首页文件"
+msgid "Add Site"
+msgstr "添加站点"
 
-msgid "Custom Server Block Content"
-msgstr "自定义 Server Block 内容"
+msgid "All Sites"
+msgstr "全部站点"
 
-msgid "Danger Zone"
-msgstr "危险区域"
+msgid "Are you sure you want to delete this certificate?"
+msgstr "确定要删除此证书吗？"
 
-msgid "Dangerous Core Edit"
-msgstr "危险核心编辑"
+msgid "Are you sure you want to delete this site?"
+msgstr "确定要删除此站点吗？"
 
-msgid "Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point."
-msgstr "修改核心配置可能导致 Nginx 无法启动，甚至导致 LuCI 后台不可访问。请确保 SSH 可用，或保留 uhttpd 作为备用入口。"
+msgid "Are you sure you want to restore this backup? A backup of the current configuration will be created first."
+msgstr "确定要恢复此备份吗？恢复前会先创建当前配置的备份。"
+
+msgid "Back to Sites"
+msgstr "返回站点列表"
+
+msgid "Backend / Root"
+msgstr "后端 / 根目录"
+
+msgid "Backup Management"
+msgstr "备份管理"
+
+msgid "Backup Time"
+msgstr "备份时间"
 
 msgid "Backup created"
 msgstr "备份已创建"
@@ -207,128 +57,479 @@ msgstr "备份已创建"
 msgid "Backup restored"
 msgstr "备份已恢复"
 
-msgid "Configuration test passed"
-msgstr "配置测试通过"
+msgid "Backups"
+msgstr "备份"
 
-msgid "Configuration test failed"
-msgstr "配置测试失败"
+msgid "Basic Settings"
+msgstr "基本设置"
 
-msgid "Nginx reloaded successfully"
-msgstr "Nginx 重新加载成功"
+msgid "Both certificate and key are required"
+msgstr "证书和私钥均为必填"
 
-msgid "Site added successfully"
-msgstr "站点添加成功"
+msgid "Cancel"
+msgstr "取消"
 
-msgid "Site updated successfully"
-msgstr "站点更新成功"
+msgid "Certificate (PEM)"
+msgstr "证书 (PEM)"
 
-msgid "Site deleted successfully"
-msgstr "站点删除成功"
-
-msgid "Confirm Delete"
-msgstr "确认删除"
-
-msgid "Are you sure you want to delete this site?"
-msgstr "确定要删除此站点吗？"
-
-msgid "Enabled"
-msgstr "已启用"
-
-msgid "Disabled"
-msgstr "已禁用"
-
-msgid "Upload Certificate"
-msgstr "上传证书"
-
-msgid "Self-Signed Certificate"
-msgstr "自签名证书"
+msgid "Certificate Expiry"
+msgstr "证书到期"
 
 msgid "Certificate Name"
 msgstr "证书名称"
 
-msgid "Certificate Type"
-msgstr "证书类型"
+msgid "Certificate deleted"
+msgstr "证书已删除"
 
-msgid "Expiry Date"
-msgstr "到期日期"
+msgid "Certificate name is required"
+msgstr "证书名称为必填"
 
-msgid "Bound Domain"
-msgstr "绑定域名"
+msgid "Certificate uploaded"
+msgstr "证书已上传"
 
-msgid "Used By Sites"
-msgstr "使用中的站点"
+msgid "Certificates"
+msgstr "证书"
 
-msgid "Valid"
-msgstr "有效"
+msgid "Click \"Refresh\" to view logs"
+msgstr "点击「刷新」查看日志"
 
-msgid "Expiring Soon"
-msgstr "即将过期"
-
-msgid "Expired"
-msgstr "已过期"
-
-msgid "File Missing"
-msgstr "文件缺失"
-
-msgid "Key Mismatch"
-msgstr "密钥不匹配"
-
-msgid "Line Count"
-msgstr "行数"
-
-msgid "Filter"
-msgstr "过滤"
-
-msgid "Download"
-msgstr "下载"
-
-msgid "Worker Processes"
-msgstr "Worker 进程数"
-
-msgid "Worker Connections"
-msgstr "Worker 连接数"
+msgid "Clear"
+msgstr "清除"
 
 msgid "Client Max Body Size"
 msgstr "客户端最大请求体"
 
-msgid "Keepalive Timeout"
-msgstr "Keepalive 超时"
-
-msgid "Gzip"
-msgstr "Gzip 压缩"
-
-msgid "Server Tokens"
-msgstr "服务器版本标识"
-
-msgid "Sendfile"
-msgstr "Sendfile"
-
-msgid "SSL Protocols"
-msgstr "SSL 协议"
-
-msgid "SSL Ciphers"
-msgstr "SSL 密码套件"
-
-msgid "Safe Settings"
-msgstr "安全设置"
-
-msgid "Dangerous Edit"
-msgstr "危险编辑"
-
-msgid "Read-only View"
-msgstr "只读查看"
-
-msgid "Backup Time"
-msgstr "备份时间"
-
-msgid "Backup Content"
-msgstr "备份内容"
-
-msgid "Restore"
-msgstr "恢复"
+msgid "Close"
+msgstr "关闭"
 
 msgid "Compare"
 msgstr "比较"
 
+msgid "Compare with Current"
+msgstr "与当前配置比较"
+
+msgid "Confirm Delete"
+msgstr "确认删除"
+
+msgid "Confirm Restore"
+msgstr "确认恢复"
+
+msgid "Confirm Save"
+msgstr "确认保存"
+
+msgid "Configuration test failed"
+msgstr "配置测试失败"
+
+msgid "Core Config"
+msgstr "核心配置"
+
+msgid "Core config saved and applied"
+msgstr "核心配置已保存并应用"
+
+msgid "Create"
+msgstr "创建"
+
 msgid "Create Backup"
 msgstr "创建备份"
+
+msgid "Creating site..."
+msgstr "正在创建站点..."
+
+msgid "Custom Server Block"
+msgstr "自定义 Server Block"
+
+msgid "Custom Server Block Content"
+msgstr "自定义 Server Block 内容"
+
+msgid "Danger Zone"
+msgstr "危险区域"
+
+msgid "Dangerous edit mode disabled"
+msgstr "危险编辑模式已关闭"
+
+msgid "Dangerous edit mode enabled"
+msgstr "危险编辑模式已开启"
+
+msgid "Default"
+msgstr "默认"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Disable"
+msgstr "禁用"
+
+msgid "Disable Dangerous Edit"
+msgstr "关闭危险编辑"
+
+msgid "Disabled"
+msgstr "已禁用"
+
+msgid "Domain"
+msgstr "域名"
+
+msgid "Domain is required for self-signed certificates"
+msgstr "自签名证书需要填写域名"
+
+msgid "Edit"
+msgstr "编辑"
+
+msgid "Edit Site"
+msgstr "编辑站点"
+
+msgid "Enable"
+msgstr "启用"
+
+msgid "Enable Dangerous Edit"
+msgstr "开启危险编辑"
+
+msgid "Enabled"
+msgstr "已启用"
+
+msgid "Environment Detection"
+msgstr "环境检测"
+
+msgid "Error Log"
+msgstr "错误日志"
+
+msgid "Error: "
+msgstr "错误："
+
+msgid "Expired"
+msgstr "已过期"
+
+msgid "Expiring Soon"
+msgstr "即将过期"
+
+msgid "Failed to load logs"
+msgstr "日志加载失败"
+
+msgid "File Missing"
+msgstr "文件缺失"
+
+msgid "File not found"
+msgstr "文件未找到"
+
+msgid "File not found or not readable"
+msgstr "文件未找到或不可读"
+
+msgid "File saved successfully"
+msgstr "文件保存成功"
+
+msgid "Filter"
+msgstr "过滤"
+
+msgid "Generated Config"
+msgstr "生成的配置"
+
+msgid "Generating..."
+msgstr "正在生成..."
+
+msgid "Gzip"
+msgstr "Gzip 压缩"
+
+msgid "HTTP to HTTPS Redirect"
+msgstr "HTTP 跳转 HTTPS"
+
+msgid "Index File"
+msgstr "首页文件"
+
+msgid "Invalid site name"
+msgstr "站点名称无效"
+
+msgid "Keepalive Timeout"
+msgstr "Keepalive 超时"
+
+msgid "Last Config Test"
+msgstr "最近配置测试"
+
+msgid "Last Reload"
+msgstr "最近重新加载"
+
+msgid "Line Count"
+msgstr "行数"
+
+msgid "Listen"
+msgstr "监听"
+
+msgid "Listening Ports"
+msgstr "监听端口"
+
+msgid "Loading..."
+msgstr "加载中..."
+
+msgid "Log Output"
+msgstr "日志输出"
+
+msgid "Log Settings"
+msgstr "日志设置"
+
+msgid "Logging"
+msgstr "日志"
+
+msgid "Logs"
+msgstr "日志"
+
+msgid "Managed Sites"
+msgstr "管理站点数"
+
+msgid "Manual"
+msgstr "手动上传"
+
+msgid "Missing"
+msgstr "缺失"
+
+msgid "Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point."
+msgstr "修改核心配置可能导致 Nginx 无法启动，甚至导致 LuCI 后台不可访问。请确保 SSH 可用，或保留 uhttpd 作为备用入口。"
+
+msgid "Name"
+msgstr "名称"
+
+msgid "Nginx Manager"
+msgstr "Nginx 管理器"
+
+msgid "Nginx is running"
+msgstr "Nginx 运行中"
+
+msgid "Nginx is stopped"
+msgstr "Nginx 已停止"
+
+msgid "Nginx service is active and serving requests."
+msgstr "Nginx 服务正在运行，正常处理请求。"
+
+msgid "Nginx service is not running. Click Start or Reload to begin."
+msgstr "Nginx 服务未运行，点击重新加载或重启启动。"
+
+msgid "No backups available."
+msgstr "暂无备份。"
+
+msgid "No certificates configured."
+msgstr "暂无证书。"
+
+msgid "No differences"
+msgstr "无差异"
+
+msgid "No log entries found"
+msgstr "未找到日志条目"
+
+msgid "No sites configured. Click \"Add Site\" to create one."
+msgstr "暂无站点，点击「添加站点」创建。"
+
+msgid "Non-Managed Configs"
+msgstr "非管理配置数"
+
+msgid "OK"
+msgstr "正常"
+
+msgid "Off"
+msgstr "关闭"
+
+msgid "On"
+msgstr "开启"
+
+msgid "OpenWrt"
+msgstr "OpenWrt"
+
+msgid "Package Manager"
+msgstr "包管理器"
+
+msgid "Path"
+msgstr "路径"
+
+msgid "Permission denied. Make sure UCI changes are applied."
+msgstr "权限不足，请确保 UCI 更改已应用。"
+
+msgid "Please wait..."
+msgstr "请稍候..."
+
+msgid "Plugin Version"
+msgstr "插件版本"
+
+msgid "Private Key (PEM)"
+msgstr "私钥 (PEM)"
+
+msgid "Proxy Host Header"
+msgstr "代理 Host 头"
+
+msgid "Proxy Pass"
+msgstr "代理地址"
+
+msgid "Read-only View"
+msgstr "只读查看"
+
+msgid "Redirect"
+msgstr "重定向"
+
+msgid "Redirect Target"
+msgstr "重定向目标"
+
+msgid "Redirecting"
+msgstr "正在跳转"
+
+msgid "Refresh"
+msgstr "刷新"
+
+msgid "Reload"
+msgstr "重新加载"
+
+msgid "Restoring..."
+msgstr "正在恢复..."
+
+msgid "Restart"
+msgstr "重启"
+
+msgid "Restore"
+msgstr "恢复"
+
+msgid "Restore failed"
+msgstr "恢复失败"
+
+msgid "Reverse Proxy"
+msgstr "反向代理"
+
+msgid "Root Directory"
+msgstr "根目录"
+
+msgid "SSL"
+msgstr "SSL"
+
+msgid "SSL Certificate"
+msgstr "SSL 证书"
+
+msgid "SSL Ciphers"
+msgstr "SSL 密码套件"
+
+msgid "SSL Module"
+msgstr "SSL 模块"
+
+msgid "SSL Protocols"
+msgstr "SSL 协议"
+
+msgid "SSL Settings"
+msgstr "SSL 设置"
+
+msgid "Safe Settings"
+msgstr "安全设置"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Save failed"
+msgstr "保存失败"
+
+msgid "Saving this file may break Nginx configuration. A backup will be created first. Continue?"
+msgstr "保存此文件可能导致 Nginx 配置损坏，会先创建备份。是否继续？"
+
+msgid "Self-Signed Certificate"
+msgstr "自签名证书"
+
+msgid "Self-signed certificate generated"
+msgstr "自签名证书已生成"
+
+msgid "Sendfile"
+msgstr "Sendfile"
+
+msgid "Server Tokens"
+msgstr "服务器版本标识"
+
+msgid "Service Control"
+msgstr "服务控制"
+
+msgid "Service Information"
+msgstr "服务信息"
+
+msgid "Site"
+msgstr "站点"
+
+msgid "Site Name"
+msgstr "站点名称"
+
+msgid "Site created, redirecting to edit page..."
+msgstr "站点已创建，正在跳转到编辑页面..."
+
+msgid "Site deleted successfully"
+msgstr "站点已删除"
+
+msgid "Site disabled"
+msgstr "站点已禁用"
+
+msgid "Site enabled"
+msgstr "站点已启用"
+
+msgid "Site name is required"
+msgstr "站点名称为必填"
+
+msgid "Site saved successfully"
+msgstr "站点已保存"
+
+msgid "Sites"
+msgstr "站点"
+
+msgid "Source"
+msgstr "来源"
+
+msgid "Static Website"
+msgstr "静态网站"
+
+msgid "Status"
+msgstr "状态"
+
+msgid "Test Config"
+msgstr "测试配置"
+
+msgid "This certificate has expired."
+msgstr "此证书已过期。"
+
+msgid "This certificate is expiring soon."
+msgstr "此证书即将过期。"
+
+msgid "Type"
+msgstr "类型"
+
+msgid "Upload"
+msgstr "上传"
+
+msgid "Upload Certificate"
+msgstr "上传证书"
+
+msgid "Unknown"
+msgstr "未知"
+
+msgid "Valid"
+msgstr "有效"
+
+msgid "Version"
+msgstr "版本"
+
+msgid "View Config"
+msgstr "查看配置"
+
+msgid "View Full Config"
+msgstr "查看完整配置"
+
+msgid "View Generated Config"
+msgstr "查看生成配置"
+
+msgid "View nginx -T"
+msgstr "查看 nginx -T"
+
+msgid "View uci.conf.template"
+msgstr "查看 uci.conf.template"
+
+msgid "WebSocket"
+msgstr "WebSocket"
+
+msgid "X-Forwarded-For"
+msgstr "X-Forwarded-For"
+
+msgid "X-Forwarded-Proto"
+msgstr "X-Forwarded-Proto"
+
+msgid "X-Real-IP"
+msgstr "X-Real-IP"
+
+msgid "days remaining"
+msgstr "天剩余"
+
+msgid "nginx -T Output"
+msgstr "nginx -T 输出"

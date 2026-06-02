@@ -39,45 +39,47 @@ return view.extend({
 	render: function(data) {
 		var backups = (data && data.backups) || [];
 
-		var page = E('div', { 'class': 'nginx-manager-page' });
+		var page = E('div', { 'class': 'cbi-map' });
 
 		page.appendChild(E('link', {
 			'rel': 'stylesheet',
 			'href': L.resource('nginx-manager/nginx-manager.css')
 		}));
 
-		page.appendChild(E('h3', {}, _('Backups')));
+		page.appendChild(E('h2', { 'class': 'cbi-map-title' }, _('Backups')));
+
+		var section = E('div', { 'class': 'cbi-section' });
+		section.appendChild(E('h3', {}, _('Backup Management')));
 
 		var createBtn = E('button', {
-			'class': 'btn cbi-button-action',
+			'class': 'cbi-button cbi-button-apply',
 			'style': 'margin-bottom: 12px;',
 			'click': function() {
 				callCreateBackup().then(function(result) {
 					if (result && result.error) {
 						ui.addNotification(null, E('p', {}, result.error), 'error');
 					} else {
-						ui.addNotification(null, E('p', {}, _('Backup created')), 'success');
+						ui.addNotification(null, E('p', {}, _('Backup created')), 'info');
 						setTimeout(function() { location.reload(); }, 500);
 					}
 				});
 			}
-		}, _('Create Backup'));
+		}, '\u271A ' + _('Create Backup'));
 
-		page.appendChild(createBtn);
+		section.appendChild(createBtn);
 
 		if (backups.length === 0) {
-			page.appendChild(E('div', { 'class': 'cbi-section' }, [
-				E('p', { 'style': 'text-align: center; color: #888; padding: 20px;' },
-					_('No backups available.'))
-			]));
+			section.appendChild(E('div', { 'class': 'nm-empty-state' },
+				_('No backups available.')));
+			page.appendChild(section);
 			return page;
 		}
 
-		var table = E('table', { 'class': 'table cbi-section-table' });
+		var table = E('table', { 'class': 'table' });
 		var thead = E('thead');
-		var headerRow = E('tr', { 'class': 'cbi-section-table-titles' });
+		var headerRow = E('tr');
 		[_('Backup Time'), _('Source'), _('Actions')].forEach(function(title) {
-			headerRow.appendChild(E('th', { 'class': 'cbi-section-table-cell' }, title));
+			headerRow.appendChild(E('th', {}, title));
 		});
 		thead.appendChild(headerRow);
 		table.appendChild(thead);
@@ -85,19 +87,19 @@ return view.extend({
 		var tbody = E('tbody');
 
 		backups.forEach(function(backup) {
-			var row = E('tr', { 'class': 'cbi-section-table-row' });
-			row.appendChild(E('td', { 'class': 'cbi-section-table-cell' }, backup.timestamp || '-'));
-			row.appendChild(E('td', { 'class': 'cbi-section-table-cell' }, backup.source || '-'));
+			var row = E('tr');
+			row.appendChild(E('td', {}, backup.timestamp || '-'));
+			row.appendChild(E('td', {}, backup.source || '-'));
 
-			var actionsCell = E('td', { 'class': 'cbi-section-table-cell' });
+			var actionsCell = E('td');
 
 			actionsCell.appendChild(E('button', {
-				'class': 'btn cbi-button',
+				'class': 'cbi-button',
 				'style': 'margin-right: 4px;',
 				'click': function() {
 					callDiffBackup(backup.id).then(function(result) {
 						ui.showModal(_('Compare with Current'), [
-							E('div', { 'class': 'nginx-manager-code-block' }, (result && result.diff) || _('No differences')),
+							E('pre', { 'class': 'nm-code-block' }, (result && result.diff) || _('No differences')),
 							E('div', { 'class': 'right', 'style': 'margin-top: 8px;' }, [
 								E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
 							])
@@ -107,15 +109,17 @@ return view.extend({
 			}, _('Compare')));
 
 			actionsCell.appendChild(E('button', {
-				'class': 'btn cbi-button-negative',
+				'class': 'cbi-button cbi-button-apply',
+				'style': 'margin-right: 4px;',
 				'click': function() {
 					ui.showModal(_('Confirm Restore'), [
-						E('p', {}, _('Are you sure you want to restore this backup? A backup of the current configuration will be created first.')),
+						E('div', { 'class': 'alert-message warning' },
+							_('Are you sure you want to restore this backup? A backup of the current configuration will be created first.')),
 						E('div', { 'class': 'right' }, [
 							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 							' ',
 							E('button', {
-								'class': 'btn cbi-button-negative',
+								'class': 'cbi-button cbi-button-apply',
 								'click': function() {
 									ui.hideModal();
 									ui.showModal(_('Restoring...'), [E('p', {}, _('Please wait...'))]);
@@ -124,23 +128,24 @@ return view.extend({
 										if (result && result.error) {
 											ui.addNotification(null, E('p', {}, _('Restore failed') + ': ' + (result.detail || result.error)), 'error');
 										} else {
-											ui.addNotification(null, E('p', {}, _('Backup restored')), 'success');
+											ui.addNotification(null, E('p', {}, _('Backup restored')), 'info');
 											setTimeout(function() { location.reload(); }, 500);
 										}
 									});
 								}
-							}, _('Restore'))
-						])
-					]);
-				}
-			}, _('Restore')));
+							}, '\u21A9 ' + _('Restore'))
+					])
+				]);
+			}
+		}, '\u21A9 ' + _('Restore')));
 
 			row.appendChild(actionsCell);
 			tbody.appendChild(row);
 		});
 
 		table.appendChild(tbody);
-		page.appendChild(E('div', { 'class': 'cbi-section' }, [table]));
+		section.appendChild(table);
+		page.appendChild(section);
 
 		return page;
 	},

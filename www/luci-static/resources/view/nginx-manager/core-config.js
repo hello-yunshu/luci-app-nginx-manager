@@ -46,12 +46,14 @@ return view.extend({
 	render: function(data) {
 		var config = data || {};
 
-		var page = E('div', { 'class': 'nginx-manager-page' });
+		var container = E('div', { 'class': 'cbi-map' });
 
-		page.appendChild(E('link', {
+		container.appendChild(E('link', {
 			'rel': 'stylesheet',
 			'href': L.resource('nginx-manager/nginx-manager.css')
 		}));
+
+		container.appendChild(E('h2', { 'class': 'cbi-map-title' }, _('Core Config')));
 
 		var m = new form.Map('nginx_manager', _('Core Config'));
 
@@ -88,17 +90,18 @@ return view.extend({
 		sslCiphers.placeholder = 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
 
 		return m.render().then(function(node) {
-			var readonlySection = E('div', { 'class': 'cbi-section', 'style': 'margin-top: 20px;' });
+			/* Read-only View Section */
+			var readonlySection = E('div', { 'class': 'cbi-section' });
 			readonlySection.appendChild(E('h3', {}, _('Read-only View')));
 
-			var readonlyBtns = E('div', { 'class': 'nginx-manager-actions' });
+			var readonlyBtns = E('div', { 'class': 'nm-btn-group' });
 
 			readonlyBtns.appendChild(E('button', {
-				'class': 'btn cbi-button',
+				'class': 'cbi-button',
 				'click': function() {
 					callGetNginxT().then(function(result) {
 						ui.showModal(_('nginx -T Output'), [
-							E('div', { 'class': 'nginx-manager-code-block' }, (result && result.content) || ''),
+							E('pre', { 'class': 'nm-code-block' }, (result && result.content) || ''),
 							E('div', { 'class': 'right', 'style': 'margin-top: 8px;' }, [
 								E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
 							])
@@ -108,11 +111,11 @@ return view.extend({
 			}, _('View nginx -T')));
 
 			readonlyBtns.appendChild(E('button', {
-				'class': 'btn cbi-button',
+				'class': 'cbi-button',
 				'click': function() {
 					callGetFileReadonly('/etc/nginx/uci.conf.template').then(function(result) {
 						ui.showModal(_('/etc/nginx/uci.conf.template'), [
-							E('div', { 'class': 'nginx-manager-code-block' }, (result && result.content) || _('File not found')),
+							E('pre', { 'class': 'nm-code-block' }, (result && result.content) || _('File not found')),
 							E('div', { 'class': 'right', 'style': 'margin-top: 8px;' }, [
 								E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
 							])
@@ -124,12 +127,16 @@ return view.extend({
 			readonlySection.appendChild(readonlyBtns);
 			node.appendChild(readonlySection);
 
-			var dangerZone = E('div', { 'class': 'nginx-manager-danger-zone', 'style': 'margin-top: 20px;' });
+			/* Danger Zone Section */
+			var dangerZone = E('div', { 'class': 'cbi-section', 'style': 'border-left: 5px solid var(--danger-color, #d94b4b);' });
 			dangerZone.appendChild(E('h3', {}, _('Danger Zone')));
-			dangerZone.appendChild(E('p', {}, _('Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point.')));
+
+			var dangerWarning = E('div', { 'class': 'alert-message warning' });
+			dangerWarning.appendChild(E('p', {}, _('Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point.')));
+			dangerZone.appendChild(dangerWarning);
 
 			var dangerToggle = E('button', {
-				'class': 'btn cbi-button-negative',
+				'class': 'cbi-button cbi-button-reset',
 				'click': function() {
 					var current = uci.get('nginx_manager', 'global', 'dangerous_core_edit') || '0';
 					var newVal = current === '1' ? '0' : '1';
@@ -137,7 +144,7 @@ return view.extend({
 					return uci.save().then(function() {
 						return uci.apply();
 					}).then(function() {
-						ui.addNotification(null, E('p', {}, newVal === '1' ? _('Dangerous edit mode enabled') : _('Dangerous edit mode disabled')), newVal === '1' ? 'warning' : 'success');
+						ui.addNotification(null, E('p', {}, newVal === '1' ? _('Dangerous edit mode enabled') : _('Dangerous edit mode disabled')), newVal === '1' ? 'warning' : 'info');
 						setTimeout(function() { location.reload(); }, 500);
 					}).catch(function(err) {
 						ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || err)), 'error');
@@ -146,6 +153,67 @@ return view.extend({
 			}, config.dangerous_core_edit === '1' ? _('Disable Dangerous Edit') : _('Enable Dangerous Edit'));
 
 			dangerZone.appendChild(dangerToggle);
+
+			if (config.dangerous_core_edit === '1') {
+				var files = [
+					{ path: '/etc/nginx/uci.conf.template', label: 'uci.conf.template' },
+					{ path: '/etc/nginx/nginx.conf', label: 'nginx.conf' }
+				];
+
+				files.forEach(function(file) {
+					var fileDiv = E('div', { 'class': 'nm-danger-file' });
+					fileDiv.appendChild(E('h5', {}, file.label));
+
+					var textarea = E('textarea', {
+						'class': 'cbi-input-textarea nm-danger-editor',
+						'id': 'editor-' + file.label.replace(/[^a-z]/g, '')
+					});
+
+					callGetFileReadonly(file.path).then(function(result) {
+						if (result && result.content) {
+							textarea.value = result.content;
+						} else {
+							textarea.value = _('File not found or not readable');
+							textarea.disabled = true;
+						}
+					});
+
+					fileDiv.appendChild(textarea);
+
+					fileDiv.appendChild(E('button', {
+						'class': 'cbi-button cbi-button-reset',
+						'style': 'margin-top: 4px;',
+						'click': function() {
+							ui.showModal(_('Confirm Save'), [
+								E('p', {}, _('Saving this file may break Nginx configuration. A backup will be created first. Continue?')),
+								E('div', { 'class': 'right' }, [
+									E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+									' ',
+									E('button', {
+										'class': 'cbi-button cbi-button-reset',
+										'click': function() {
+											ui.hideModal();
+											callSetFileDangerous({
+												path: file.path,
+												content: textarea.value
+											}).then(function(result) {
+												if (result && result.error) {
+													ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (result.detail || result.error)), 'error');
+												} else {
+													ui.addNotification(null, E('p', {}, _('File saved successfully')), 'info');
+												}
+											});
+										}
+									}, _('Save'))
+								])
+							]);
+						}
+					}, _('Save')));
+
+					dangerZone.appendChild(fileDiv);
+				});
+			}
+
 			node.appendChild(dangerZone);
 
 			return node;
@@ -173,7 +241,7 @@ return view.extend({
 			if (result && result.error) {
 				ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + result.error), 'error');
 			} else {
-				ui.addNotification(null, E('p', {}, _('Core config saved and applied')), 'success');
+				ui.addNotification(null, E('p', {}, _('Core config saved and applied')), 'info');
 			}
 		});
 	},
