@@ -139,9 +139,9 @@ luci-base  nginx-ssl  nginx-util  rpcd  rpcd-mod-file  openssl-util
 
 如需直接修改 nginx 配置文件：
 
-1. 在 **Core Config** 页面开启 **危险编辑模式**
-2. 进入 **Advanced** 页面
-3. 选择要编辑的文件（nginx.conf、模板、managed 配置）
+1. 进入 **Core Config** 页面
+2. 开启 **危险编辑模式**
+3. 页面底部会出现文件编辑器，可直接编辑 `nginx.conf` 和 `uci.conf.template`
 4. 编辑后保存 — 系统自动测试，失败则回滚
 
 > ⚠️ 危险编辑模式下，Core Config 页面的可视化编辑将被禁用。
@@ -168,9 +168,8 @@ htdocs/luci-static/resources/
     ├── site-edit.js                            # 站点编辑表单
     ├── certificates.js                         # 证书管理
     ├── logs.js                                 # 日志查看器
-    ├── core-config.js                          # 核心配置编辑
-    ├── backups.js                              # 备份与恢复
-    └── advanced.js                             # 高级文件编辑
+    ├── core-config.js                          # 核心配置编辑（含危险编辑）
+    └── backups.js                              # 备份与恢复
 ```
 
 ## 架构设计
@@ -178,7 +177,7 @@ htdocs/luci-static/resources/
 ```
 ┌──────────────┐     ubus/rpcd     ┌──────────────────┐     UCI      ┌──────────────┐
 │  LuCI 前端    │ ──────────────→  │  rpcd 后端        │ ──────────→ │  UCI 配置     │
-│  (8 个 JS 视图)│ ←──────────────  │  (30 个 API 方法)  │ ←──────────  │  nginx_manager│
+│  (7 个 JS 视图)│ ←──────────────  │  (30 个 API 方法)  │ ←──────────  │  nginx_manager│
 └──────────────┘     JSON 响应      └──────────────────┘              └──────┬───────┘
                                                                             │
                                                               nginx-manager-gen

@@ -4,8 +4,6 @@
 'require view';
 'require ui';
 'require rpc';
-'require uci';
-'require form';
 
 var callGetSite = rpc.declare({
 	object: 'nginx_manager',
@@ -65,206 +63,298 @@ return view.extend({
 			siteId = window.location.hash.split('/').pop();
 		}
 
-		var page = E('div', { 'class': 'nginx-manager-page' });
+		var page = E('div', { 'class': 'cbi-map' });
 
 		page.appendChild(E('link', {
 			'rel': 'stylesheet',
 			'href': L.resource('nginx-manager/nginx-manager.css')
 		}));
 
-		var m = new form.Map('nginx_manager', isNew ? _('Add Site') : _('Edit Site'));
+		page.appendChild(E('h2', { 'class': 'cbi-map-title' }, isNew ? _('Add Site') : _('Edit Site')));
 
-		var s = m.section(form.NamedSection, siteId || '_new', 'site', _('Site Configuration'));
-		s.anonymous = false;
-		s.addremove = false;
+		/* ---- helpers ---- */
 
-		var enabled = s.option(form.Flag, 'enabled', _('Enabled'));
-		enabled.default = '1';
-		enabled.rmempty = false;
+		function makeField(id, label, inputEl, desc) {
+			var row = E('div', { 'class': 'cbi-value' });
+			row.appendChild(E('label', { 'class': 'cbi-value-title', 'for': id }, label));
+			var field = E('div', { 'class': 'cbi-value-field' });
+			inputEl.id = id;
+			field.appendChild(inputEl);
+			if (desc)
+				field.appendChild(E('div', { 'class': 'cbi-value-description' }, desc));
+			row.appendChild(field);
+			return row;
+		}
 
-		var name = s.option(form.Value, 'name', _('Site Name'));
-		name.datatype = 'and(uciname,maxlength(63))';
-		name.rmempty = false;
-		if (isNew) name.default = siteId;
+		function makeFlag(id, label, checked) {
+			var row = E('div', { 'class': 'cbi-value' });
+			row.appendChild(E('label', { 'class': 'cbi-value-title', 'for': id }, label));
+			var field = E('div', { 'class': 'cbi-value-field' });
+			var cb = E('input', { 'type': 'checkbox', 'id': id, 'class': 'cbi-input-checkbox' });
+			if (checked) cb.checked = true;
+			field.appendChild(cb);
+			row.appendChild(field);
+			return row;
+		}
 
-		var mode = s.option(form.ListValue, 'mode', _('Type'));
-		mode.value('reverse_proxy', _('Reverse Proxy'));
-		mode.value('static', _('Static Website'));
-		mode.value('custom', _('Custom Server Block'));
-		mode.value('redirect', _('Redirect'));
-		mode.default = 'reverse_proxy';
-		mode.rmempty = false;
+		/* ---- conditional sections ---- */
+		var sslSection, proxySection, staticSection, redirectSection, customSection;
 
-		var serverName = s.option(form.Value, 'server_name', _('Domain'));
-		serverName.datatype = 'hostname';
-		serverName.depends('mode', 'reverse_proxy');
-		serverName.depends('mode', 'static');
-		serverName.depends('mode', 'redirect');
+		function updateVisibility() {
+			var mode = document.getElementById('opt-mode').value;
+			sslSection.style.display      = (mode === 'reverse_proxy' || mode === 'static') ? '' : 'none';
+			proxySection.style.display    = mode === 'reverse_proxy' ? '' : 'none';
+			staticSection.style.display   = mode === 'static'        ? '' : 'none';
+			redirectSection.style.display = mode === 'redirect'      ? '' : 'none';
+			customSection.style.display   = mode === 'custom'        ? '' : 'none';
+		}
 
-		var redirectHttps = s.option(form.Flag, 'redirect_https', _('HTTP to HTTPS Redirect'));
-		redirectHttps.depends('mode', 'reverse_proxy');
-		redirectHttps.depends('mode', 'static');
-		redirectHttps.default = '1';
+		/* ========== Basic Settings ========== */
+		var basicSection = E('div', { 'class': 'cbi-section' });
+		basicSection.appendChild(E('h3', {}, _('Basic Settings')));
 
-		var sslCert = s.option(form.ListValue, 'ssl_cert', _('SSL Certificate'));
-		sslCert.depends('mode', 'reverse_proxy');
-		sslCert.depends('mode', 'static');
-		sslCert.value('', _('-- None --'));
+		basicSection.appendChild(makeFlag('opt-enabled', _('Enabled'),
+			isNew ? true : site && site.enabled === '1'));
+
+		var nameInput = E('input', { 'type': 'text', 'class': 'cbi-input-text' });
+		if (isNew && siteId) nameInput.value = siteId;
+		if (!isNew && site && site.name) nameInput.value = site.name;
+		basicSection.appendChild(makeField('opt-name', _('Site Name'), nameInput));
+
+		var modeSelect = E('select', { 'class': 'cbi-input-select' }, [
+			E('option', { 'value': 'reverse_proxy' }, _('Reverse Proxy')),
+			E('option', { 'value': 'static' },        _('Static Website')),
+			E('option', { 'value': 'custom' },        _('Custom Server Block')),
+			E('option', { 'value': 'redirect' },      _('Redirect'))
+		]);
+		if (!isNew && site && site.mode) modeSelect.value = site.mode;
+		modeSelect.addEventListener('change', updateVisibility);
+		basicSection.appendChild(makeField('opt-mode', _('Type'), modeSelect));
+
+		var serverNameInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': 'example.com' });
+		if (!isNew && site && site.server_name) serverNameInput.value = site.server_name;
+		basicSection.appendChild(makeField('opt-server_name', _('Domain'), serverNameInput));
+
+		/* Listen — dynamic list */
+		var listenContainer = E('div', { 'class': 'cbi-value' });
+		listenContainer.appendChild(E('label', { 'class': 'cbi-value-title' }, _('Listen')));
+		var listenField = E('div', { 'class': 'cbi-value-field' });
+		var listenItems = E('div', { 'id': 'listen-items' });
+
+		function createListenItem(val) {
+			var item = E('div', { 'style': 'display:flex;gap:4px;margin-bottom:4px;' });
+			item.appendChild(E('input', { 'type': 'text', 'class': 'cbi-input-text', 'value': val, 'placeholder': '80' }));
+			item.appendChild(E('button', {
+				'class': 'cbi-button cbi-button-reset',
+				'type': 'button',
+				'click': function() { if (listenItems.children.length > 1) item.remove(); }
+			}, '\u00D7'));
+			return item;
+		}
+
+		var listenVals = (!isNew && site && site.listen) ? site.listen.split(',') : ['80'];
+		listenVals.forEach(function(v) { listenItems.appendChild(createListenItem(v.trim())); });
+
+		listenField.appendChild(listenItems);
+		listenField.appendChild(E('button', {
+			'class': 'cbi-button',
+			'type': 'button',
+			'click': function() { listenItems.appendChild(createListenItem('')); }
+		}, '+'));
+		listenContainer.appendChild(listenField);
+		basicSection.appendChild(listenContainer);
+
+		page.appendChild(basicSection);
+
+		/* ========== SSL Settings ========== */
+		sslSection = E('div', { 'class': 'cbi-section' });
+		sslSection.appendChild(E('h3', {}, _('SSL Settings')));
+
+		var sslCertSelect = E('select', { 'class': 'cbi-input-select' }, [
+			E('option', { 'value': '' }, _('-- None --'))
+		]);
 		certs.forEach(function(cert) {
-			sslCert.value(cert.id, cert.name + (cert.domain ? ' (' + cert.domain + ')' : ''));
+			sslCertSelect.appendChild(E('option', { 'value': cert.id },
+				cert.name + (cert.domain ? ' (' + cert.domain + ')' : '')));
+		});
+		if (!isNew && site && site.ssl_cert) sslCertSelect.value = site.ssl_cert;
+		sslSection.appendChild(makeField('opt-ssl_cert', _('SSL Certificate'), sslCertSelect));
+
+		var sslWarning = E('div', { 'class': 'alert-message warning', 'style': 'display:none;' });
+		sslSection.appendChild(sslWarning);
+
+		sslCertSelect.addEventListener('change', function() {
+			var sel = certs.find(function(c) { return c.id === sslCertSelect.value; });
+			if (sel && (sel.status === 'expiring' || sel.status === 'expired')) {
+				sslWarning.style.display = '';
+				sslWarning.textContent = sel.status === 'expired'
+					? _('This certificate has expired.')
+					: _('This certificate is expiring soon.');
+			} else {
+				sslWarning.style.display = 'none';
+			}
 		});
 
-		var listen = s.option(form.DynamicList, 'listen', _('Listen'));
-		listen.datatype = 'string';
-		listen.placeholder = '80';
-		listen.depends('mode', 'reverse_proxy');
-		listen.depends('mode', 'static');
-		listen.depends('mode', 'redirect');
+		sslSection.appendChild(makeFlag('opt-redirect_https', _('HTTP to HTTPS Redirect'),
+			!isNew && site ? site.redirect_https === '1' : true));
 
-		var proxyPass = s.option(form.Value, 'proxy_pass', _('Proxy Pass'));
-		proxyPass.depends('mode', 'reverse_proxy');
-		proxyPass.placeholder = 'http://192.168.1.1:3000';
+		page.appendChild(sslSection);
 
-		var websocket = s.option(form.Flag, 'websocket', _('WebSocket'));
-		websocket.depends('mode', 'reverse_proxy');
+		/* ========== Reverse Proxy ========== */
+		proxySection = E('div', { 'class': 'cbi-section' });
+		proxySection.appendChild(E('h3', {}, _('Reverse Proxy')));
 
-		var proxyHost = s.option(form.Flag, 'proxy_host', _('Proxy Host Header'));
-		proxyHost.depends('mode', 'reverse_proxy');
-		proxyHost.default = '1';
+		var proxyPassInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': 'http://192.168.1.1:3000' });
+		if (!isNew && site && site.proxy_pass) proxyPassInput.value = site.proxy_pass;
+		proxySection.appendChild(makeField('opt-proxy_pass', _('Proxy Pass'), proxyPassInput));
 
-		var proxyXff = s.option(form.Flag, 'proxy_xff', _('X-Forwarded-For'));
-		proxyXff.depends('mode', 'reverse_proxy');
-		proxyXff.default = '1';
+		proxySection.appendChild(makeFlag('opt-websocket', _('WebSocket'),
+			!isNew && site ? site.websocket === '1' : false));
 
-		var proxyXfp = s.option(form.Flag, 'proxy_xfp', _('X-Forwarded-Proto'));
-		proxyXfp.depends('mode', 'reverse_proxy');
-		proxyXfp.default = '1';
+		proxySection.appendChild(makeFlag('opt-proxy_host', _('Proxy Host Header'),
+			!isNew && site ? site.proxy_host === '1' : true));
 
-		var proxyXri = s.option(form.Flag, 'proxy_xri', _('X-Real-IP'));
-		proxyXri.depends('mode', 'reverse_proxy');
-		proxyXri.default = '1';
+		proxySection.appendChild(makeFlag('opt-proxy_xff', _('X-Forwarded-For'),
+			!isNew && site ? site.proxy_xff === '1' : true));
 
-		var rootDir = s.option(form.Value, 'root', _('Root Directory'));
-		rootDir.depends('mode', 'static');
-		rootDir.placeholder = '/www/mysite';
+		proxySection.appendChild(makeFlag('opt-proxy_xfp', _('X-Forwarded-Proto'),
+			!isNew && site ? site.proxy_xfp === '1' : true));
 
-		var indexFile = s.option(form.Value, 'index', _('Index File'));
-		indexFile.depends('mode', 'static');
-		indexFile.default = 'index.html';
-		indexFile.placeholder = 'index.html';
+		proxySection.appendChild(makeFlag('opt-proxy_xri', _('X-Real-IP'),
+			!isNew && site ? site.proxy_xri === '1' : true));
 
-		var redirectTarget = s.option(form.Value, 'redirect_target', _('Redirect Target'));
-		redirectTarget.depends('mode', 'redirect');
-		redirectTarget.placeholder = 'https://example.com';
+		page.appendChild(proxySection);
 
-		var customBlock = s.option(form.TextValue, 'custom_server_block', _('Custom Server Block Content'));
-		customBlock.depends('mode', 'custom');
-		customBlock.rows = 15;
-		customBlock.monospace = true;
+		/* ========== Static Website ========== */
+		staticSection = E('div', { 'class': 'cbi-section' });
+		staticSection.appendChild(E('h3', {}, _('Static Website')));
 
-		var accessLog = s.option(form.Flag, 'access_log', _('Access Log'));
-		accessLog.default = '0';
+		var rootInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': '/www/mysite' });
+		if (!isNew && site && site.root) rootInput.value = site.root;
+		staticSection.appendChild(makeField('opt-root', _('Root Directory'), rootInput));
 
-		var errorLog = s.option(form.Flag, 'error_log', _('Error Log'));
-		errorLog.default = '1';
+		var indexInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': 'index.html' });
+		if (!isNew && site && site.index) indexInput.value = site.index;
+		else indexInput.value = 'index.html';
+		staticSection.appendChild(makeField('opt-index', _('Index File'), indexInput));
 
-		if (!isNew && site) {
-			Object.keys(site).forEach(function(key) {
-				if (key === 'id') return;
-				if (key === 'listen') {
-					uci.set('nginx_manager', siteId, key, site[key] ? site[key].split(',') : []);
+		page.appendChild(staticSection);
+
+		/* ========== Redirect ========== */
+		redirectSection = E('div', { 'class': 'cbi-section' });
+		redirectSection.appendChild(E('h3', {}, _('Redirect')));
+
+		var redirectTargetInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': 'https://example.com' });
+		if (!isNew && site && site.redirect_target) redirectTargetInput.value = site.redirect_target;
+		redirectSection.appendChild(makeField('opt-redirect_target', _('Redirect Target'), redirectTargetInput));
+
+		page.appendChild(redirectSection);
+
+		/* ========== Custom Server Block ========== */
+		customSection = E('div', { 'class': 'cbi-section' });
+		customSection.appendChild(E('h3', {}, _('Custom Server Block')));
+
+		var customBlockInput = E('textarea', { 'class': 'cbi-input-textarea', 'rows': 15, 'style': 'font-family:monospace;width:100%;' });
+		if (!isNew && site && site.custom_server_block) customBlockInput.value = site.custom_server_block;
+		customSection.appendChild(makeField('opt-custom_server_block', _('Custom Server Block Content'), customBlockInput));
+
+		page.appendChild(customSection);
+
+		/* ========== Logging ========== */
+		var loggingSection = E('div', { 'class': 'cbi-section' });
+		loggingSection.appendChild(E('h3', {}, _('Logging')));
+
+		loggingSection.appendChild(makeFlag('opt-access_log', _('Access Log'),
+			!isNew && site ? site.access_log === '1' : false));
+
+		loggingSection.appendChild(makeFlag('opt-error_log', _('Error Log'),
+			!isNew && site ? site.error_log === '1' : true));
+
+		page.appendChild(loggingSection);
+
+		/* ========== Actions ========== */
+		var actionsDiv = E('div', { 'class': 'nm-btn-group' });
+
+		if (!isNew) {
+			actionsDiv.appendChild(E('button', {
+				'class': 'cbi-button',
+				'click': function() {
+					callRenderSite(siteId).then(function(result) {
+						ui.showModal(_('Generated Config'), [
+							E('pre', { 'class': 'nm-code-block' }, (result && result.config) || ''),
+							E('div', { 'class': 'right', 'style': 'margin-top:8px;' }, [
+								E('button', {
+									'class': 'btn',
+									'click': function() { ui.hideModal(); }
+								}, _('Close'))
+							])
+						]);
+					});
+				}
+			}, '\u21BB ' + _('View Generated Config')));
+		}
+
+		actionsDiv.appendChild(E('button', {
+			'class': 'cbi-button cbi-button-apply',
+			'click': function() { saveSite(); }
+		}, _('Save')));
+
+		actionsDiv.appendChild(E('button', {
+			'class': 'cbi-button cbi-button-reset',
+			'click': function() {
+				location.href = L.url('admin/services/nginx-manager/sites');
+			}
+		}, '\u2190 ' + _('Back to Sites')));
+
+		page.appendChild(actionsDiv);
+
+		/* initial visibility */
+		updateVisibility();
+
+		/* ---- save logic ---- */
+		function saveSite() {
+			var data = { id: siteId || document.getElementById('opt-name').value.trim() };
+
+			data.enabled             = document.getElementById('opt-enabled').checked ? '1' : '0';
+			data.name                = document.getElementById('opt-name').value.trim();
+			data.mode                = document.getElementById('opt-mode').value;
+			data.server_name         = document.getElementById('opt-server_name').value.trim();
+
+			var lv = [];
+			document.querySelectorAll('#listen-items input').forEach(function(inp) {
+				var v = inp.value.trim();
+				if (v) lv.push(v);
+			});
+			data.listen = lv.join(',');
+
+			data.ssl_cert            = document.getElementById('opt-ssl_cert').value;
+			data.redirect_https      = document.getElementById('opt-redirect_https').checked ? '1' : '0';
+			data.proxy_pass          = document.getElementById('opt-proxy_pass').value.trim();
+			data.websocket           = document.getElementById('opt-websocket').checked ? '1' : '0';
+			data.proxy_host          = document.getElementById('opt-proxy_host').checked ? '1' : '0';
+			data.proxy_xff           = document.getElementById('opt-proxy_xff').checked ? '1' : '0';
+			data.proxy_xfp           = document.getElementById('opt-proxy_xfp').checked ? '1' : '0';
+			data.proxy_xri           = document.getElementById('opt-proxy_xri').checked ? '1' : '0';
+			data.root                = document.getElementById('opt-root').value.trim();
+			data.index               = document.getElementById('opt-index').value.trim();
+			data.redirect_target     = document.getElementById('opt-redirect_target').value.trim();
+			data.custom_server_block = document.getElementById('opt-custom_server_block').value;
+			data.access_log          = document.getElementById('opt-access_log').checked ? '1' : '0';
+			data.error_log           = document.getElementById('opt-error_log').checked ? '1' : '0';
+
+			return callSetSite(data).then(function(result) {
+				if (result && result.error) {
+					ui.addNotification(null, E('p', {}, _('Configuration test failed') + ': ' + (result.detail || result.error)), 'error');
 				} else {
-					uci.set('nginx_manager', siteId, key, site[key]);
+					ui.addNotification(null, E('p', {}, _('Site saved successfully')), 'info');
 				}
 			});
 		}
 
-		return m.render().then(function(node) {
-			var actionsDiv = E('div', { 'class': 'nginx-manager-actions', 'style': 'margin-top: 16px;' });
-
-			if (!isNew) {
-				actionsDiv.appendChild(E('button', {
-					'class': 'btn cbi-button',
-					'click': function() {
-						callRenderSite(siteId).then(function(result) {
-							ui.showModal(_('Generated Config'), [
-								E('div', { 'class': 'nginx-manager-code-block' }, (result && result.config) || ''),
-								E('div', { 'class': 'right', 'style': 'margin-top: 8px;' }, [
-									E('button', {
-										'class': 'btn',
-										'click': function() { ui.hideModal(); }
-									}, _('Close'))
-								])
-							]);
-						});
-					}
-				}, _('View Generated Config')));
-			}
-
-			actionsDiv.appendChild(E('button', {
-				'class': 'btn',
-				'click': function() {
-					location.href = L.url('admin/services/nginx-manager/sites');
-				}
-			}, _('Back to Sites')));
-
-			node.appendChild(actionsDiv);
-			return node;
-		});
+		return page;
 	},
 
-	handleSave: function(ev) {
-		var siteId = '';
-		if (L.env.pathinfo) {
-			siteId = L.env.pathinfo.split('/').pop();
-		}
-		if (!siteId && window.location.hash) {
-			siteId = window.location.hash.split('/').pop();
-		}
-
-		var formEl = document.querySelector('.cbi-map');
-		if (!formEl) return Promise.reject('form not found');
-
-		var data = { id: siteId };
-
-		var fields = ['name', 'mode', 'server_name', 'proxy_pass', 'root', 'index',
-			'websocket', 'redirect_https', 'proxy_host', 'proxy_xff', 'proxy_xfp',
-			'proxy_xri', 'ssl_cert', 'access_log', 'error_log', 'custom_server_block',
-			'redirect_target', 'enabled', 'listen'];
-
-		fields.forEach(function(field) {
-			if (field === 'listen') {
-				var listenVals = [];
-				document.querySelectorAll('[data-name="listen"] input').forEach(function(input) {
-					var value = input.value.trim();
-					if (value) listenVals.push(value);
-				});
-				data.listen = listenVals.join(',');
-				return;
-			}
-
-			var el = document.querySelector('[data-name="' + field + '"] input, [data-name="' + field + '"] select, [data-name="' + field + '"] textarea');
-			if (el) {
-				if (el.type === 'checkbox') {
-					data[field] = el.checked ? '1' : '0';
-				} else {
-					data[field] = el.value;
-				}
-			}
-		});
-
-		return callSetSite(data).then(function(result) {
-			if (result && result.error) {
-				ui.addNotification(null, E('p', {}, _('Configuration test failed') + ': ' + (result.detail || result.error)), 'error');
-			} else {
-				ui.addNotification(null, E('p', {}, _('Site saved successfully')), 'success');
-			}
-		});
-	},
-
-	handleSaveApply: function(ev) {
-		return this.handleSave(ev);
-	},
-
+	handleSave: null,
+	handleSaveApply: null,
 	handleReset: null
 });

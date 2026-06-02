@@ -26,16 +26,20 @@ return view.extend({
 	render: function(data) {
 		var sites = (data && data.sites) || [];
 
-		var page = E('div', { 'class': 'nginx-manager-page nginx-manager-log-viewer' });
+		var page = E('div', { 'class': 'cbi-map' });
 
 		page.appendChild(E('link', {
 			'rel': 'stylesheet',
 			'href': L.resource('nginx-manager/nginx-manager.css')
 		}));
 
-		page.appendChild(E('h3', {}, _('Logs')));
+		page.appendChild(E('h2', { 'class': 'cbi-map-title' }, _('Logs')));
 
-		var controls = E('div', { 'class': 'nginx-manager-log-controls' });
+		/* Log Controls Section */
+		var controlSection = E('div', { 'class': 'cbi-section' });
+		controlSection.appendChild(E('h3', {}, _('Log Settings')));
+
+		var controls = E('div', { 'class': 'nm-btn-group', 'style': 'align-items: center; flex-wrap: wrap; gap: 0.5em;' });
 
 		var typeSelect = E('select', { 'class': 'cbi-input-select' }, [
 			E('option', { 'value': 'error' }, _('Error Log')),
@@ -70,18 +74,39 @@ return view.extend({
 		controls.appendChild(E('label', { 'style': 'margin-left: 12px;' }, _('Filter') + ': '));
 		controls.appendChild(filterInput);
 
-		var loadBtn = E('button', {
-			'class': 'btn cbi-button-action',
-			'style': 'margin-left: 12px;'
-		}, _('Load'));
-		controls.appendChild(loadBtn);
+		controlSection.appendChild(controls);
 
-		page.appendChild(controls);
+		/* Button Group */
+		var btnGroup = E('div', { 'class': 'nm-btn-group' });
 
-		var logOutput = E('div', { 'class': 'nginx-manager-code-block', 'style': 'min-height: 200px;' }, _('Click "Load" to view logs'));
+		var refreshBtn = E('button', {
+			'class': 'cbi-button cbi-button-apply'
+		}, '\u21BB ' + _('Refresh'));
 
-		loadBtn.addEventListener('click', function() {
+		var clearBtn = E('button', {
+			'class': 'cbi-button cbi-button-reset'
+		}, '\u2716 ' + _('Clear'));
+
+		btnGroup.appendChild(refreshBtn);
+		btnGroup.appendChild(clearBtn);
+
+		controlSection.appendChild(btnGroup);
+		page.appendChild(controlSection);
+
+		/* Log Output Section */
+		var logSection = E('div', { 'class': 'cbi-section' });
+		logSection.appendChild(E('h3', {}, _('Log Output')));
+
+		var logOutput = E('pre', {
+			'class': 'nm-log-area is-empty'
+		}, _('Click "Refresh" to view logs'));
+
+		logSection.appendChild(logOutput);
+		page.appendChild(logSection);
+
+		refreshBtn.addEventListener('click', function() {
 			logOutput.textContent = _('Loading...');
+			logOutput.className = 'nm-log-area is-loading';
 
 			callGetLogs(
 				typeSelect.value,
@@ -94,17 +119,24 @@ return view.extend({
 					if (result.path) {
 						logOutput.textContent += '\n' + _('Path') + ': ' + result.path;
 					}
+					logOutput.className = 'nm-log-area is-error';
 				} else if (result && result.content) {
 					logOutput.textContent = result.content || _('No log entries found');
+					logOutput.className = 'nm-log-area';
 				} else {
 					logOutput.textContent = _('No log entries found');
+					logOutput.className = 'nm-log-area';
 				}
 			}).catch(function(err) {
 				logOutput.textContent = _('Failed to load logs') + ': ' + err;
+				logOutput.className = 'nm-log-area is-error';
 			});
 		});
 
-		page.appendChild(logOutput);
+		clearBtn.addEventListener('click', function() {
+			logOutput.textContent = '';
+			logOutput.className = 'nm-log-area is-empty';
+		});
 
 		return page;
 	},
