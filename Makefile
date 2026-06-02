@@ -4,7 +4,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-nginx-manager
 PKG_VERSION:=1.0.0
-PKG_RELEASE:=2
+PKG_RELEASE:=3
 
 PKG_LICENSE:=AGPL-3.0-only
 PKG_MAINTAINER:=yunshu
@@ -30,15 +30,19 @@ define Package/luci-app-nginx-manager/description
   logs, configuration testing, backup and rollback.
 endef
 
-define Build/Configure
-endef
-
 define Build/Compile
-	$(foreach lang,$(shell ls po/ 2>/dev/null), \
-		$(STAGING_DIR_HOSTPKG)/bin/po2lmo \
-			./po/$(lang)/nginx-manager.po \
-			./po/$(lang)/nginx-manager.$(lang).lmo; \
-	)
+	mkdir -p $(PKG_BUILD_DIR)/lmo; \
+	for po_dir in $(CURDIR)/po/*/; do \
+		[ -d "$$$$po_dir" ] || continue; \
+		lang=$$$$(basename "$$$$po_dir"); \
+		[ "$$$$lang" = "templates" ] && continue; \
+		[ -f "$$$$po_dir/nginx-manager.po" ] || continue; \
+		lmo_lang="$$$$lang"; \
+		[ "$$$$lmo_lang" = "zh_Hans" ] && lmo_lang="zh-cn"; \
+		if [ -x "$(STAGING_DIR_HOSTPKG)/bin/po2lmo" ]; then \
+			"$(STAGING_DIR_HOSTPKG)/bin/po2lmo" "$$$$po_dir/nginx-manager.po" "$(PKG_BUILD_DIR)/lmo/nginx-manager.$$$$lmo_lang.lmo"; \
+		fi; \
+	done
 endef
 
 define Package/luci-app-nginx-manager/install
@@ -64,23 +68,23 @@ define Package/luci-app-nginx-manager/install
 	$(INSTALL_DIR) $(1)/usr/share/rpcd/acl.d
 	$(INSTALL_DATA) ./root/usr/share/rpcd/acl.d/luci-app-nginx-manager.json $(1)/usr/share/rpcd/acl.d/luci-app-nginx-manager.json
 
-	$(INSTALL_DIR) $(1)/htdocs/luci-static/resources/nginx-manager
-	$(INSTALL_DATA) ./htdocs/luci-static/resources/nginx-manager/nginx-manager.css $(1)/htdocs/luci-static/resources/nginx-manager/nginx-manager.css
+	$(INSTALL_DIR) $(1)/www/luci-static/resources/nginx-manager
+	$(INSTALL_DATA) ./www/luci-static/resources/nginx-manager/nginx-manager.css $(1)/www/luci-static/resources/nginx-manager/nginx-manager.css
 
-	$(INSTALL_DIR) $(1)/htdocs/luci-static/resources/view/nginx-manager
-	$(INSTALL_DATA) ./htdocs/luci-static/resources/view/nginx-manager/overview.js $(1)/htdocs/luci-static/resources/view/nginx-manager/overview.js
-	$(INSTALL_DATA) ./htdocs/luci-static/resources/view/nginx-manager/sites.js $(1)/htdocs/luci-static/resources/view/nginx-manager/sites.js
-	$(INSTALL_DATA) ./htdocs/luci-static/resources/view/nginx-manager/site-edit.js $(1)/htdocs/luci-static/resources/view/nginx-manager/site-edit.js
-	$(INSTALL_DATA) ./htdocs/luci-static/resources/view/nginx-manager/certificates.js $(1)/htdocs/luci-static/resources/view/nginx-manager/certificates.js
-	$(INSTALL_DATA) ./htdocs/luci-static/resources/view/nginx-manager/logs.js $(1)/htdocs/luci-static/resources/view/nginx-manager/logs.js
-	$(INSTALL_DATA) ./htdocs/luci-static/resources/view/nginx-manager/core-config.js $(1)/htdocs/luci-static/resources/view/nginx-manager/core-config.js
-	$(INSTALL_DATA) ./htdocs/luci-static/resources/view/nginx-manager/backups.js $(1)/htdocs/luci-static/resources/view/nginx-manager/backups.js
-	$(INSTALL_DATA) ./htdocs/luci-static/resources/view/nginx-manager/advanced.js $(1)/htdocs/luci-static/resources/view/nginx-manager/advanced.js
+	$(INSTALL_DIR) $(1)/www/luci-static/resources/view/nginx-manager
+	$(INSTALL_DATA) ./www/luci-static/resources/view/nginx-manager/overview.js $(1)/www/luci-static/resources/view/nginx-manager/overview.js
+	$(INSTALL_DATA) ./www/luci-static/resources/view/nginx-manager/sites.js $(1)/www/luci-static/resources/view/nginx-manager/sites.js
+	$(INSTALL_DATA) ./www/luci-static/resources/view/nginx-manager/site-edit.js $(1)/www/luci-static/resources/view/nginx-manager/site-edit.js
+	$(INSTALL_DATA) ./www/luci-static/resources/view/nginx-manager/certificates.js $(1)/www/luci-static/resources/view/nginx-manager/certificates.js
+	$(INSTALL_DATA) ./www/luci-static/resources/view/nginx-manager/logs.js $(1)/www/luci-static/resources/view/nginx-manager/logs.js
+	$(INSTALL_DATA) ./www/luci-static/resources/view/nginx-manager/core-config.js $(1)/www/luci-static/resources/view/nginx-manager/core-config.js
+	$(INSTALL_DATA) ./www/luci-static/resources/view/nginx-manager/backups.js $(1)/www/luci-static/resources/view/nginx-manager/backups.js
+	$(INSTALL_DATA) ./www/luci-static/resources/view/nginx-manager/advanced.js $(1)/www/luci-static/resources/view/nginx-manager/advanced.js
 
-	$(INSTALL_DIR) $(1)/usr/share/luci/i18n
-	$(foreach lang,$(shell ls po/ 2>/dev/null), \
-		$(INSTALL_DATA) ./po/$(lang)/nginx-manager.$(lang).lmo $(1)/usr/share/luci/i18n/; \
-	)
+	if [ -n "$$$$(ls $(PKG_BUILD_DIR)/lmo/*.lmo 2>/dev/null)" ]; then \
+		$(INSTALL_DIR) $(1)/usr/lib/lua/luci/i18n; \
+		$(INSTALL_DATA) $(PKG_BUILD_DIR)/lmo/*.lmo $(1)/usr/lib/lua/luci/i18n/; \
+	fi
 endef
 
 define Package/luci-app-nginx-manager/postinst
@@ -122,11 +126,15 @@ NGINX_MGR_CONF
 		uci commit nginx_manager
 	}
 
+	uci -q get luci.languages.zh_cn >/dev/null || uci -q set luci.languages.zh_cn='简体中文'; \
+	uci -q commit luci; \
+
 	chmod 600 /etc/config/nginx_manager 2>/dev/null
 
 	rm -f /etc/uci-defaults/90-luci-app-nginx-manager
-	rm -f /tmp/luci-indexcache
-	rm -f /tmp/luci-modulecache/*
+	rm -f /tmp/luci-indexcache.*
+	rm -rf /tmp/luci-modulecache/
+	/etc/init.d/rpcd reload 2>/dev/null
 }
 exit 0
 endef
@@ -134,8 +142,8 @@ endef
 define Package/luci-app-nginx-manager/postrm
 #!/bin/sh
 [ -n "$${IPKG_INSTROOT}" ] || {
-	rm -f /tmp/luci-indexcache
-	rm -f /tmp/luci-modulecache/*
+	rm -f /tmp/luci-indexcache.*
+	rm -rf /tmp/luci-modulecache/
 }
 exit 0
 endef

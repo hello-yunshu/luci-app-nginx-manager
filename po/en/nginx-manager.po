@@ -1,334 +1,328 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: luci-app-nginx-manager\n"
-"PO-Revision-Date: 2026-06-02 00:00+0000\n"
-"Last-Translator: yunshu\n"
-"Language-Team: Chinese (Simplified)\n"
-"Language: zh_CN\n"
-"MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "Nginx Manager"
-msgstr "Nginx 管理器"
+msgstr "Nginx Manager"
 
 msgid "Sites"
-msgstr "网站"
+msgstr "Sites"
 
 msgid "Certificates"
-msgstr "证书"
+msgstr "Certificates"
 
 msgid "Logs"
-msgstr "日志"
+msgstr "Logs"
 
 msgid "Core Config"
-msgstr "核心配置"
+msgstr "Core Config"
 
 msgid "Backups"
-msgstr "备份"
+msgstr "Backups"
 
 msgid "Overview"
-msgstr "概览"
+msgstr "Overview"
 
 msgid "Nginx Status"
-msgstr "Nginx 状态"
+msgstr "Nginx Status"
 
 msgid "Running"
-msgstr "运行中"
+msgstr "Running"
 
 msgid "Stopped"
-msgstr "已停止"
+msgstr "Stopped"
 
 msgid "Version"
-msgstr "版本"
+msgstr "Version"
 
 msgid "SSL Module"
-msgstr "SSL 模块"
+msgstr "SSL Module"
 
 msgid "Listening Ports"
-msgstr "监听端口"
+msgstr "Listening Ports"
 
 msgid "Managed Sites"
-msgstr "管理站点数"
+msgstr "Managed Sites"
 
 msgid "Non-Managed Configs"
-msgstr "非管理配置数"
+msgstr "Non-Managed Configs"
 
 msgid "Certificate Expiry"
-msgstr "证书到期"
+msgstr "Certificate Expiry"
 
 msgid "Last Config Test"
-msgstr "最近配置测试"
+msgstr "Last Config Test"
 
 msgid "Last Reload"
-msgstr "最近 Reload"
+msgstr "Last Reload"
 
 msgid "Start"
-msgstr "启动"
+msgstr "Start"
 
 msgid "Stop"
-msgstr "停止"
+msgstr "Stop"
 
 msgid "Restart"
-msgstr "重启"
+msgstr "Restart"
 
 msgid "Reload"
-msgstr "重新加载"
+msgstr "Reload"
 
 msgid "Test Config"
-msgstr "测试配置"
+msgstr "Test Config"
 
 msgid "View Full Config"
-msgstr "查看完整配置"
+msgstr "View Full Config"
 
 msgid "Add Site"
-msgstr "添加站点"
+msgstr "Add Site"
 
 msgid "Edit"
-msgstr "编辑"
+msgstr "Edit"
 
 msgid "Delete"
-msgstr "删除"
+msgstr "Delete"
 
 msgid "Enable"
-msgstr "启用"
+msgstr "Enable"
 
 msgid "Disable"
-msgstr "禁用"
+msgstr "Disable"
 
 msgid "Copy"
-msgstr "复制"
+msgstr "Copy"
 
 msgid "Site Name"
-msgstr "站点名称"
+msgstr "Site Name"
 
 msgid "Domain"
-msgstr "域名"
+msgstr "Domain"
 
 msgid "Type"
-msgstr "类型"
+msgstr "Type"
 
 msgid "Listen"
-msgstr "监听"
+msgstr "Listen"
 
 msgid "SSL"
 msgstr "SSL"
 
 msgid "Backend / Root"
-msgstr "后端 / 根目录"
+msgstr "Backend / Root"
 
 msgid "Status"
-msgstr "状态"
+msgstr "Status"
 
 msgid "Actions"
-msgstr "操作"
+msgstr "Actions"
 
 msgid "Reverse Proxy"
-msgstr "反向代理"
+msgstr "Reverse Proxy"
 
 msgid "Static Website"
-msgstr "静态网站"
+msgstr "Static Website"
 
 msgid "Custom Server Block"
-msgstr "自定义 Server Block"
+msgstr "Custom Server Block"
 
 msgid "Redirect"
-msgstr "重定向"
+msgstr "Redirect"
 
 msgid "Basic Settings"
-msgstr "基础设置"
+msgstr "Basic Settings"
 
 msgid "Listen & Domain"
-msgstr "监听与域名"
+msgstr "Listen & Domain"
 
 msgid "SSL Certificate"
-msgstr "SSL 证书"
+msgstr "SSL Certificate"
 
 msgid "Proxy Settings"
-msgstr "代理设置"
+msgstr "Proxy Settings"
 
 msgid "Log Settings"
-msgstr "日志设置"
+msgstr "Log Settings"
 
 msgid "Advanced Settings"
-msgstr "高级设置"
+msgstr "Advanced Settings"
 
 msgid "Server Name"
-msgstr "服务器名称"
+msgstr "Server Name"
 
 msgid "Mode"
-msgstr "模式"
+msgstr "Mode"
 
 msgid "Listen Port"
-msgstr "监听端口"
+msgstr "Listen Port"
 
 msgid "HTTP to HTTPS Redirect"
-msgstr "HTTP 跳转 HTTPS"
+msgstr "HTTP to HTTPS Redirect"
 
 msgid "Proxy Pass"
-msgstr "代理地址"
+msgstr "Proxy Pass"
 
 msgid "WebSocket"
 msgstr "WebSocket"
 
 msgid "SSL Certificate Path"
-msgstr "SSL 证书路径"
+msgstr "SSL Certificate Path"
 
 msgid "SSL Key Path"
-msgstr "SSL 私钥路径"
+msgstr "SSL Key Path"
 
 msgid "Access Log"
-msgstr "访问日志"
+msgstr "Access Log"
 
 msgid "Error Log"
-msgstr "错误日志"
+msgstr "Error Log"
 
 msgid "Root Directory"
-msgstr "根目录"
+msgstr "Root Directory"
 
 msgid "Index File"
-msgstr "首页文件"
+msgstr "Index File"
 
 msgid "Custom Server Block Content"
-msgstr "自定义 Server Block 内容"
+msgstr "Custom Server Block Content"
 
 msgid "Danger Zone"
-msgstr "危险区域"
+msgstr "Danger Zone"
 
 msgid "Dangerous Core Edit"
-msgstr "危险核心编辑"
+msgstr "Dangerous Core Edit"
 
 msgid "Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point."
-msgstr "修改核心配置可能导致 Nginx 无法启动，甚至导致 LuCI 后台不可访问。请确保 SSH 可用，或保留 uhttpd 作为备用入口。"
+msgstr "Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point."
 
 msgid "Backup created"
-msgstr "备份已创建"
+msgstr "Backup created"
 
 msgid "Backup restored"
-msgstr "备份已恢复"
+msgstr "Backup restored"
 
 msgid "Configuration test passed"
-msgstr "配置测试通过"
+msgstr "Configuration test passed"
 
 msgid "Configuration test failed"
-msgstr "配置测试失败"
+msgstr "Configuration test failed"
 
 msgid "Nginx reloaded successfully"
-msgstr "Nginx 重新加载成功"
+msgstr "Nginx reloaded successfully"
 
 msgid "Site added successfully"
-msgstr "站点添加成功"
+msgstr "Site added successfully"
 
 msgid "Site updated successfully"
-msgstr "站点更新成功"
+msgstr "Site updated successfully"
 
 msgid "Site deleted successfully"
-msgstr "站点删除成功"
+msgstr "Site deleted successfully"
 
 msgid "Confirm Delete"
-msgstr "确认删除"
+msgstr "Confirm Delete"
 
 msgid "Are you sure you want to delete this site?"
-msgstr "确定要删除此站点吗？"
+msgstr "Are you sure you want to delete this site?"
 
 msgid "Enabled"
-msgstr "已启用"
+msgstr "Enabled"
 
 msgid "Disabled"
-msgstr "已禁用"
+msgstr "Disabled"
 
 msgid "Upload Certificate"
-msgstr "上传证书"
+msgstr "Upload Certificate"
 
 msgid "Self-Signed Certificate"
-msgstr "自签名证书"
+msgstr "Self-Signed Certificate"
 
 msgid "Certificate Name"
-msgstr "证书名称"
+msgstr "Certificate Name"
 
 msgid "Certificate Type"
-msgstr "证书类型"
+msgstr "Certificate Type"
 
 msgid "Expiry Date"
-msgstr "到期日期"
+msgstr "Expiry Date"
 
 msgid "Bound Domain"
-msgstr "绑定域名"
+msgstr "Bound Domain"
 
 msgid "Used By Sites"
-msgstr "使用中的站点"
+msgstr "Used By Sites"
 
 msgid "Valid"
-msgstr "有效"
+msgstr "Valid"
 
 msgid "Expiring Soon"
-msgstr "即将过期"
+msgstr "Expiring Soon"
 
 msgid "Expired"
-msgstr "已过期"
+msgstr "Expired"
 
 msgid "File Missing"
-msgstr "文件缺失"
+msgstr "File Missing"
 
 msgid "Key Mismatch"
-msgstr "密钥不匹配"
+msgstr "Key Mismatch"
 
 msgid "Line Count"
-msgstr "行数"
+msgstr "Line Count"
 
 msgid "Filter"
-msgstr "过滤"
+msgstr "Filter"
 
 msgid "Download"
-msgstr "下载"
+msgstr "Download"
 
 msgid "Worker Processes"
-msgstr "Worker 进程数"
+msgstr "Worker Processes"
 
 msgid "Worker Connections"
-msgstr "Worker 连接数"
+msgstr "Worker Connections"
 
 msgid "Client Max Body Size"
-msgstr "客户端最大请求体"
+msgstr "Client Max Body Size"
 
 msgid "Keepalive Timeout"
-msgstr "Keepalive 超时"
+msgstr "Keepalive Timeout"
 
 msgid "Gzip"
-msgstr "Gzip 压缩"
+msgstr "Gzip"
 
 msgid "Server Tokens"
-msgstr "服务器版本标识"
+msgstr "Server Tokens"
 
 msgid "Sendfile"
 msgstr "Sendfile"
 
 msgid "SSL Protocols"
-msgstr "SSL 协议"
+msgstr "SSL Protocols"
 
 msgid "SSL Ciphers"
-msgstr "SSL 密码套件"
+msgstr "SSL Ciphers"
 
 msgid "Safe Settings"
-msgstr "安全设置"
+msgstr "Safe Settings"
 
 msgid "Dangerous Edit"
-msgstr "危险编辑"
+msgstr "Dangerous Edit"
 
 msgid "Read-only View"
-msgstr "只读查看"
+msgstr "Read-only View"
 
 msgid "Backup Time"
-msgstr "备份时间"
+msgstr "Backup Time"
 
 msgid "Backup Content"
-msgstr "备份内容"
+msgstr "Backup Content"
 
 msgid "Restore"
-msgstr "恢复"
+msgstr "Restore"
 
 msgid "Compare"
-msgstr "比较"
+msgstr "Compare"
 
 msgid "Create Backup"
-msgstr "创建备份"
+msgstr "Create Backup"
