@@ -21,3 +21,5 @@ tmp/
 *.ipk
 *.tar.gz
 sha256sums.txt
+
+luci-app-nginx-manager-plan(1).md
