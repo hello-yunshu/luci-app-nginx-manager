@@ -1,0 +1,328 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Nginx Manager"
+msgstr ""
+
+msgid "Sites"
+msgstr ""
+
+msgid "Certificates"
+msgstr ""
+
+msgid "Logs"
+msgstr ""
+
+msgid "Core Config"
+msgstr ""
+
+msgid "Backups"
+msgstr ""
+
+msgid "Overview"
+msgstr ""
+
+msgid "Nginx Status"
+msgstr ""
+
+msgid "Running"
+msgstr ""
+
+msgid "Stopped"
+msgstr ""
+
+msgid "Version"
+msgstr ""
+
+msgid "SSL Module"
+msgstr ""
+
+msgid "Listening Ports"
+msgstr ""
+
+msgid "Managed Sites"
+msgstr ""
+
+msgid "Non-Managed Configs"
+msgstr ""
+
+msgid "Certificate Expiry"
+msgstr ""
+
+msgid "Last Config Test"
+msgstr ""
+
+msgid "Last Reload"
+msgstr ""
+
+msgid "Start"
+msgstr ""
+
+msgid "Stop"
+msgstr ""
+
+msgid "Restart"
+msgstr ""
+
+msgid "Reload"
+msgstr ""
+
+msgid "Test Config"
+msgstr ""
+
+msgid "View Full Config"
+msgstr ""
+
+msgid "Add Site"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "Enable"
+msgstr ""
+
+msgid "Disable"
+msgstr ""
+
+msgid "Copy"
+msgstr ""
+
+msgid "Site Name"
+msgstr ""
+
+msgid "Domain"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Listen"
+msgstr ""
+
+msgid "SSL"
+msgstr ""
+
+msgid "Backend / Root"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Actions"
+msgstr ""
+
+msgid "Reverse Proxy"
+msgstr ""
+
+msgid "Static Website"
+msgstr ""
+
+msgid "Custom Server Block"
+msgstr ""
+
+msgid "Redirect"
+msgstr ""
+
+msgid "Basic Settings"
+msgstr ""
+
+msgid "Listen & Domain"
+msgstr ""
+
+msgid "SSL Certificate"
+msgstr ""
+
+msgid "Proxy Settings"
+msgstr ""
+
+msgid "Log Settings"
+msgstr ""
+
+msgid "Advanced Settings"
+msgstr ""
+
+msgid "Server Name"
+msgstr ""
+
+msgid "Mode"
+msgstr ""
+
+msgid "Listen Port"
+msgstr ""
+
+msgid "HTTP to HTTPS Redirect"
+msgstr ""
+
+msgid "Proxy Pass"
+msgstr ""
+
+msgid "WebSocket"
+msgstr ""
+
+msgid "SSL Certificate Path"
+msgstr ""
+
+msgid "SSL Key Path"
+msgstr ""
+
+msgid "Access Log"
+msgstr ""
+
+msgid "Error Log"
+msgstr ""
+
+msgid "Root Directory"
+msgstr ""
+
+msgid "Index File"
+msgstr ""
+
+msgid "Custom Server Block Content"
+msgstr ""
+
+msgid "Danger Zone"
+msgstr ""
+
+msgid "Dangerous Core Edit"
+msgstr ""
+
+msgid "Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point."
+msgstr ""
+
+msgid "Backup created"
+msgstr ""
+
+msgid "Backup restored"
+msgstr ""
+
+msgid "Configuration test passed"
+msgstr ""
+
+msgid "Configuration test failed"
+msgstr ""
+
+msgid "Nginx reloaded successfully"
+msgstr ""
+
+msgid "Site added successfully"
+msgstr ""
+
+msgid "Site updated successfully"
+msgstr ""
+
+msgid "Site deleted successfully"
+msgstr ""
+
+msgid "Confirm Delete"
+msgstr ""
+
+msgid "Are you sure you want to delete this site?"
+msgstr ""
+
+msgid "Enabled"
+msgstr ""
+
+msgid "Disabled"
+msgstr ""
+
+msgid "Upload Certificate"
+msgstr ""
+
+msgid "Self-Signed Certificate"
+msgstr ""
+
+msgid "Certificate Name"
+msgstr ""
+
+msgid "Certificate Type"
+msgstr ""
+
+msgid "Expiry Date"
+msgstr ""
+
+msgid "Bound Domain"
+msgstr ""
+
+msgid "Used By Sites"
+msgstr ""
+
+msgid "Valid"
+msgstr ""
+
+msgid "Expiring Soon"
+msgstr ""
+
+msgid "Expired"
+msgstr ""
+
+msgid "File Missing"
+msgstr ""
+
+msgid "Key Mismatch"
+msgstr ""
+
+msgid "Line Count"
+msgstr ""
+
+msgid "Filter"
+msgstr ""
+
+msgid "Download"
+msgstr ""
+
+msgid "Worker Processes"
+msgstr ""
+
+msgid "Worker Connections"
+msgstr ""
+
+msgid "Client Max Body Size"
+msgstr ""
+
+msgid "Keepalive Timeout"
+msgstr ""
+
+msgid "Gzip"
+msgstr ""
+
+msgid "Server Tokens"
+msgstr ""
+
+msgid "Sendfile"
+msgstr ""
+
+msgid "SSL Protocols"
+msgstr ""
+
+msgid "SSL Ciphers"
+msgstr ""
+
+msgid "Safe Settings"
+msgstr ""
+
+msgid "Dangerous Edit"
+msgstr ""
+
+msgid "Read-only View"
+msgstr ""
+
+msgid "Backup Time"
+msgstr ""
+
+msgid "Backup Content"
+msgstr ""
+
+msgid "Restore"
+msgstr ""
+
+msgid "Compare"
+msgstr ""
+
+msgid "Create Backup"
+msgstr ""

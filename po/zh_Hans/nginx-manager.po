@@ -1,0 +1,334 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: luci-app-nginx-manager\n"
+"PO-Revision-Date: 2026-06-02 00:00+0000\n"
+"Last-Translator: yunshu\n"
+"Language-Team: Chinese (Simplified)\n"
+"Language: zh_Hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Nginx Manager"
+msgstr "Nginx 管理器"
+
+msgid "Sites"
+msgstr "网站"
+
+msgid "Certificates"
+msgstr "证书"
+
+msgid "Logs"
+msgstr "日志"
+
+msgid "Core Config"
+msgstr "核心配置"
+
+msgid "Backups"
+msgstr "备份"
+
+msgid "Overview"
+msgstr "概览"
+
+msgid "Nginx Status"
+msgstr "Nginx 状态"
+
+msgid "Running"
+msgstr "运行中"
+
+msgid "Stopped"
+msgstr "已停止"
+
+msgid "Version"
+msgstr "版本"
+
+msgid "SSL Module"
+msgstr "SSL 模块"
+
+msgid "Listening Ports"
+msgstr "监听端口"
+
+msgid "Managed Sites"
+msgstr "管理站点数"
+
+msgid "Non-Managed Configs"
+msgstr "非管理配置数"
+
+msgid "Certificate Expiry"
+msgstr "证书到期"
+
+msgid "Last Config Test"
+msgstr "最近配置测试"
+
+msgid "Last Reload"
+msgstr "最近 Reload"
+
+msgid "Start"
+msgstr "启动"
+
+msgid "Stop"
+msgstr "停止"
+
+msgid "Restart"
+msgstr "重启"
+
+msgid "Reload"
+msgstr "重新加载"
+
+msgid "Test Config"
+msgstr "测试配置"
+
+msgid "View Full Config"
+msgstr "查看完整配置"
+
+msgid "Add Site"
+msgstr "添加站点"
+
+msgid "Edit"
+msgstr "编辑"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Enable"
+msgstr "启用"
+
+msgid "Disable"
+msgstr "禁用"
+
+msgid "Copy"
+msgstr "复制"
+
+msgid "Site Name"
+msgstr "站点名称"
+
+msgid "Domain"
+msgstr "域名"
+
+msgid "Type"
+msgstr "类型"
+
+msgid "Listen"
+msgstr "监听"
+
+msgid "SSL"
+msgstr "SSL"
+
+msgid "Backend / Root"
+msgstr "后端 / 根目录"
+
+msgid "Status"
+msgstr "状态"
+
+msgid "Actions"
+msgstr "操作"
+
+msgid "Reverse Proxy"
+msgstr "反向代理"
+
+msgid "Static Website"
+msgstr "静态网站"
+
+msgid "Custom Server Block"
+msgstr "自定义 Server Block"
+
+msgid "Redirect"
+msgstr "重定向"
+
+msgid "Basic Settings"
+msgstr "基础设置"
+
+msgid "Listen & Domain"
+msgstr "监听与域名"
+
+msgid "SSL Certificate"
+msgstr "SSL 证书"
+
+msgid "Proxy Settings"
+msgstr "代理设置"
+
+msgid "Log Settings"
+msgstr "日志设置"
+
+msgid "Advanced Settings"
+msgstr "高级设置"
+
+msgid "Server Name"
+msgstr "服务器名称"
+
+msgid "Mode"
+msgstr "模式"
+
+msgid "Listen Port"
+msgstr "监听端口"
+
+msgid "HTTP to HTTPS Redirect"
+msgstr "HTTP 跳转 HTTPS"
+
+msgid "Proxy Pass"
+msgstr "代理地址"
+
+msgid "WebSocket"
+msgstr "WebSocket"
+
+msgid "SSL Certificate Path"
+msgstr "SSL 证书路径"
+
+msgid "SSL Key Path"
+msgstr "SSL 私钥路径"
+
+msgid "Access Log"
+msgstr "访问日志"
+
+msgid "Error Log"
+msgstr "错误日志"
+
+msgid "Root Directory"
+msgstr "根目录"
+
+msgid "Index File"
+msgstr "首页文件"
+
+msgid "Custom Server Block Content"
+msgstr "自定义 Server Block 内容"
+
+msgid "Danger Zone"
+msgstr "危险区域"
+
+msgid "Dangerous Core Edit"
+msgstr "危险核心编辑"
+
+msgid "Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point."
+msgstr "修改核心配置可能导致 Nginx 无法启动，甚至导致 LuCI 后台不可访问。请确保 SSH 可用，或保留 uhttpd 作为备用入口。"
+
+msgid "Backup created"
+msgstr "备份已创建"
+
+msgid "Backup restored"
+msgstr "备份已恢复"
+
+msgid "Configuration test passed"
+msgstr "配置测试通过"
+
+msgid "Configuration test failed"
+msgstr "配置测试失败"
+
+msgid "Nginx reloaded successfully"
+msgstr "Nginx 重新加载成功"
+
+msgid "Site added successfully"
+msgstr "站点添加成功"
+
+msgid "Site updated successfully"
+msgstr "站点更新成功"
+
+msgid "Site deleted successfully"
+msgstr "站点删除成功"
+
+msgid "Confirm Delete"
+msgstr "确认删除"
+
+msgid "Are you sure you want to delete this site?"
+msgstr "确定要删除此站点吗？"
+
+msgid "Enabled"
+msgstr "已启用"
+
+msgid "Disabled"
+msgstr "已禁用"
+
+msgid "Upload Certificate"
+msgstr "上传证书"
+
+msgid "Self-Signed Certificate"
+msgstr "自签名证书"
+
+msgid "Certificate Name"
+msgstr "证书名称"
+
+msgid "Certificate Type"
+msgstr "证书类型"
+
+msgid "Expiry Date"
+msgstr "到期日期"
+
+msgid "Bound Domain"
+msgstr "绑定域名"
+
+msgid "Used By Sites"
+msgstr "使用中的站点"
+
+msgid "Valid"
+msgstr "有效"
+
+msgid "Expiring Soon"
+msgstr "即将过期"
+
+msgid "Expired"
+msgstr "已过期"
+
+msgid "File Missing"
+msgstr "文件缺失"
+
+msgid "Key Mismatch"
+msgstr "密钥不匹配"
+
+msgid "Line Count"
+msgstr "行数"
+
+msgid "Filter"
+msgstr "过滤"
+
+msgid "Download"
+msgstr "下载"
+
+msgid "Worker Processes"
+msgstr "Worker 进程数"
+
+msgid "Worker Connections"
+msgstr "Worker 连接数"
+
+msgid "Client Max Body Size"
+msgstr "客户端最大请求体"
+
+msgid "Keepalive Timeout"
+msgstr "Keepalive 超时"
+
+msgid "Gzip"
+msgstr "Gzip 压缩"
+
+msgid "Server Tokens"
+msgstr "服务器版本标识"
+
+msgid "Sendfile"
+msgstr "Sendfile"
+
+msgid "SSL Protocols"
+msgstr "SSL 协议"
+
+msgid "SSL Ciphers"
+msgstr "SSL 密码套件"
+
+msgid "Safe Settings"
+msgstr "安全设置"
+
+msgid "Dangerous Edit"
+msgstr "危险编辑"
+
+msgid "Read-only View"
+msgstr "只读查看"
+
+msgid "Backup Time"
+msgstr "备份时间"
+
+msgid "Backup Content"
+msgstr "备份内容"
+
+msgid "Restore"
+msgstr "恢复"
+
+msgid "Compare"
+msgstr "比较"
+
+msgid "Create Backup"
+msgstr "创建备份"
