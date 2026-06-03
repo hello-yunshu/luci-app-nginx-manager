@@ -166,13 +166,15 @@ return view.extend({
 
 		var nonManagedCount = parseInt(status.non_managed_configs) || 0;
 		var nonManagedNames = (status.non_managed_names || '').split(',').filter(Boolean);
+		var nonManagedValueAttrs = { 'class': 'nm-stat-value' + (nonManagedCount > 0 ? ' orange' : '') };
+		if (nonManagedCount > 0 && nonManagedNames.length > 0) {
+			nonManagedValueAttrs['title'] = nonManagedNames.join(', ');
+			nonManagedValueAttrs['style'] = 'cursor: help;';
+		}
 		var nonManagedChildren = [
-			E('div', { 'class': 'nm-stat-value' + (nonManagedCount > 0 ? ' orange' : '') }, String(nonManagedCount)),
+			E('div', nonManagedValueAttrs, String(nonManagedCount)),
 			E('div', { 'class': 'nm-stat-label' }, _('Non-Managed Configs'))
 		];
-		if (nonManagedCount > 0 && nonManagedNames.length > 0) {
-			nonManagedChildren.push(E('div', { 'class': 'nm-stat-detail' }, nonManagedNames.join(', ')));
-		}
 		statsGrid.appendChild(E('div', { 'class': 'cbi-section nm-stat-card' }, nonManagedChildren));
 
 		var sslLabel = status.ssl_module === '1' ? _('Enabled') : _('Disabled');

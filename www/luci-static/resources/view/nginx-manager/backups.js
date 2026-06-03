@@ -123,7 +123,6 @@ return view.extend({
 							_('Are you sure you want to restore this backup? A backup of the current configuration will be created first.')),
 						E('div', { 'class': 'right' }, [
 							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
-							' ',
 							E('button', {
 								'class': 'cbi-button cbi-button-apply',
 								'click': function() {
@@ -152,7 +151,6 @@ return view.extend({
 						E('p', {}, _('Are you sure you want to delete this backup?')),
 						E('div', { 'class': 'right' }, [
 							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
-							' ',
 							E('button', {
 								'class': 'cbi-button cbi-button-reset',
 								'click': function() {

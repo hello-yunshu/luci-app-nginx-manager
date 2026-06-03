@@ -102,7 +102,7 @@ return view.extend({
 		var sslSection, proxySection, staticSection, redirectSection, customSection;
 
 		function updateVisibility() {
-			var mode = document.getElementById('opt-mode').value;
+			var mode = modeSelect.value;
 			sslSection.style.display      = (mode === 'reverse_proxy' || mode === 'static') ? '' : 'none';
 			proxySection.style.display    = mode === 'reverse_proxy' ? '' : 'none';
 			staticSection.style.display   = mode === 'static'        ? '' : 'none';
