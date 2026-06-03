@@ -39,7 +39,7 @@ return view.extend({
 		var controlSection = E('div', { 'class': 'cbi-section' });
 		controlSection.appendChild(E('h3', {}, _('Log Settings')));
 
-		var controls = E('div', { 'class': 'nm-btn-group', 'style': 'align-items: center; flex-wrap: wrap; gap: 0.5em;' });
+		var controls = E('div', { 'class': 'nm-log-controls' });
 
 		var typeSelect = E('select', { 'class': 'cbi-input-select' }, [
 			E('option', { 'value': 'error' }, _('Error Log')),
@@ -53,7 +53,7 @@ return view.extend({
 			E('option', { 'value': '200', 'selected': true }, '200'),
 			E('option', { 'value': '500' }, '500')
 		]);
-		controls.appendChild(E('label', { 'style': 'margin-left: 12px;' }, _('Line Count') + ': '));
+		controls.appendChild(E('label', {}, _('Line Count') + ': '));
 		controls.appendChild(lineSelect);
 
 		var siteSelect = E('select', { 'class': 'cbi-input-select' }, [
@@ -62,16 +62,16 @@ return view.extend({
 		sites.forEach(function(site) {
 			siteSelect.appendChild(E('option', { 'value': site.name }, site.name));
 		});
-		controls.appendChild(E('label', { 'style': 'margin-left: 12px;' }, _('Site') + ': '));
+		controls.appendChild(E('label', {}, _('Site') + ': '));
 		controls.appendChild(siteSelect);
 
 		var filterInput = E('input', {
 			'type': 'text',
 			'class': 'cbi-input-text',
 			'placeholder': _('Filter'),
-			'style': 'max-width: 200px; margin-left: 4px;'
+			'style': 'max-width: 200px;'
 		});
-		controls.appendChild(E('label', { 'style': 'margin-left: 12px;' }, _('Filter') + ': '));
+		controls.appendChild(E('label', {}, _('Filter') + ': '));
 		controls.appendChild(filterInput);
 
 		controlSection.appendChild(controls);

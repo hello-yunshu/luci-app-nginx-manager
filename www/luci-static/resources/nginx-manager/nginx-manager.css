@@ -34,6 +34,34 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.8em;
+	align-items: center;
+}
+
+/* === Table Action Cell === */
+.nm-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	align-items: center;
+}
+
+/* === Log Controls === */
+.nm-log-controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.6em;
+	align-items: center;
+	margin-bottom: 0.8em;
+}
+
+.nm-log-controls label {
+	white-space: nowrap;
+	font-size: 0.9em;
+}
+
+.nm-log-controls select,
+.nm-log-controls input {
+	max-width: 160px;
 }
 
 /* === Code Block (for modals) === */
@@ -77,15 +105,39 @@
 	color: var(--danger-color);
 }
 
-/* === Danger Zone File Editor === */
+/* === Danger Zone === */
 .nm-danger-file {
-	margin-bottom: 12px;
+	margin-bottom: 1em;
+	padding-bottom: 1em;
+	border-bottom: 1px solid var(--border-color, #ddd);
+}
+
+.nm-danger-file:last-child {
+	border-bottom: none;
+	margin-bottom: 0;
+	padding-bottom: 0;
+}
+
+.nm-danger-file h5 {
+	margin: 0 0 0.5em 0;
 }
 
 .nm-danger-editor {
 	width: 100%;
 	font-family: monospace;
 	min-height: 200px;
+	box-sizing: border-box;
+}
+
+.nm-danger-file .cbi-button {
+	margin-top: 0.5em;
+}
+
+/* === Modal Textarea === */
+.nm-modal-textarea {
+	width: 100%;
+	font-family: monospace;
+	box-sizing: border-box;
 }
 
 /* === Empty State === */

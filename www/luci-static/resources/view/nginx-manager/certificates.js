@@ -125,11 +125,11 @@ return view.extend({
 									ui.showModal(_('Upload Certificate'), [
 										E('div', { 'class': 'cbi-value' }, [
 											E('label', { 'class': 'cbi-value-title' }, _('Certificate (PEM)')),
-											E('textarea', { 'id': 'cert-pem', 'class': 'cbi-input-textarea', 'rows': 10, 'style': 'width: 100%; font-family: monospace;' })
+											E('textarea', { 'id': 'cert-pem', 'class': 'cbi-input-textarea nm-modal-textarea', 'rows': 10 })
 										]),
 										E('div', { 'class': 'cbi-value' }, [
 											E('label', { 'class': 'cbi-value-title' }, _('Private Key (PEM)')),
-											E('textarea', { 'id': 'key-pem', 'class': 'cbi-input-textarea', 'rows': 10, 'style': 'width: 100%; font-family: monospace;' })
+											E('textarea', { 'id': 'key-pem', 'class': 'cbi-input-textarea nm-modal-textarea', 'rows': 10 })
 										]),
 										E('div', { 'class': 'right' }, [
 											E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),

@@ -9,6 +9,16 @@ MANAGED_DIR=""
 CERT_DIR=""
 BACKUP_DIR=""
 NGINX_MANAGER_GEN="/usr/sbin/nginx-manager-gen"
+NGINX_CONF_PATH=""
+
+detect_nginx_conf() {
+	[ -n "${NGINX_CONF_PATH}" ] && return
+	if [ -f /etc/nginx/uci.conf ]; then
+		NGINX_CONF_PATH="/etc/nginx/uci.conf"
+	else
+		NGINX_CONF_PATH="/etc/nginx/nginx.conf"
+	fi
+}
 
 load_global_config() {
 	MANAGED_DIR="$(uci -q get nginx_manager.global.managed_dir)" || MANAGED_DIR="/etc/nginx/conf.d/luci-manager"
@@ -701,8 +711,9 @@ handle_set_core_config_safe() {
 }
 
 handle_get_nginx_T() {
+	detect_nginx_conf
 	local output
-	output="$(nginx -T 2>&1)" || true
+	output="$(nginx -T -c "${NGINX_CONF_PATH}" 2>&1)" || true
 
 	json_init
 	json_add_string "content" "${output}"
@@ -787,13 +798,13 @@ handle_set_file_dangerous() {
 	printf '%s' "${content}" > "${file_path}"
 
 	local test_output
-	test_output="$(nginx -t 2>&1)"
+	test_output="$(nginx -t -c "${NGINX_CONF_PATH}" 2>&1)"
 	if [ $? -ne 0 ]; then
 		local backup_file="${backup_path}/nginx/${file_path#/etc/nginx/}"
 		if [ -f "${backup_file}" ]; then
 			cp "${backup_file}" "${file_path}"
 		fi
-		nginx -t >/dev/null 2>&1
+		nginx -t -c "${NGINX_CONF_PATH}" >/dev/null 2>&1
 		/etc/init.d/nginx reload >/dev/null 2>&1
 
 		json_init
@@ -880,12 +891,12 @@ handle_restore_backup() {
 	[ -f "${backup_path}/config-nginx-manager" ] && cp -a "${backup_path}/config-nginx-manager" "${NGINX_MANAGER_CONFIG}"
 
 	local test_output
-	test_output="$(nginx -t 2>&1)"
+	test_output="$(nginx -t -c "${NGINX_CONF_PATH}" 2>&1)"
 	if [ $? -ne 0 ]; then
 		rm -rf "${MANAGED_DIR:?}"/*
 		cp -a "${pre_restore_path}/nginx/conf.d/luci-manager/"* "${MANAGED_DIR}/" 2>/dev/null
 		cp -a "${pre_restore_path}/config-nginx-manager" "${NGINX_MANAGER_CONFIG}"
-		nginx -t >/dev/null 2>&1
+		nginx -t -c "${NGINX_CONF_PATH}" >/dev/null 2>&1
 		/etc/init.d/nginx reload >/dev/null 2>&1
 
 		json_init
@@ -1004,6 +1015,9 @@ case "$1" in
 		json_add_object "restart_nginx"
 		json_close_object
 
+		json_add_object "start_nginx"
+		json_close_object
+
 		json_add_object "list_certs"
 		json_close_object
 
@@ -1113,6 +1127,7 @@ case "$1" in
 			test_config)        "${NGINX_MANAGER_GEN}" --test-config ;;
 			reload_nginx)       "${NGINX_MANAGER_GEN}" --reload ;;
 			restart_nginx)      "${NGINX_MANAGER_GEN}" --restart ;;
+			start_nginx)        "${NGINX_MANAGER_GEN}" --start ;;
 			list_sites)         handle_list_sites ;;
 			get_site)           handle_get_site ;;
 			set_site)           handle_set_site ;;

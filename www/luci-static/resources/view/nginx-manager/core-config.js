@@ -94,7 +94,7 @@ return view.extend({
 			var readonlySection = E('div', { 'class': 'cbi-section' });
 			readonlySection.appendChild(E('h3', {}, _('Read-only View')));
 
-			var readonlyBtns = E('div', { 'class': 'nm-btn-group' });
+			var readonlyBtns = E('div', { 'class': 'nm-btn-group', 'style': 'margin-bottom: 0.5em;' });
 
 			readonlyBtns.appendChild(E('button', {
 				'class': 'cbi-button',
@@ -137,6 +137,7 @@ return view.extend({
 
 			var dangerToggle = E('button', {
 				'class': 'cbi-button cbi-button-reset',
+				'style': 'margin-bottom: 1em;',
 				'click': function() {
 					var current = uci.get('nginx_manager', 'global', 'dangerous_core_edit') || '0';
 					var newVal = current === '1' ? '0' : '1';
@@ -182,7 +183,6 @@ return view.extend({
 
 					fileDiv.appendChild(E('button', {
 						'class': 'cbi-button cbi-button-reset',
-						'style': 'margin-top: 4px;',
 						'click': function() {
 							ui.showModal(_('Confirm Save'), [
 								E('p', {}, _('Saving this file may break Nginx configuration. A backup will be created first. Continue?')),
@@ -243,6 +243,8 @@ return view.extend({
 			} else {
 				ui.addNotification(null, E('p', {}, _('Core config saved and applied')), 'info');
 			}
+		}).catch(function(err) {
+			ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || JSON.stringify(err))), 'error');
 		});
 	},
 

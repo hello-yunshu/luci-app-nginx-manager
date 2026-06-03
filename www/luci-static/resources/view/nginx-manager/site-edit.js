@@ -15,6 +15,9 @@ var callGetSite = rpc.declare({
 var callSetSite = rpc.declare({
 	object: 'nginx_manager',
 	method: 'set_site',
+	params: ['id', 'name', 'mode', 'server_name', 'listen', 'proxy_pass', 'root', 'index',
+		'websocket', 'redirect_https', 'proxy_host', 'proxy_xff', 'proxy_xfp', 'proxy_xri',
+		'ssl_cert', 'access_log', 'error_log', 'custom_server_block', 'redirect_target', 'enabled'],
 	expect: {}
 });
 
@@ -159,6 +162,7 @@ return view.extend({
 		listenField.appendChild(E('button', {
 			'class': 'cbi-button',
 			'type': 'button',
+			'style': 'margin-top: 4px;',
 			'click': function() { listenItems.appendChild(createListenItem('')); }
 		}, '+'));
 		listenContainer.appendChild(listenField);
@@ -254,7 +258,7 @@ return view.extend({
 		customSection = E('div', { 'class': 'cbi-section' });
 		customSection.appendChild(E('h3', {}, _('Custom Server Block')));
 
-		var customBlockInput = E('textarea', { 'class': 'cbi-input-textarea', 'rows': 15, 'style': 'font-family:monospace;width:100%;' });
+		var customBlockInput = E('textarea', { 'class': 'cbi-input-textarea nm-modal-textarea', 'rows': 15 });
 		if (!isNew && site && site.custom_server_block) customBlockInput.value = site.custom_server_block;
 		customSection.appendChild(makeField('opt-custom_server_block', _('Custom Server Block Content'), customBlockInput));
 
@@ -342,12 +346,35 @@ return view.extend({
 			data.access_log          = document.getElementById('opt-access_log').checked ? '1' : '0';
 			data.error_log           = document.getElementById('opt-error_log').checked ? '1' : '0';
 
-			return callSetSite(data).then(function(result) {
+			return callSetSite(
+				data.id,
+				data.name,
+				data.mode,
+				data.server_name,
+				data.listen,
+				data.proxy_pass,
+				data.root,
+				data.index,
+				data.websocket,
+				data.redirect_https,
+				data.proxy_host,
+				data.proxy_xff,
+				data.proxy_xfp,
+				data.proxy_xri,
+				data.ssl_cert,
+				data.access_log,
+				data.error_log,
+				data.custom_server_block,
+				data.redirect_target,
+				data.enabled
+			).then(function(result) {
 				if (result && result.error) {
 					ui.addNotification(null, E('p', {}, _('Configuration test failed') + ': ' + (result.detail || result.error)), 'error');
 				} else {
 					ui.addNotification(null, E('p', {}, _('Site saved successfully')), 'info');
 				}
+			}).catch(function(err) {
+				ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || JSON.stringify(err))), 'error');
 			});
 		}
 
