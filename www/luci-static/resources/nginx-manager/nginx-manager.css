@@ -31,10 +31,14 @@
 
 /* === Button Group === */
 .nm-btn-group {
-	display: flex;
-	flex-wrap: wrap;
+	display: flex !important;
+	flex-wrap: wrap !important;
 	gap: 0.8em;
 	align-items: center;
+}
+
+.nm-btn-group .cbi-button {
+	white-space: nowrap;
 }
 
 /* === Table Action Cell === */

@@ -8,7 +8,7 @@
 var callListBackups = rpc.declare({
 	object: 'nginx_manager',
 	method: 'list_backups',
-	expect: { backups: [] }
+	expect: {}
 });
 
 var callCreateBackup = rpc.declare({

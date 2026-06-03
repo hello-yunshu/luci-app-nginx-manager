@@ -8,7 +8,7 @@
 var callListSites = rpc.declare({
 	object: 'nginx_manager',
 	method: 'list_sites',
-	expect: { sites: [] }
+	expect: {}
 });
 
 var callDeleteSite = rpc.declare({

@@ -24,7 +24,7 @@ var callSetSite = rpc.declare({
 var callListCerts = rpc.declare({
 	object: 'nginx_manager',
 	method: 'list_certs',
-	expect: { certs: [] }
+	expect: {}
 });
 
 var callRenderSite = rpc.declare({
