@@ -186,7 +186,6 @@ return view.extend({
 								E('p', {}, _('Saving this file may break Nginx configuration. A backup will be created first. Continue?')),
 								E('div', { 'class': 'right' }, [
 									E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
-									' ',
 									E('button', {
 										'class': 'cbi-button cbi-button-reset',
 										'click': function() {
