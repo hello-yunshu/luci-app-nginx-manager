@@ -29,6 +29,12 @@ var callRestartNginx = rpc.declare({
 	expect: {}
 });
 
+var callStartNginx = rpc.declare({
+	object: 'nginx_manager',
+	method: 'start_nginx',
+	expect: {}
+});
+
 var callCheckCertExpiry = rpc.declare({
 	object: 'nginx_manager',
 	method: 'check_cert_expiry',
@@ -186,17 +192,33 @@ return view.extend({
 
 		var btnGroup = E('div', { 'class': 'nm-btn-group' });
 
-		btnGroup.appendChild(E('button', {
-			'class': 'cbi-button cbi-button-apply',
-			'click': function() {
-				var btn = this;
-				setBusy(btn);
-				return safeApply(callReloadNginx).then(function() {
-					resetBusy(btn);
-					reloadSoon();
-				});
-			}
-		}, '\u21BB ' + _('Reload')));
+		if (!running) {
+			btnGroup.appendChild(E('button', {
+				'class': 'cbi-button cbi-button-apply',
+				'click': function() {
+					var btn = this;
+					setBusy(btn);
+					return safeApply(callStartNginx).then(function() {
+						resetBusy(btn);
+						reloadSoon();
+					});
+				}
+			}, '\u25B6 ' + _('Start')));
+		}
+
+		if (running) {
+			btnGroup.appendChild(E('button', {
+				'class': 'cbi-button cbi-button-apply',
+				'click': function() {
+					var btn = this;
+					setBusy(btn);
+					return safeApply(callReloadNginx).then(function() {
+						resetBusy(btn);
+						reloadSoon();
+					});
+				}
+			}, '\u21BB ' + _('Reload')));
+		}
 
 		btnGroup.appendChild(E('button', {
 			'class': 'cbi-button cbi-button-apply',
@@ -215,9 +237,18 @@ return view.extend({
 			'click': function() {
 				var btn = this;
 				setBusy(btn);
-				return safeApply(callTestConfig).then(function() {
+				return callTestConfig().then(function(result) {
 					resetBusy(btn);
-					reloadSoon();
+					var output = (result && result.output) || _('No output');
+					ui.showModal(_('Config Test Result'), [
+						E('pre', { 'class': 'nm-code-block' }, output),
+						E('div', { 'class': 'right', 'style': 'margin-top: 8px;' }, [
+							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); reloadSoon(); } }, _('OK'))
+						])
+					]);
+				}).catch(function(err) {
+					resetBusy(btn);
+					ui.addNotification(null, E('p', {}, _('Error: ') + (err.message || JSON.stringify(err))));
 				});
 			}
 		}, _('Test Config')));

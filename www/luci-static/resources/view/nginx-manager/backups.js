@@ -91,11 +91,10 @@ return view.extend({
 			row.appendChild(E('td', {}, backup.timestamp || '-'));
 			row.appendChild(E('td', {}, backup.source || '-'));
 
-			var actionsCell = E('td');
+			var actionsCell = E('td', { 'class': 'nm-actions' });
 
 			actionsCell.appendChild(E('button', {
 				'class': 'cbi-button',
-				'style': 'margin-right: 4px;',
 				'click': function() {
 					callDiffBackup(backup.id).then(function(result) {
 						ui.showModal(_('Compare with Current'), [
@@ -110,7 +109,6 @@ return view.extend({
 
 			actionsCell.appendChild(E('button', {
 				'class': 'cbi-button cbi-button-apply',
-				'style': 'margin-right: 4px;',
 				'click': function() {
 					ui.showModal(_('Confirm Restore'), [
 						E('div', { 'class': 'alert-message warning' },

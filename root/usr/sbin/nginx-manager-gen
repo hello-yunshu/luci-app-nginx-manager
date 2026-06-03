@@ -11,6 +11,7 @@ AUTO_BACKUP=""
 TEST_BEFORE_RELOAD=""
 MAX_BACKUPS=""
 LOCK_FILE="/tmp/nginx-manager-gen.lock"
+NGINX_CONF_PATH=""
 
 log_info() {
 	logger -t nginx-manager -p daemon.info "$1"
@@ -60,8 +61,30 @@ validate_path() {
 	esac
 }
 
+detect_nginx_conf() {
+	[ -n "${NGINX_CONF_PATH}" ] && return
+	if [ -f /etc/nginx/uci.conf ]; then
+		NGINX_CONF_PATH="/etc/nginx/uci.conf"
+	else
+		NGINX_CONF_PATH="/etc/nginx/nginx.conf"
+	fi
+}
+
 is_nginx_running() {
-	pgrep -x nginx >/dev/null 2>&1
+	# Method 1: PID file (most reliable on OpenWrt)
+	local pid_file="/var/run/nginx.pid"
+	if [ -f "${pid_file}" ]; then
+		local pid
+		pid="$(cat "${pid_file}" 2>/dev/null)"
+		if [ -n "${pid}" ] && kill -0 "${pid}" 2>/dev/null; then
+			return 0
+		fi
+	fi
+	# Method 2: pgrep
+	pgrep -x nginx >/dev/null 2>&1 && return 0
+	# Method 3: ps grep (BusyBox compatible fallback)
+	ps | grep -q '[n]ginx: master' && return 0
+	return 1
 }
 
 get_nginx_version() {
@@ -173,7 +196,8 @@ restore_latest_backup() {
 }
 
 test_nginx_config() {
-	nginx -t 2>&1
+	detect_nginx_conf
+	nginx -t -c "${NGINX_CONF_PATH}" 2>&1
 	return $?
 }
 
@@ -807,8 +831,9 @@ do_check_env() {
 }
 
 do_test_config() {
+	detect_nginx_conf
 	local test_output
-	test_output="$(nginx -t 2>&1)"
+	test_output="$(nginx -t -c "${NGINX_CONF_PATH}" 2>&1)"
 	local test_exit=$?
 
 	if [ "${test_exit}" -eq 0 ]; then
@@ -860,6 +885,23 @@ do_restart() {
 		"$(json_escape "${restart_output}")"
 }
 
+do_start() {
+	local start_output
+	start_output="$(/etc/init.d/nginx start 2>&1)"
+	local start_exit=$?
+
+	if [ "${start_exit}" -eq 0 ]; then
+		log_info "Nginx started"
+		date '+%Y-%m-%d %H:%M:%S' > /tmp/nginx-manager-last-reload
+	else
+		log_err "Nginx start failed: ${start_output}"
+	fi
+
+	printf '{"success":"%s","output":"%s"}\n' \
+		"$([ "${start_exit}" -eq 0 ] && echo '1' || echo '0')" \
+		"$(json_escape "${start_output}")"
+}
+
 case "$1" in
 	generate)
 		generate_all
@@ -892,8 +934,11 @@ case "$1" in
 	--restart)
 		do_restart
 		;;
+	--start)
+		do_start
+		;;
 	*)
-		echo "Usage: $0 {generate|apply|render <section>|test|backup|--status|--check-env|--test-config|--reload|--restart}" >&2
+		echo "Usage: $0 {generate|apply|render <section>|test|backup|--status|--check-env|--test-config|--reload|--restart|--start}" >&2
 		exit 1
 		;;
 esac

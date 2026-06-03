@@ -42,7 +42,9 @@ var callRenderSite = rpc.declare({
 var callSetSite = rpc.declare({
 	object: 'nginx_manager',
 	method: 'set_site',
-	params: ['id', 'name', 'mode', 'enabled'],
+	params: ['id', 'name', 'mode', 'server_name', 'listen', 'proxy_pass', 'root', 'index',
+		'websocket', 'redirect_https', 'proxy_host', 'proxy_xff', 'proxy_xfp', 'proxy_xri',
+		'ssl_cert', 'access_log', 'error_log', 'custom_server_block', 'redirect_target', 'enabled'],
 	expect: {}
 });
 
@@ -115,7 +117,7 @@ return view.extend({
 								}
 								ui.hideModal();
 								ui.showModal(_('Creating site...'), [E('p', {}, _('Please wait...'))]);
-								callSetSite(name, name, mode, '1').then(function(result) {
+								callSetSite(name, name, mode, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '1').then(function(result) {
 									ui.hideModal();
 									if (result && result.error) {
 										ui.addNotification(null, E('p', {}, result.error), 'error');
@@ -172,11 +174,10 @@ return view.extend({
 
 			row.appendChild(E('td', {}, site.proxy_pass || site.root || '-'));
 
-			var actionsCell = E('td');
+			var actionsCell = E('td', { 'class': 'nm-actions' });
 
 			actionsCell.appendChild(E('button', {
 				'class': 'cbi-button',
-				'style': 'margin-right: 4px;',
 				'click': function() {
 					location.href = L.url('admin/services/nginx-manager/sites/edit', site.id);
 				}
@@ -184,7 +185,6 @@ return view.extend({
 
 			actionsCell.appendChild(E('button', {
 				'class': 'cbi-button',
-				'style': 'margin-right: 4px;',
 				'click': function() {
 					callRenderSite(site.id).then(function(result) {
 						ui.showModal(_('Generated Config'), [
@@ -200,7 +200,6 @@ return view.extend({
 			if (site.enabled === '1') {
 				actionsCell.appendChild(E('button', {
 					'class': 'cbi-button cbi-button-reset',
-					'style': 'margin-right: 4px;',
 					'click': function() {
 						callDisableSite(site.id).then(function() {
 							ui.addNotification(null, E('p', {}, _('Site disabled')), 'info');
@@ -211,7 +210,6 @@ return view.extend({
 			} else {
 				actionsCell.appendChild(E('button', {
 					'class': 'cbi-button cbi-button-apply',
-					'style': 'margin-right: 4px;',
 					'click': function() {
 						callEnableSite(site.id).then(function() {
 							ui.addNotification(null, E('p', {}, _('Site enabled')), 'info');
