@@ -69,10 +69,7 @@ return view.extend({
 
 		var page = E('div', { 'class': 'cbi-map' });
 
-		page.appendChild(E('link', {
-			'rel': 'stylesheet',
-			'href': L.resource('nginx-manager/nginx-manager.css')
-		}));
+		utils.loadSharedCSS();
 
 		page.appendChild(E('h2', { 'class': 'cbi-map-title' }, isNew ? _('Add Site') : _('Edit Site')));
 

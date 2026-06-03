@@ -131,10 +131,7 @@ return view.extend({
 		var container = E('div', { 'class': 'cbi-map' });
 		container.appendChild(E('style', {}, css));
 
-		container.appendChild(E('link', {
-			'rel': 'stylesheet',
-			'href': L.resource('nginx-manager/nginx-manager.css')
-		}));
+		utils.loadSharedCSS();
 
 		container.appendChild(E('h2', { 'class': 'cbi-map-title' }, _('Nginx Manager')));
 
