@@ -4,6 +4,7 @@
 'require view';
 'require ui';
 'require rpc';
+'require nginx-manager/utils as utils';
 
 var callGetSite = rpc.declare({
 	object: 'nginx_manager',
@@ -378,7 +379,10 @@ return view.extend({
 			});
 		}
 
-		return page;
+		return utils.appendFooter(page, {
+			project: 'Nginx Manager',
+			repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
+		});
 	},
 
 	handleSave: null,

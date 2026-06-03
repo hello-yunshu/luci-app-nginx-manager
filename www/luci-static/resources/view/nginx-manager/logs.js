@@ -4,6 +4,7 @@
 'require view';
 'require ui';
 'require rpc';
+'require nginx-manager/utils as utils';
 
 var callGetLogs = rpc.declare({
 	object: 'nginx_manager',
@@ -138,7 +139,10 @@ return view.extend({
 			logOutput.className = 'nm-log-area is-empty';
 		});
 
-		return page;
+		return utils.appendFooter(page, {
+			project: 'Nginx Manager',
+			repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
+		});
 	},
 
 	handleSave: null,

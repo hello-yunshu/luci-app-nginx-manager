@@ -4,6 +4,7 @@
 'require view';
 'require ui';
 'require rpc';
+'require nginx-manager/utils as utils';
 'require form';
 'require uci';
 
@@ -216,7 +217,10 @@ return view.extend({
 
 			node.appendChild(dangerZone);
 
-			return node;
+			return utils.appendFooter(node, {
+				project: 'Nginx Manager',
+				repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
+			});
 		});
 	},
 

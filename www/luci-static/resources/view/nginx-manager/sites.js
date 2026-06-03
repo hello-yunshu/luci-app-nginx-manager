@@ -4,6 +4,7 @@
 'require view';
 'require ui';
 'require rpc';
+'require nginx-manager/utils as utils';
 
 var callListSites = rpc.declare({
 	object: 'nginx_manager',
@@ -143,7 +144,10 @@ return view.extend({
 				E('p', { 'class': 'nm-empty-state' },
 					_('No sites configured. Click "Add Site" to create one.'))
 			]));
-			return container;
+			return utils.appendFooter(container, {
+				project: 'Nginx Manager',
+				repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
+			});
 		}
 
 		var table = E('table', { 'class': 'table' });
@@ -252,7 +256,10 @@ return view.extend({
 
 		container.appendChild(E('div', { 'class': 'cbi-section' }, [table]));
 
-		return container;
+		return utils.appendFooter(container, {
+			project: 'Nginx Manager',
+			repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
+		});
 	},
 
 	handleSave: null,
