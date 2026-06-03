@@ -113,13 +113,18 @@ _count_site() {
 
 count_non_managed_configs() {
 	local count="0"
+	local names=""
 	if [ -d /etc/nginx/conf.d ]; then
 		for f in /etc/nginx/conf.d/*.conf; do
 			[ -f "$f" ] || continue
-			head -3 "$f" | grep -q "luci-app-nginx-manager" || count="$((count + 1))"
+			head -3 "$f" | grep -q "luci-app-nginx-manager" || {
+				count="$((count + 1))"
+				names="${names:+${names},}$(basename "$f")"
+			}
 		done
 	fi
 	echo "${count}"
+	echo "${names}"
 }
 
 get_cert_expiry() {
@@ -739,8 +744,10 @@ do_status() {
 	local managed
 	managed="$(count_managed_sites)"
 
-	local non_managed
-	non_managed="$(count_non_managed_configs)"
+	local non_managed_output non_managed non_managed_names
+	non_managed_output="$(count_non_managed_configs)"
+	non_managed="$(echo "${non_managed_output}" | head -1)"
+	non_managed_names="$(echo "${non_managed_output}" | sed -n '2p')"
 
 	local last_test="unknown"
 	if [ -f /tmp/nginx-manager-last-test ]; then
@@ -752,13 +759,14 @@ do_status() {
 		last_reload="$(cat /tmp/nginx-manager-last-reload)"
 	fi
 
-	printf '{"running":"%s","version":"%s","ssl_module":"%s","listening_ports":"%s","managed_sites":"%s","non_managed_configs":"%s","last_test_result":"%s","last_reload":"%s"}\n' \
+	printf '{"running":"%s","version":"%s","ssl_module":"%s","listening_ports":"%s","managed_sites":"%s","non_managed_configs":"%s","non_managed_names":"%s","last_test_result":"%s","last_reload":"%s"}\n' \
 		"${running}" \
 		"$(json_escape "${version}")" \
 		"${ssl_mod}" \
 		"$(json_escape "${ports}")" \
 		"${managed}" \
 		"${non_managed}" \
+		"$(json_escape "${non_managed_names}")" \
 		"$(json_escape "${last_test}")" \
 		"$(json_escape "${last_reload}")"
 }
