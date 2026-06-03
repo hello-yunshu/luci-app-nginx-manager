@@ -15,7 +15,7 @@ var callGetLogs = rpc.declare({
 var callListSites = rpc.declare({
 	object: 'nginx_manager',
 	method: 'list_sites',
-	expect: { sites: [] }
+	expect: {}
 });
 
 return view.extend({

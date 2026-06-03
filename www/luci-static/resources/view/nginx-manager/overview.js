@@ -38,7 +38,7 @@ var callStartNginx = rpc.declare({
 var callCheckCertExpiry = rpc.declare({
 	object: 'nginx_manager',
 	method: 'check_cert_expiry',
-	expect: { certificates: [] }
+	expect: {}
 });
 
 var callCheckEnv = rpc.declare({

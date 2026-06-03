@@ -8,7 +8,7 @@
 var callListCerts = rpc.declare({
 	object: 'nginx_manager',
 	method: 'list_certs',
-	expect: { certs: [] }
+	expect: {}
 });
 
 var callDeleteCert = rpc.declare({
