@@ -4,6 +4,7 @@
 'require view';
 'require ui';
 'require rpc';
+'require nginx-manager/utils as utils';
 
 var callListBackups = rpc.declare({
 	object: 'nginx_manager',
@@ -72,7 +73,10 @@ return view.extend({
 			section.appendChild(E('div', { 'class': 'nm-empty-state' },
 				_('No backups available.')));
 			page.appendChild(section);
-			return page;
+			return utils.appendFooter(page, {
+			project: 'Nginx Manager',
+			repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
+		});
 		}
 
 		var table = E('table', { 'class': 'table' });
@@ -145,7 +149,10 @@ return view.extend({
 		section.appendChild(table);
 		page.appendChild(section);
 
-		return page;
+		return utils.appendFooter(page, {
+			project: 'Nginx Manager',
+			repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
+		});
 	},
 
 	handleSave: null,
