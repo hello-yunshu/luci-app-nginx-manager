@@ -111,6 +111,10 @@ var css = `
 	.nm-stat-card .nm-stat-label {
 		font-size: 0.85em; color: var(--subtext-color, #666); margin-top: 0.3em;
 	}
+	.nm-stat-card .nm-stat-detail {
+		font-size: 0.75em; color: color-mix(in srgb, var(--subtext-color, #666) 70%, transparent); margin-top: 0.4em;
+		word-break: break-all;
+	}
 `;
 
 return view.extend({
@@ -161,10 +165,15 @@ return view.extend({
 		]));
 
 		var nonManagedCount = parseInt(status.non_managed_configs) || 0;
-		statsGrid.appendChild(E('div', { 'class': 'cbi-section nm-stat-card' }, [
+		var nonManagedNames = (status.non_managed_names || '').split(',').filter(Boolean);
+		var nonManagedChildren = [
 			E('div', { 'class': 'nm-stat-value' + (nonManagedCount > 0 ? ' orange' : '') }, String(nonManagedCount)),
 			E('div', { 'class': 'nm-stat-label' }, _('Non-Managed Configs'))
-		]));
+		];
+		if (nonManagedCount > 0 && nonManagedNames.length > 0) {
+			nonManagedChildren.push(E('div', { 'class': 'nm-stat-detail' }, nonManagedNames.join(', ')));
+		}
+		statsGrid.appendChild(E('div', { 'class': 'cbi-section nm-stat-card' }, nonManagedChildren));
 
 		var sslLabel = status.ssl_module === '1' ? _('Enabled') : _('Disabled');
 		var sslClass = status.ssl_module === '1' ? 'nm-stat-value green' : 'nm-stat-value orange';

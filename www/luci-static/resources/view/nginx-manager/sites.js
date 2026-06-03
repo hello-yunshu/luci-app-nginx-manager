@@ -78,24 +78,26 @@ return view.extend({
 		headerSection.appendChild(E('button', {
 			'class': 'cbi-button cbi-button-apply',
 			'click': function() {
+				var nameInput = E('input', {
+					'type': 'text',
+					'id': 'new-site-name',
+					'placeholder': 'my-site',
+					'class': 'cbi-input-text'
+				});
+				var modeSelect = E('select', { 'id': 'new-site-mode', 'class': 'cbi-input-select' }, [
+					E('option', { 'value': 'reverse_proxy' }, _('Reverse Proxy')),
+					E('option', { 'value': 'static' }, _('Static Website')),
+					E('option', { 'value': 'custom' }, _('Custom Server Block')),
+					E('option', { 'value': 'redirect' }, _('Redirect'))
+				]);
 				ui.showModal(_('Add Site'), [
 					E('div', { 'class': 'cbi-value' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('Site Name')),
-						E('input', {
-							'type': 'text',
-							'id': 'new-site-name',
-							'placeholder': 'my-site',
-							'class': 'cbi-input-text'
-						})
+						nameInput
 					]),
 					E('div', { 'class': 'cbi-value' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('Type')),
-						E('select', { 'id': 'new-site-mode', 'class': 'cbi-input-select' }, [
-							E('option', { 'value': 'reverse_proxy' }, _('Reverse Proxy')),
-							E('option', { 'value': 'static' }, _('Static Website')),
-							E('option', { 'value': 'custom' }, _('Custom Server Block')),
-							E('option', { 'value': 'redirect' }, _('Redirect'))
-						])
+						modeSelect
 					]),
 					E('div', { 'class': 'right' }, [
 						E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
@@ -103,8 +105,8 @@ return view.extend({
 						E('button', {
 							'class': 'cbi-button cbi-button-apply',
 							'click': function() {
-								var name = document.getElementById('new-site-name').value.trim();
-								var mode = document.getElementById('new-site-mode').value;
+								var name = nameInput.value.trim();
+								var mode = modeSelect.value;
 								if (!name) {
 									ui.addNotification(null, E('p', {}, _('Site name is required')), 'error');
 									return;

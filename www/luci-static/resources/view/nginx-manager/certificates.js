@@ -71,21 +71,30 @@ return view.extend({
 		headerSection.appendChild(E('button', {
 			'class': 'cbi-button cbi-button-apply',
 			'click': function() {
+				var certNameInput = E('input', { 'type': 'text', 'id': 'new-cert-name', 'class': 'cbi-input-text' });
+				var certTypeSelect = E('select', { 'id': 'new-cert-type', 'class': 'cbi-input-select' }, [
+					E('option', { 'value': 'manual' }, _('Manual')),
+					E('option', { 'value': 'self_signed' }, _('Self-Signed Certificate'))
+				]);
+				var certDomainInput = E('input', { 'type': 'text', 'id': 'new-cert-domain', 'class': 'cbi-input-text' });
+
+				certTypeSelect.addEventListener('change', function() {
+					var domainRow = document.getElementById('cert-domain-row');
+					if (domainRow) domainRow.style.display = certTypeSelect.value === 'self_signed' ? '' : 'none';
+				});
+
 				ui.showModal(_('Add Certificate'), [
 					E('div', { 'class': 'cbi-value' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('Certificate Name')),
-						E('input', { 'type': 'text', 'id': 'new-cert-name', 'class': 'cbi-input-text' })
+						certNameInput
 					]),
 					E('div', { 'class': 'cbi-value' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('Type')),
-						E('select', { 'id': 'new-cert-type', 'class': 'cbi-input-select' }, [
-							E('option', { 'value': 'manual' }, _('Manual')),
-							E('option', { 'value': 'self_signed' }, _('Self-Signed Certificate'))
-						])
+						certTypeSelect
 					]),
 					E('div', { 'class': 'cbi-value', 'id': 'cert-domain-row' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('Domain')),
-						E('input', { 'type': 'text', 'id': 'new-cert-domain', 'class': 'cbi-input-text' })
+						certDomainInput
 					]),
 					E('div', { 'class': 'right' }, [
 						E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
@@ -93,9 +102,9 @@ return view.extend({
 						E('button', {
 							'class': 'cbi-button cbi-button-apply',
 							'click': function() {
-								var certName = document.getElementById('new-cert-name').value.trim();
-								var certType = document.getElementById('new-cert-type').value;
-								var certDomain = document.getElementById('new-cert-domain').value.trim();
+								var certName = certNameInput.value.trim();
+								var certType = certTypeSelect.value;
+								var certDomain = certDomainInput.value.trim();
 
 								if (!certName) {
 									ui.addNotification(null, E('p', {}, _('Certificate name is required')), 'error');
@@ -120,14 +129,16 @@ return view.extend({
 										}
 									});
 								} else {
+									var certPemInput = E('textarea', { 'id': 'cert-pem', 'class': 'cbi-input-textarea nm-modal-textarea', 'rows': 10 });
+									var keyPemInput = E('textarea', { 'id': 'key-pem', 'class': 'cbi-input-textarea nm-modal-textarea', 'rows': 10 });
 									ui.showModal(_('Upload Certificate'), [
 										E('div', { 'class': 'cbi-value' }, [
 											E('label', { 'class': 'cbi-value-title' }, _('Certificate (PEM)')),
-											E('textarea', { 'id': 'cert-pem', 'class': 'cbi-input-textarea nm-modal-textarea', 'rows': 10 })
+											certPemInput
 										]),
 										E('div', { 'class': 'cbi-value' }, [
 											E('label', { 'class': 'cbi-value-title' }, _('Private Key (PEM)')),
-											E('textarea', { 'id': 'key-pem', 'class': 'cbi-input-textarea nm-modal-textarea', 'rows': 10 })
+											keyPemInput
 										]),
 										E('div', { 'class': 'right' }, [
 											E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
@@ -135,8 +146,8 @@ return view.extend({
 											E('button', {
 												'class': 'cbi-button cbi-button-apply',
 												'click': function() {
-													var certPem = document.getElementById('cert-pem').value;
-													var keyPem = document.getElementById('key-pem').value;
+													var certPem = certPemInput.value;
+													var keyPem = keyPemInput.value;
 													if (!certPem || !keyPem) {
 														ui.addNotification(null, E('p', {}, _('Both certificate and key are required')), 'error');
 														return;
@@ -198,7 +209,7 @@ return view.extend({
 			statusCell.appendChild(E('span', { 'class': certStatusClass(cert.status) }, certStatusLabel(cert.status)));
 			row.appendChild(statusCell);
 
-			var actionsCell = E('td');
+			var actionsCell = E('td', { 'class': 'nm-actions' });
 
 			actionsCell.appendChild(E('button', {
 				'class': 'cbi-button cbi-button-reset',

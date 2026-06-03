@@ -32,6 +32,13 @@ var callDiffBackup = rpc.declare({
 	expect: {}
 });
 
+var callDeleteBackup = rpc.declare({
+	object: 'nginx_manager',
+	method: 'delete_backup',
+	params: ['id'],
+	expect: {}
+});
+
 return view.extend({
 	load: function() {
 		return callListBackups();
@@ -137,6 +144,33 @@ return view.extend({
 				]);
 			}
 		}, '\u21A9 ' + _('Restore')));
+
+			actionsCell.appendChild(E('button', {
+				'class': 'cbi-button cbi-button-reset',
+				'click': function() {
+					ui.showModal(_('Confirm Delete'), [
+						E('p', {}, _('Are you sure you want to delete this backup?')),
+						E('div', { 'class': 'right' }, [
+							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+							' ',
+							E('button', {
+								'class': 'cbi-button cbi-button-reset',
+								'click': function() {
+									ui.hideModal();
+									callDeleteBackup(backup.id).then(function(result) {
+										if (result && result.error) {
+											ui.addNotification(null, E('p', {}, result.error), 'error');
+										} else {
+											ui.addNotification(null, E('p', {}, _('Backup deleted')), 'info');
+											setTimeout(function() { location.reload(); }, 500);
+										}
+									});
+								}
+							}, _('Delete'))
+						])
+					]);
+				}
+			}, _('Delete')));
 
 			row.appendChild(actionsCell);
 			tbody.appendChild(row);

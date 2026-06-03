@@ -39,14 +39,19 @@
 
 .nm-btn-group .cbi-button {
 	white-space: nowrap;
+	margin: 0;
 }
 
 /* === Table Action Cell === */
 .nm-actions {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 4px;
+	gap: 0.5em;
 	align-items: center;
+}
+
+.nm-actions .cbi-button {
+	margin: 0;
 }
 
 /* === Log Controls === */
@@ -212,17 +217,11 @@
 	text-decoration: none;
 }
 .ys-tool-footer-icon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
+	display: inline-block;
 	width: 1em;
 	height: 1em;
 	flex: 0 0 auto;
-}
-.ys-tool-footer-icon svg {
-	display: block;
-	width: 1em;
-	height: 1em;
+	vertical-align: -0.125em;
 }
 @media (max-width: 600px) {
 	.ys-tool-footer {

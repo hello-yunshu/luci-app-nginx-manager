@@ -939,6 +939,28 @@ handle_diff_backup() {
 	json_dump
 }
 
+handle_delete_backup() {
+	local backup_id
+	json_get_var backup_id "id"
+	[ -z "${backup_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+
+	load_global_config
+
+	local backup_path="${BACKUP_DIR}/${backup_id}"
+	[ -d "${backup_path}" ] || {
+		json_init
+		json_add_string "error" "backup not found"
+		json_dump
+		return
+	}
+
+	rm -rf "${backup_path}"
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
 handle_acme_issue() {
 	json_init
 	json_add_string "error" "not implemented"
@@ -1113,6 +1135,10 @@ case "$1" in
 		json_add_string "id" ""
 		json_close_object
 
+		json_add_object "delete_backup"
+		json_add_string "id" ""
+		json_close_object
+
 		json_dump
 		;;
 	call)
@@ -1154,6 +1180,7 @@ case "$1" in
 			create_backup)      handle_create_backup ;;
 			restore_backup)     handle_restore_backup ;;
 			diff_backup)        handle_diff_backup ;;
+			delete_backup)      handle_delete_backup ;;
 			*)                  json_init; json_add_string "error" "unknown method"; json_dump ;;
 		esac
 		;;
