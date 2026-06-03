@@ -33,6 +33,7 @@
 					"disable_site",
 					"reload_nginx",
 					"restart_nginx",
+					"start_nginx",
 					"set_cert",
 					"delete_cert",
 					"upload_cert",
