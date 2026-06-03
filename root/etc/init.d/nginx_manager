@@ -46,7 +46,8 @@ validate_nginx_manager_site() {
         'access_log:bool:0' \
         'error_log:bool:1' \
         'custom_server_block:string' \
-        'redirect_target:string'
+        'redirect_target:string' \
+        'listen:list(string)'
 }
 
 validate_nginx_manager_cert() {
