@@ -8,7 +8,7 @@ function loadSharedCSS() {
 		var link = E('link', {
 			'id': 'nm-shared-css',
 			'rel': 'stylesheet',
-			'href': L.resource('nginx-manager/nginx-manager.css') + '?v=1.1.0'
+			'href': L.resource('nginx-manager/nginx-manager.css') + '?t=' + Date.now()
 		});
 		document.head.appendChild(link);
 	}
