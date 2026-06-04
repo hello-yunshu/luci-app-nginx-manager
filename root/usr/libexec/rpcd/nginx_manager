@@ -34,10 +34,6 @@ validate_domain() {
 	echo "$1" | grep -qE '^[a-zA-Z0-9._*-]+$'
 }
 
-validate_listen() {
-	echo "$1" | grep -qE '^[0-9A-Za-z_.:\[\]= -]+$'
-}
-
 run_apply_or_error() {
 	local apply_result
 	apply_result="$("${NGINX_MANAGER_GEN}" apply 2>&1)"
@@ -134,7 +130,7 @@ handle_get_site() {
 	json_add_string "id" "${site_id}"
 
 	local opt
-	for opt in name mode server_name proxy_pass root index websocket redirect_https \
+	for opt in name mode server_name listen_addr listen_port proxy_pass root index websocket proxy_type custom_proxy_headers redirect_https \
 		proxy_host proxy_xff proxy_xfp proxy_xri ssl_cert access_log error_log \
 		custom_server_block redirect_target enabled; do
 		local val
@@ -142,11 +138,33 @@ handle_get_site() {
 		json_add_string "${opt}" "${val}"
 	done
 
-	local listen_vals=""
-	local listen_found="0"
-	config_list_foreach "${site_id}" listen _collect_listen
-	if [ "${listen_found}" = "1" ]; then
-		json_add_string "listen" "${listen_vals}"
+	# Backward compatibility: migrate old listen list to listen_addr/listen_port
+	local listen_addr_exists listen_port_exists
+	listen_addr_exists="$(uci -q get "nginx_manager.${site_id}.listen_addr")"
+	listen_port_exists="$(uci -q get "nginx_manager.${site_id}.listen_port")"
+
+	if [ -z "${listen_addr_exists}" ] && [ -z "${listen_port_exists}" ]; then
+		# No new fields, check for old listen list
+		local listen_vals="" listen_found="0"
+		config_list_foreach "${site_id}" listen _collect_listen
+		if [ "${listen_found}" = "1" ]; then
+			# Parse first listen value to extract addr and port
+			local first_listen="${listen_vals%%,*}"
+			local addr="" port=""
+			case "${first_listen}" in
+				*:*)
+					addr="${first_listen%:*}"
+					port="${first_listen##*:}"
+					;;
+				*)
+					port="${first_listen}"
+					;;
+			esac
+			# Strip ssl and other options from port
+			port="$(echo "${port}" | sed 's/ .*//')"
+			json_add_string "listen_addr" "${addr}"
+			json_add_string "listen_port" "${port}"
+		fi
 	fi
 
 	json_dump
@@ -163,19 +181,22 @@ _collect_listen() {
 
 handle_set_site() {
 	local site_id name mode server_name proxy_pass root index
-	local websocket redirect_https proxy_host proxy_xff proxy_xfp proxy_xri
+	local websocket proxy_type custom_proxy_headers redirect_https proxy_host proxy_xff proxy_xfp proxy_xri
 	local ssl_cert access_log error_log custom_server_block redirect_target enabled
-	local listen
+	local listen_addr listen_port
 
 	json_get_var site_id "id"
 	json_get_var name "name"
 	json_get_var mode "mode"
 	json_get_var server_name "server_name"
-	json_get_var listen "listen"
+	json_get_var listen_addr "listen_addr"
+	json_get_var listen_port "listen_port"
 	json_get_var proxy_pass "proxy_pass"
 	json_get_var root "root"
 	json_get_var index "index"
 	json_get_var websocket "websocket"
+	json_get_var proxy_type "proxy_type"
+	json_get_var custom_proxy_headers "custom_proxy_headers"
 	json_get_var redirect_https "redirect_https"
 	json_get_var proxy_host "proxy_host"
 	json_get_var proxy_xff "proxy_xff"
@@ -193,13 +214,23 @@ handle_set_site() {
 	[ -z "${name}" ] && name="${site_id}"
 	validate_name "${name}" || { json_init; json_add_string "error" "invalid name"; json_dump; return; }
 
+	case "${mode}" in
+		reverse_proxy|static|custom|redirect|"") ;;
+		*) { json_init; json_add_string "error" "invalid mode"; json_dump; return; } ;;
+	esac
+
 	if [ -n "${server_name}" ]; then
 		validate_domain "${server_name}" || { json_init; json_add_string "error" "invalid server_name"; json_dump; return; }
 	fi
 
+	case "${proxy_type}" in
+		http|grpc|websocket|"") ;;
+		*) { json_init; json_add_string "error" "invalid proxy_type"; json_dump; return; } ;;
+	esac
+
 	if [ "${mode}" = "reverse_proxy" ] && [ -n "${proxy_pass}" ]; then
 		case "${proxy_pass}" in
-			http://*|https://*|unix:*) ;;
+			http://*|https://*|unix:*|grpc://*|grpcs://*) ;;
 			*) { json_init; json_add_string "error" "invalid proxy_pass"; json_dump; return; } ;;
 		esac
 	fi
@@ -211,18 +242,20 @@ handle_set_site() {
 		esac
 	fi
 
-	if [ -n "${listen}" ]; then
-		local old_ifs listen_val
-		old_ifs="${IFS}"
-		IFS=","
-		# shellcheck disable=SC2086
-		set -- ${listen}
-		IFS="${old_ifs}"
-		for listen_val in "$@"; do
-			listen_val="$(echo "${listen_val}" | sed 's/^ *//;s/ *$//')"
-			[ -z "${listen_val}" ] && continue
-			validate_listen "${listen_val}" || { json_init; json_add_string "error" "invalid listen"; json_dump; return; }
-		done
+	if [ -n "${redirect_target}" ]; then
+		case "${redirect_target}" in
+			http://*|https://*|//$*) ;;
+			*) { json_init; json_add_string "error" "invalid redirect_target"; json_dump; return; } ;;
+		esac
+	fi
+
+	if [ -n "${listen_addr}" ]; then
+		echo "${listen_addr}" | grep -qE '^[0-9A-Za-z_.:\[\]-]+$' || { json_init; json_add_string "error" "invalid listen_addr"; json_dump; return; }
+	fi
+
+	if [ -n "${listen_port}" ]; then
+		echo "${listen_port}" | grep -qE '^[0-9]+$' || { json_init; json_add_string "error" "invalid listen_port"; json_dump; return; }
+		[ "${listen_port}" -ge 1 ] && [ "${listen_port}" -le 65535 ] || { json_init; json_add_string "error" "listen_port out of range"; json_dump; return; }
 	fi
 
 	uci set "nginx_manager.${site_id}=site"
@@ -233,6 +266,8 @@ handle_set_site() {
 	[ -n "${root}" ] && uci set "nginx_manager.${site_id}.root=${root}"
 	[ -n "${index}" ] && uci set "nginx_manager.${site_id}.index=${index}"
 	[ -n "${websocket}" ] && uci set "nginx_manager.${site_id}.websocket=${websocket}"
+	[ -n "${proxy_type}" ] && uci set "nginx_manager.${site_id}.proxy_type=${proxy_type}"
+	[ -n "${custom_proxy_headers}" ] && uci set "nginx_manager.${site_id}.custom_proxy_headers=${custom_proxy_headers}"
 	[ -n "${redirect_https}" ] && uci set "nginx_manager.${site_id}.redirect_https=${redirect_https}"
 	[ -n "${proxy_host}" ] && uci set "nginx_manager.${site_id}.proxy_host=${proxy_host}"
 	[ -n "${proxy_xff}" ] && uci set "nginx_manager.${site_id}.proxy_xff=${proxy_xff}"
@@ -244,20 +279,13 @@ handle_set_site() {
 	[ -n "${custom_server_block}" ] && uci set "nginx_manager.${site_id}.custom_server_block=${custom_server_block}"
 	[ -n "${redirect_target}" ] && uci set "nginx_manager.${site_id}.redirect_target=${redirect_target}"
 	[ -n "${enabled}" ] && uci set "nginx_manager.${site_id}.enabled=${enabled}"
+
+	# Migrate old listen list to new listen_addr/listen_port if present
 	uci -q delete "nginx_manager.${site_id}.listen"
-	if [ -n "${listen}" ]; then
-		local old_ifs listen_val
-		old_ifs="${IFS}"
-		IFS=","
-		# shellcheck disable=SC2086
-		set -- ${listen}
-		IFS="${old_ifs}"
-		for listen_val in "$@"; do
-			listen_val="$(echo "${listen_val}" | sed 's/^ *//;s/ *$//')"
-			[ -z "${listen_val}" ] && continue
-			uci add_list "nginx_manager.${site_id}.listen=${listen_val}"
-		done
-	fi
+
+	# Set listen_addr and listen_port (allow empty listen_addr for all-interfaces)
+	uci set "nginx_manager.${site_id}.listen_addr=${listen_addr:-}"
+	uci set "nginx_manager.${site_id}.listen_port=${listen_port:-80}"
 
 	uci commit nginx_manager
 
@@ -994,11 +1022,14 @@ case "$1" in
 		json_add_string "name" ""
 		json_add_string "mode" ""
 		json_add_string "server_name" ""
-		json_add_string "listen" ""
+		json_add_string "listen_addr" ""
+		json_add_string "listen_port" ""
 		json_add_string "proxy_pass" ""
 		json_add_string "root" ""
 		json_add_string "index" ""
 		json_add_string "websocket" ""
+		json_add_string "proxy_type" ""
+		json_add_string "custom_proxy_headers" ""
 		json_add_string "redirect_https" ""
 		json_add_string "proxy_host" ""
 		json_add_string "proxy_xff" ""

@@ -223,7 +223,19 @@ EOF
 
 generate_redirect_block() {
 	local server_name="$1"
-	cat <<EOF
+	local listen_addr="$2"
+
+	if [ -n "${listen_addr}" ]; then
+		cat <<EOF
+server {
+    listen ${listen_addr}:80;
+    server_name ${server_name};
+
+    return 301 https://\$host\$request_uri;
+}
+EOF
+	else
+		cat <<EOF
 server {
     listen 80;
     listen [::]:80;
@@ -232,6 +244,7 @@ server {
     return 301 https://\$host\$request_uri;
 }
 EOF
+	fi
 }
 
 generate_ssl_directives() {
@@ -254,8 +267,8 @@ generate_proxy_headers() {
 	local proxy_xri="$4"
 
 	[ "${proxy_host}" = "1" ] && echo "        proxy_set_header Host \$host;"
-	[ "${proxy_xff}" = "1" ] && echo "        proxy_set_header X-Real-IP \$remote_addr;"
-	[ "${proxy_xri}" = "1" ] && echo "        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;"
+	[ "${proxy_xff}" = "1" ] && echo "        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;"
+	[ "${proxy_xri}" = "1" ] && echo "        proxy_set_header X-Real-IP \$remote_addr;"
 	[ "${proxy_xfp}" = "1" ] && echo "        proxy_set_header X-Forwarded-Proto \$scheme;"
 }
 
@@ -264,23 +277,6 @@ generate_websocket_headers() {
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
 EOF
-}
-
-generate_listen_directives() {
-	local section="$1"
-	local ssl_cert="$2"
-	local listen_ports
-
-	config_get listen_ports "${section}" listen
-	if [ -n "${listen_ports}" ]; then
-		config_list_foreach "${section}" listen _collect_listen_ports
-	elif [ -n "${ssl_cert}" ]; then
-		echo "    listen 443 ssl;"
-		echo "    listen [::]:443 ssl;"
-	else
-		echo "    listen 80;"
-		echo "    listen [::]:80;"
-	fi
 }
 
 generate_log_directives() {
@@ -299,11 +295,30 @@ generate_log_directives() {
 	fi
 }
 
+generate_grpc_headers() {
+	local proxy_host="$1"
+	local proxy_xff="$2"
+	local proxy_xfp="$3"
+	local proxy_xri="$4"
+
+	[ "${proxy_host}" = "1" ] && echo "        grpc_set_header Host \$host;"
+	[ "${proxy_xri}" = "1" ] && echo "        grpc_set_header X-Real-IP \$remote_addr;"
+	[ "${proxy_xff}" = "1" ] && echo "        grpc_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;"
+	[ "${proxy_xfp}" = "1" ] && echo "        grpc_set_header X-Forwarded-Proto \$scheme;"
+}
+
+generate_custom_proxy_headers() {
+	local custom_headers="$1"
+	[ -z "${custom_headers}" ] && return 0
+	echo "${custom_headers}"
+}
+
 generate_reverse_proxy_site() {
 	local section="$1"
 	local name server_name proxy_pass websocket redirect_https
 	local proxy_host proxy_xff proxy_xfp proxy_xri
 	local ssl_cert access_log error_log enabled
+	local proxy_type custom_proxy_headers listen_addr
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
 	server_name="$(uci -q get "nginx_manager.${section}.server_name")" || return 1
@@ -318,13 +333,16 @@ generate_reverse_proxy_site() {
 	access_log="$(uci -q get "nginx_manager.${section}.access_log")" || access_log="0"
 	error_log="$(uci -q get "nginx_manager.${section}.error_log")" || error_log="1"
 	enabled="$(uci -q get "nginx_manager.${section}.enabled")" || enabled="1"
+	proxy_type="$(uci -q get "nginx_manager.${section}.proxy_type")" || proxy_type="http"
+	custom_proxy_headers="$(uci -q get "nginx_manager.${section}.custom_proxy_headers")" || custom_proxy_headers=""
+	listen_addr="$(uci -q get "nginx_manager.${section}.listen_addr")" || listen_addr=""
 
 	local output_file="${BUILD_DIR}/${name}.conf"
 	{
 		generate_header
 
 		if [ "${redirect_https}" = "1" ] && [ -n "${ssl_cert}" ]; then
-			generate_redirect_block "${server_name}"
+			generate_redirect_block "${server_name}" "${listen_addr}"
 			echo ""
 		fi
 
@@ -342,12 +360,20 @@ generate_reverse_proxy_site() {
 
 		echo ""
 		echo "    location / {"
-		echo "        proxy_pass ${proxy_pass};"
-		generate_proxy_headers "${proxy_host}" "${proxy_xff}" "${proxy_xfp}" "${proxy_xri}"
 
-		if [ "${websocket}" = "1" ]; then
-			generate_websocket_headers
+		if [ "${proxy_type}" = "grpc" ]; then
+			echo "        grpc_pass ${proxy_pass};"
+			generate_grpc_headers "${proxy_host}" "${proxy_xff}" "${proxy_xfp}" "${proxy_xri}"
+		else
+			echo "        proxy_pass ${proxy_pass};"
+			generate_proxy_headers "${proxy_host}" "${proxy_xff}" "${proxy_xfp}" "${proxy_xri}"
+
+			if [ "${websocket}" = "1" ] || [ "${proxy_type}" = "websocket" ]; then
+				generate_websocket_headers
+			fi
 		fi
+
+		generate_custom_proxy_headers "${custom_proxy_headers}"
 
 		echo "    }"
 		echo "}"
@@ -358,14 +384,59 @@ generate_reverse_proxy_site() {
 	fi
 }
 
+_CURRENT_SSL_CERT=""
+
+# Legacy: used for backward compat with old listen list format
 _collect_listen_ports() {
-	printf '    listen %s;\n' "$1"
+	local val="$1"
+	if [ -n "${_CURRENT_SSL_CERT}" ] && ! echo "${val}" | grep -qw "ssl"; then
+		val="${val} ssl"
+	fi
+	printf '    listen %s;\n' "${val}"
+}
+
+generate_listen_directives() {
+	local section="$1"
+	local ssl_cert="$2"
+	local listen_addr listen_port ssl_flag=""
+
+	config_get listen_addr "${section}" listen_addr
+	config_get listen_port "${section}" listen_port
+
+	# Fallback: try old listen list for backward compatibility
+	if [ -z "${listen_port}" ]; then
+		local listen_ports
+		config_get listen_ports "${section}" listen
+		if [ -n "${listen_ports}" ]; then
+			# Use old _collect_listen_ports with auto-ssl
+			_CURRENT_SSL_CERT="${ssl_cert}"
+			config_list_foreach "${section}" listen _collect_listen_ports
+			_CURRENT_SSL_CERT=""
+			return
+		fi
+	fi
+
+	# Determine ssl flag
+	if [ -n "${ssl_cert}" ]; then
+		ssl_flag=" ssl"
+	fi
+
+	# Default port
+	listen_port="${listen_port:-80}"
+
+	# Generate listen directives
+	if [ -n "${listen_addr}" ]; then
+		printf '    listen %s:%s%s;\n' "${listen_addr}" "${listen_port}" "${ssl_flag}"
+	else
+		printf '    listen %s%s;\n' "${listen_port}" "${ssl_flag}"
+		printf '    listen [::]:%s%s;\n' "${listen_port}" "${ssl_flag}"
+	fi
 }
 
 generate_static_site() {
 	local section="$1"
 	local name server_name root index redirect_https ssl_cert
-	local access_log error_log enabled
+	local access_log error_log enabled listen_addr
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
 	server_name="$(uci -q get "nginx_manager.${section}.server_name")" || return 1
@@ -376,13 +447,14 @@ generate_static_site() {
 	access_log="$(uci -q get "nginx_manager.${section}.access_log")" || access_log="0"
 	error_log="$(uci -q get "nginx_manager.${section}.error_log")" || error_log="1"
 	enabled="$(uci -q get "nginx_manager.${section}.enabled")" || enabled="1"
+	listen_addr="$(uci -q get "nginx_manager.${section}.listen_addr")" || listen_addr=""
 
 	local output_file="${BUILD_DIR}/${name}.conf"
 	{
 		generate_header
 
 		if [ "${redirect_https}" = "1" ] && [ -n "${ssl_cert}" ]; then
-			generate_redirect_block "${server_name}"
+			generate_redirect_block "${server_name}" "${listen_addr}"
 			echo ""
 		fi
 
@@ -435,7 +507,7 @@ generate_custom_site() {
 generate_redirect_site() {
 	local section="$1"
 	local name server_name redirect_target redirect_https ssl_cert enabled
-	local access_log error_log
+	local access_log error_log listen_addr
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
 	server_name="$(uci -q get "nginx_manager.${section}.server_name")" || return 1
@@ -445,13 +517,14 @@ generate_redirect_site() {
 	access_log="$(uci -q get "nginx_manager.${section}.access_log")" || access_log="0"
 	error_log="$(uci -q get "nginx_manager.${section}.error_log")" || error_log="1"
 	enabled="$(uci -q get "nginx_manager.${section}.enabled")" || enabled="1"
+	listen_addr="$(uci -q get "nginx_manager.${section}.listen_addr")" || listen_addr=""
 
 	local output_file="${BUILD_DIR}/${name}.conf"
 	{
 		generate_header
 
 		if [ "${redirect_https}" = "1" ] && [ -n "${ssl_cert}" ]; then
-			generate_redirect_block "${server_name}"
+			generate_redirect_block "${server_name}" "${listen_addr}"
 			echo ""
 		fi
 

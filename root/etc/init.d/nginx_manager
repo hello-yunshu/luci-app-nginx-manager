@@ -33,10 +33,14 @@ validate_nginx_manager_site() {
         'mode:string:reverse_proxy' \
         'server_name:string' \
         'enabled:bool:1' \
+        'listen_addr:string' \
+        'listen_port:string:80' \
         'proxy_pass:string' \
         'root:string' \
         'index:string:index.html' \
         'websocket:bool:0' \
+        'proxy_type:string:http' \
+        'custom_proxy_headers:string' \
         'redirect_https:bool:0' \
         'proxy_host:bool:1' \
         'proxy_xff:bool:1' \
@@ -46,8 +50,7 @@ validate_nginx_manager_site() {
         'access_log:bool:0' \
         'error_log:bool:1' \
         'custom_server_block:string' \
-        'redirect_target:string' \
-        'listen:list(string)'
+        'redirect_target:string'
 }
 
 validate_nginx_manager_cert() {
