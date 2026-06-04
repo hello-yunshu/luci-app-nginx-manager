@@ -16,8 +16,8 @@ var callGetSite = rpc.declare({
 var callSetSite = rpc.declare({
 	object: 'nginx_manager',
 	method: 'set_site',
-	params: ['id', 'name', 'mode', 'server_name', 'listen', 'proxy_pass', 'root', 'index',
-		'websocket', 'redirect_https', 'proxy_host', 'proxy_xff', 'proxy_xfp', 'proxy_xri',
+	params: ['id', 'name', 'mode', 'server_name', 'listen_addr', 'listen_port', 'proxy_pass', 'root', 'index',
+		'websocket', 'proxy_type', 'custom_proxy_headers', 'redirect_https', 'proxy_host', 'proxy_xff', 'proxy_xfp', 'proxy_xri',
 		'ssl_cert', 'access_log', 'error_log', 'custom_server_block', 'redirect_target', 'enabled'],
 	expect: {}
 });
@@ -101,6 +101,9 @@ return view.extend({
 		/* ---- conditional sections ---- */
 		var sslSection, proxySection, staticSection, redirectSection, customSection;
 
+		/* references for visibility updates */
+		var proxyTypeSelect, proxyPassInput;
+
 		function updateVisibility() {
 			var mode = modeSelect.value;
 			sslSection.style.display      = (mode === 'reverse_proxy' || mode === 'static') ? '' : 'none';
@@ -108,6 +111,18 @@ return view.extend({
 			staticSection.style.display   = mode === 'static'        ? '' : 'none';
 			redirectSection.style.display = mode === 'redirect'      ? '' : 'none';
 			customSection.style.display   = mode === 'custom'        ? '' : 'none';
+
+			/* proxy-type specific: update proxy_pass placeholder */
+			if (mode === 'reverse_proxy' && proxyTypeSelect) {
+				var ptype = proxyTypeSelect.value;
+				if (ptype === 'grpc') {
+					proxyPassInput.placeholder = 'grpc://192.168.1.1:9000';
+				} else if (ptype === 'websocket') {
+					proxyPassInput.placeholder = 'http://192.168.1.1:3000';
+				} else {
+					proxyPassInput.placeholder = 'http://192.168.1.1:3000';
+				}
+			}
 		}
 
 		/* ========== Basic Settings ========== */
@@ -136,35 +151,21 @@ return view.extend({
 		if (!isNew && site && site.server_name) serverNameInput.value = site.server_name;
 		basicSection.appendChild(makeField('opt-server_name', _('Domain'), serverNameInput));
 
-		/* Listen — dynamic list */
-		var listenContainer = E('div', { 'class': 'cbi-value' });
-		listenContainer.appendChild(E('label', { 'class': 'cbi-value-title' }, _('Listen')));
-		var listenField = E('div', { 'class': 'cbi-value-field' });
-		var listenItems = E('div', { 'id': 'listen-items' });
+		/* Listen Address — optional IP to bind to */
+		var listenAddrInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': _('All interfaces') });
+		if (!isNew && site && site.listen_addr) listenAddrInput.value = site.listen_addr;
+		basicSection.appendChild(makeField('opt-listen_addr', _('Listen Address'), listenAddrInput,
+			_('Leave empty for all interfaces, or specify an IP (e.g. 127.0.0.1).')));
 
-		function createListenItem(val) {
-			var item = E('div', { 'style': 'display:flex;gap:4px;margin-bottom:4px;' });
-			item.appendChild(E('input', { 'type': 'text', 'class': 'cbi-input-text', 'value': val, 'placeholder': '80' }));
-			item.appendChild(E('button', {
-				'class': 'cbi-button cbi-button-reset',
-				'type': 'button',
-				'click': function() { if (listenItems.children.length > 1) item.remove(); }
-			}, '\u00D7'));
-			return item;
+		/* Listen Port */
+		var listenPortInput = E('input', { 'type': 'number', 'class': 'cbi-input-text', 'min': '1', 'max': '65535', 'placeholder': '80' });
+		if (!isNew && site && site.listen_port) {
+			listenPortInput.value = site.listen_port;
+		} else {
+			listenPortInput.value = '80';
 		}
-
-		var listenVals = (!isNew && site && site.listen) ? site.listen.split(',') : ['80'];
-		listenVals.forEach(function(v) { listenItems.appendChild(createListenItem(v.trim())); });
-
-		listenField.appendChild(listenItems);
-		listenField.appendChild(E('button', {
-			'class': 'cbi-button',
-			'type': 'button',
-			'style': 'margin-top: 4px;',
-			'click': function() { listenItems.appendChild(createListenItem('')); }
-		}, '+'));
-		listenContainer.appendChild(listenField);
-		basicSection.appendChild(listenContainer);
+		basicSection.appendChild(makeField('opt-listen_port', _('Listen Port'), listenPortInput,
+			_('Auto-switches to 443 when SSL is enabled.')));
 
 		page.appendChild(basicSection);
 
@@ -195,6 +196,9 @@ return view.extend({
 			} else {
 				sslWarning.style.display = 'none';
 			}
+
+			/* Auto-update listen defaults when SSL is toggled */
+			updateListenDefaults();
 		});
 
 		sslSection.appendChild(makeFlag('opt-redirect_https', _('HTTP to HTTPS Redirect'),
@@ -202,16 +206,39 @@ return view.extend({
 
 		page.appendChild(sslSection);
 
+		/* Helper: update listen port default when SSL is toggled */
+		function updateListenDefaults() {
+			var hasSsl = !!sslCertSelect.value;
+			var port = listenPortInput.value.trim();
+			if (hasSsl && (port === '80' || port === '')) {
+				listenPortInput.value = '443';
+			} else if (!hasSsl && (port === '443')) {
+				listenPortInput.value = '80';
+			}
+		}
+
 		/* ========== Reverse Proxy ========== */
 		proxySection = E('div', { 'class': 'cbi-section' });
 		proxySection.appendChild(E('h3', {}, _('Reverse Proxy')));
 
-		var proxyPassInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': 'http://192.168.1.1:3000' });
-		if (!isNew && site && site.proxy_pass) proxyPassInput.value = site.proxy_pass;
-		proxySection.appendChild(makeField('opt-proxy_pass', _('Proxy Pass'), proxyPassInput));
+		/* Proxy Type: HTTP / gRPC / WebSocket */
+		proxyTypeSelect = E('select', { 'class': 'cbi-input-select' }, [
+			E('option', { 'value': 'http' }, _('HTTP')),
+			E('option', { 'value': 'grpc' }, _('gRPC')),
+			E('option', { 'value': 'websocket' }, _('WebSocket'))
+		]);
+		if (!isNew && site && site.proxy_type) proxyTypeSelect.value = site.proxy_type;
+		proxyTypeSelect.addEventListener('change', updateVisibility);
+		proxySection.appendChild(makeField('opt-proxy_type', _('Proxy Type'), proxyTypeSelect));
 
-		proxySection.appendChild(makeFlag('opt-websocket', _('WebSocket'),
-			!isNew && site ? site.websocket === '1' : false));
+		/* Proxy Pass */
+		proxyPassInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': 'http://192.168.1.1:3000' });
+		if (!isNew && site && site.proxy_pass) proxyPassInput.value = site.proxy_pass;
+		proxySection.appendChild(makeField('opt-proxy_pass', _('Backend Address'), proxyPassInput,
+			_('gRPC uses grpc:// or grpcs:// scheme.')));
+
+		/* Common Proxy Headers */
+		proxySection.appendChild(E('h4', { 'style': 'margin-top:1em;margin-bottom:0.5em;' }, _('Common Proxy Headers')));
 
 		proxySection.appendChild(makeFlag('opt-proxy_host', _('Proxy Host Header'),
 			!isNew && site ? site.proxy_host === '1' : true));
@@ -224,6 +251,16 @@ return view.extend({
 
 		proxySection.appendChild(makeFlag('opt-proxy_xri', _('X-Real-IP'),
 			!isNew && site ? site.proxy_xri === '1' : true));
+
+		/* Custom Proxy Headers */
+		var customHeadersInput = E('textarea', {
+			'class': 'cbi-input-textarea',
+			'rows': 4,
+			'placeholder': 'proxy_set_header X-Custom-Header "value";\nproxy_set_header Authorization $http_authorization;'
+		});
+		if (!isNew && site && site.custom_proxy_headers) customHeadersInput.value = site.custom_proxy_headers;
+		proxySection.appendChild(makeField('opt-custom_proxy_headers', _('Custom Proxy Headers'), customHeadersInput,
+			_('One directive per line.')));
 
 		page.appendChild(proxySection);
 
@@ -322,17 +359,15 @@ return view.extend({
 			data.mode                = document.getElementById('opt-mode').value;
 			data.server_name         = document.getElementById('opt-server_name').value.trim();
 
-			var lv = [];
-			document.querySelectorAll('#listen-items input').forEach(function(inp) {
-				var v = inp.value.trim();
-				if (v) lv.push(v);
-			});
-			data.listen = lv.join(',');
+			data.listen_addr         = document.getElementById('opt-listen_addr').value.trim();
+			data.listen_port         = document.getElementById('opt-listen_port').value.trim() || '80';
 
 			data.ssl_cert            = document.getElementById('opt-ssl_cert').value;
 			data.redirect_https      = document.getElementById('opt-redirect_https').checked ? '1' : '0';
 			data.proxy_pass          = document.getElementById('opt-proxy_pass').value.trim();
-			data.websocket           = document.getElementById('opt-websocket').checked ? '1' : '0';
+			data.proxy_type          = document.getElementById('opt-proxy_type').value;
+			data.websocket           = data.proxy_type === 'websocket' ? '1' : '0';
+			data.custom_proxy_headers = document.getElementById('opt-custom_proxy_headers').value.trim();
 			data.proxy_host          = document.getElementById('opt-proxy_host').checked ? '1' : '0';
 			data.proxy_xff           = document.getElementById('opt-proxy_xff').checked ? '1' : '0';
 			data.proxy_xfp           = document.getElementById('opt-proxy_xfp').checked ? '1' : '0';
@@ -349,11 +384,14 @@ return view.extend({
 				data.name,
 				data.mode,
 				data.server_name,
-				data.listen,
+				data.listen_addr,
+				data.listen_port,
 				data.proxy_pass,
 				data.root,
 				data.index,
 				data.websocket,
+				data.proxy_type,
+				data.custom_proxy_headers,
 				data.redirect_https,
 				data.proxy_host,
 				data.proxy_xff,
