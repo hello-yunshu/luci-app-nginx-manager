@@ -33,6 +33,13 @@ var callAcmeIssue = rpc.declare({
 	expect: {}
 });
 
+var callAcmeRenew = rpc.declare({
+	object: 'nginx_manager',
+	method: 'acme_renew',
+	params: ['id'],
+	expect: {}
+});
+
 var callUploadCert = rpc.declare({
 	object: 'nginx_manager',
 	method: 'upload_cert',
@@ -152,13 +159,15 @@ return view.extend({
 										ui.addNotification(null, E('p', {}, _('Domain is required for ACME certificates')), 'error');
 										return;
 									}
-									ui.showModal(_('Requesting...'), [E('p', {}, _('Please wait...'))]);
+									ui.showModal(_('Requesting...'), [E('p', {}, _('Please wait, ACME certificate issuance may take a while...'))]);
 									callAcmeIssue(certName, certDomain).then(function(result) {
 										ui.hideModal();
 										if (result && result.error) {
-											ui.addNotification(null, E('p', {}, result.error), 'error');
+											var errMsg = _(result.error);
+											if (result.detail) errMsg += ': ' + result.detail;
+											ui.addNotification(null, E('p', {}, _('Failed to issue ACME certificate') + ': ' + errMsg), 'error');
 										} else {
-											ui.addNotification(null, E('p', {}, _('ACME certificate requested')), 'info');
+											ui.addNotification(null, E('p', {}, _('ACME certificate issued successfully')), 'info');
 											setTimeout(function() { location.reload(); }, 500);
 										}
 									}).catch(function(err) {
@@ -248,6 +257,29 @@ return view.extend({
 			row.appendChild(statusCell);
 
 			var actionsCell = E('td', { 'class': 'nm-actions' });
+
+			if (cert.type === 'acme') {
+				actionsCell.appendChild(E('button', {
+					'class': 'cbi-button cbi-button-apply',
+					'click': function() {
+						ui.showModal(_('Renewing...'), [E('p', {}, _('Please wait...'))]);
+						callAcmeRenew(cert.id).then(function(result) {
+							ui.hideModal();
+							if (result && result.error) {
+								var errMsg = _(result.error);
+								if (result.detail) errMsg += ': ' + result.detail;
+								ui.addNotification(null, E('p', {}, _('Failed to renew ACME certificate') + ': ' + errMsg), 'error');
+							} else {
+								ui.addNotification(null, E('p', {}, _('ACME certificate renewed successfully')), 'info');
+								setTimeout(function() { location.reload(); }, 500);
+							}
+						}).catch(function(err) {
+							ui.hideModal();
+							ui.addNotification(null, E('p', {}, _('Failed to renew ACME certificate') + ': ' + err), 'error');
+						});
+					}
+				}, '\u21BB ' + _('Renew')));
+			}
 
 			actionsCell.appendChild(E('button', {
 				'class': 'cbi-button cbi-button-reset',
