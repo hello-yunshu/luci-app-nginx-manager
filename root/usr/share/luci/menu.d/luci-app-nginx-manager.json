@@ -27,8 +27,8 @@
 			"path": "nginx-manager/sites"
 		}
 	},
-	"admin/services/nginx-manager/site-edit": {
-		"title": "",
+	"admin/services/nginx-manager/sites/edit": {
+		"title": null,
 		"order": 11,
 		"action": {
 			"type": "view",

@@ -132,8 +132,9 @@ luci-base  nginx-ssl  nginx-util  rpcd  rpcd-mod-file  openssl-util
 
 1. 进入 **Logs** 页面
 2. 选择日志类型（访问/错误）
-3. 可选填站点名和过滤关键词
-4. 点击 **Load** 加载最新日志
+3. 可选选择站点并填写过滤关键词
+4. 日志会自动加载；点击 **Refresh** 可手动重读
+5. 点击 **Clear** 会清空当前选择的日志文件内容
 
 ### 高级编辑
 

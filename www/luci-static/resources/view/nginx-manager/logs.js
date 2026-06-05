@@ -13,6 +13,13 @@ var callGetLogs = rpc.declare({
 	expect: {}
 });
 
+var callClearLogs = rpc.declare({
+	object: 'nginx_manager',
+	method: 'clear_logs',
+	params: ['type', 'site'],
+	expect: {}
+});
+
 var callListSites = rpc.declare({
 	object: 'nginx_manager',
 	method: 'list_sites',
@@ -58,7 +65,11 @@ return view.extend({
 			E('option', { 'value': '' }, _('All Sites'))
 		]);
 		sites.forEach(function(site) {
-			siteSelect.appendChild(E('option', { 'value': site.name }, site.name));
+			var label = site.name && site.name !== site.id
+				? site.name + ' (' + site.id + ')'
+				: (site.name || site.id);
+			siteSelect.appendChild(E('option', { 'value': site.id },
+				label));
 		});
 		controls.appendChild(E('label', {}, _('Site') + ': '));
 		controls.appendChild(siteSelect);
@@ -96,16 +107,28 @@ return view.extend({
 		logSection.appendChild(E('h3', {}, _('Log Output')));
 
 		var logOutput = E('pre', {
-			'class': 'nm-log-area is-empty'
-		}, _('Click "Refresh" to view logs'));
+			'class': 'nm-log-area is-loading'
+		}, _('Loading...'));
 
 		logSection.appendChild(logOutput);
 		page.appendChild(logSection);
 
-		refreshBtn.addEventListener('click', function() {
+		var filterTimer = null;
+
+		function setLoading() {
 			logOutput.textContent = _('Loading...');
 			logOutput.className = 'nm-log-area is-loading';
+			refreshBtn.disabled = true;
+			clearBtn.disabled = true;
+		}
 
+		function setReady() {
+			refreshBtn.disabled = false;
+			clearBtn.disabled = false;
+		}
+
+		function loadLogs() {
+			setLoading();
 			callGetLogs(
 				typeSelect.value,
 				lineSelect.value,
@@ -128,13 +151,49 @@ return view.extend({
 			}).catch(function(err) {
 				logOutput.textContent = _('Failed to load logs') + ': ' + err;
 				logOutput.className = 'nm-log-area is-error';
+			}).finally(function() {
+				setReady();
+			});
+		}
+
+		function queueLoadLogs() {
+			window.clearTimeout(filterTimer);
+			filterTimer = window.setTimeout(loadLogs, 250);
+		}
+
+		refreshBtn.addEventListener('click', loadLogs);
+		typeSelect.addEventListener('change', loadLogs);
+		lineSelect.addEventListener('change', loadLogs);
+		siteSelect.addEventListener('change', loadLogs);
+		filterInput.addEventListener('input', queueLoadLogs);
+
+		clearBtn.addEventListener('click', function() {
+			logOutput.textContent = _('Clearing...');
+			logOutput.className = 'nm-log-area is-loading';
+			refreshBtn.disabled = true;
+			clearBtn.disabled = true;
+
+			callClearLogs(typeSelect.value, siteSelect.value).then(function(result) {
+				if (result && result.error) {
+					logOutput.textContent = result.error;
+					if (result.path) {
+						logOutput.textContent += '\n' + _('Path') + ': ' + result.path;
+					}
+					logOutput.className = 'nm-log-area is-error';
+					return;
+				}
+
+				ui.addNotification(null, E('p', {}, _('Log cleared')), 'info');
+				loadLogs();
+			}).catch(function(err) {
+				logOutput.textContent = _('Failed to clear logs') + ': ' + err;
+				logOutput.className = 'nm-log-area is-error';
+			}).finally(function() {
+				setReady();
 			});
 		});
 
-		clearBtn.addEventListener('click', function() {
-			logOutput.textContent = '';
-			logOutput.className = 'nm-log-area is-empty';
-		});
+		window.setTimeout(loadLogs, 0);
 
 		return utils.appendFooter(page, {
 			project: 'Nginx Manager',

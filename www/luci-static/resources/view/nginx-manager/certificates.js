@@ -26,6 +26,13 @@ var callIssueSelfSigned = rpc.declare({
 	expect: {}
 });
 
+var callAcmeIssue = rpc.declare({
+	object: 'nginx_manager',
+	method: 'acme_issue',
+	params: ['id', 'domain'],
+	expect: {}
+});
+
 var callUploadCert = rpc.declare({
 	object: 'nginx_manager',
 	method: 'upload_cert',
@@ -52,6 +59,15 @@ function certStatusClass(status) {
 	}
 }
 
+function certTypeLabel(type) {
+	switch (type) {
+		case 'manual': return _('Manual');
+		case 'self_signed': return _('Self-Signed Certificate');
+		case 'acme': return _('Auto (ACME)');
+		default: return type || '-';
+	}
+}
+
 return view.extend({
 	load: function() {
 		return callListCerts();
@@ -74,13 +90,14 @@ return view.extend({
 				var certNameInput = E('input', { 'type': 'text', 'id': 'new-cert-name', 'class': 'cbi-input-text' });
 				var certTypeSelect = E('select', { 'id': 'new-cert-type', 'class': 'cbi-input-select' }, [
 					E('option', { 'value': 'manual' }, _('Manual')),
-					E('option', { 'value': 'self_signed' }, _('Self-Signed Certificate'))
+					E('option', { 'value': 'self_signed' }, _('Self-Signed Certificate')),
+					E('option', { 'value': 'acme' }, _('Auto (ACME)'))
 				]);
 				var certDomainInput = E('input', { 'type': 'text', 'id': 'new-cert-domain', 'class': 'cbi-input-text' });
 
 				certTypeSelect.addEventListener('change', function() {
 					var domainRow = document.getElementById('cert-domain-row');
-					if (domainRow) domainRow.style.display = certTypeSelect.value === 'self_signed' ? '' : 'none';
+					if (domainRow) domainRow.style.display = certTypeSelect.value === 'manual' ? 'none' : '';
 				});
 
 				ui.showModal(_('Add Certificate'), [
@@ -126,6 +143,27 @@ return view.extend({
 											ui.addNotification(null, E('p', {}, _('Self-signed certificate generated')), 'info');
 											setTimeout(function() { location.reload(); }, 500);
 										}
+									}).catch(function(err) {
+										ui.hideModal();
+										ui.addNotification(null, E('p', {}, _('Failed to generate self-signed certificate') + ': ' + err), 'error');
+									});
+								} else if (certType === 'acme') {
+									if (!certDomain) {
+										ui.addNotification(null, E('p', {}, _('Domain is required for ACME certificates')), 'error');
+										return;
+									}
+									ui.showModal(_('Requesting...'), [E('p', {}, _('Please wait...'))]);
+									callAcmeIssue(certName, certDomain).then(function(result) {
+										ui.hideModal();
+										if (result && result.error) {
+											ui.addNotification(null, E('p', {}, result.error), 'error');
+										} else {
+											ui.addNotification(null, E('p', {}, _('ACME certificate requested')), 'info');
+											setTimeout(function() { location.reload(); }, 500);
+										}
+									}).catch(function(err) {
+										ui.hideModal();
+										ui.addNotification(null, E('p', {}, _('Failed to issue ACME certificate') + ': ' + err), 'error');
 									});
 								} else {
 									var certPemInput = E('textarea', { 'id': 'cert-pem', 'class': 'cbi-input-textarea nm-modal-textarea', 'rows': 10 });
@@ -158,6 +196,8 @@ return view.extend({
 															ui.addNotification(null, E('p', {}, _('Certificate uploaded')), 'info');
 															setTimeout(function() { location.reload(); }, 500);
 														}
+													}).catch(function(err) {
+														ui.addNotification(null, E('p', {}, _('Failed to upload certificate') + ': ' + err), 'error');
 													});
 												}
 											}, '\u271A ' + _('Upload'))
@@ -197,7 +237,7 @@ return view.extend({
 			var row = E('tr');
 
 			row.appendChild(E('td', {}, cert.name || '-'));
-			row.appendChild(E('td', {}, cert.type || '-'));
+			row.appendChild(E('td', {}, certTypeLabel(cert.type)));
 
 			var domainCell = E('td');
 			domainCell.textContent = cert.domain || '-';
@@ -227,6 +267,8 @@ return view.extend({
 											ui.addNotification(null, E('p', {}, _('Certificate deleted')), 'info');
 											setTimeout(function() { location.reload(); }, 500);
 										}
+									}).catch(function(err) {
+										ui.addNotification(null, E('p', {}, _('Failed to delete certificate') + ': ' + err), 'error');
 									});
 								}
 							}, '\u2718 ' + _('Delete'))
