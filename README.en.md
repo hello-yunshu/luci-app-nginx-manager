@@ -132,8 +132,9 @@ luci-base  nginx-ssl  nginx-util  rpcd  rpcd-mod-file  openssl-util
 
 1. Go to the **Logs** page
 2. Select log type (access / error)
-3. Optionally enter a site name and filter keyword
-4. Click **Load** to fetch the latest entries
+3. Optionally choose a site and enter a filter keyword
+4. Logs load automatically; click **Refresh** to read them again
+5. Click **Clear** to empty the currently selected log file content
 
 ### Advanced Editing
 

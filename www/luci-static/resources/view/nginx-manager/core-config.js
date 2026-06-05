@@ -5,7 +5,6 @@
 'require ui';
 'require rpc';
 'require nginx-manager/utils as utils';
-'require form';
 'require uci';
 
 var callGetCoreConfig = rpc.declare({
@@ -53,204 +52,250 @@ return view.extend({
 
 		container.appendChild(E('h2', { 'class': 'cbi-map-title' }, _('Core Config')));
 
-		var m = new form.Map('nginx_manager', _('Core Config'));
+		/* ---- helpers ---- */
+		function makeField(id, label, inputEl, desc) {
+			var row = E('div', { 'class': 'cbi-value' });
+			row.appendChild(E('label', { 'class': 'cbi-value-title', 'for': id }, label));
+			var field = E('div', { 'class': 'cbi-value-field' });
+			inputEl.id = id;
+			field.appendChild(inputEl);
+			if (desc)
+				field.appendChild(E('div', { 'class': 'cbi-value-description' }, desc));
+			row.appendChild(field);
+			return row;
+		}
 
-		var safeSection = m.section(form.NamedSection, 'global', 'global', _('Safe Settings'));
-		safeSection.anonymous = false;
-		safeSection.addremove = false;
+		function makeFlag(id, label, checked) {
+			var row = E('div', { 'class': 'cbi-value' });
+			row.appendChild(E('label', { 'class': 'cbi-value-title', 'for': id }, label));
+			var field = E('div', { 'class': 'cbi-value-field' });
+			var cb = E('input', { 'type': 'checkbox', 'id': id, 'class': 'cbi-input-checkbox' });
+			if (checked) cb.checked = true;
+			field.appendChild(cb);
+			row.appendChild(field);
+			return row;
+		}
 
-		var maxBody = safeSection.option(form.Value, 'client_max_body_size', _('Client Max Body Size'));
-		maxBody.placeholder = '1m';
+		/* ========== General Settings ========== */
+		var generalSection = E('div', { 'class': 'cbi-section' });
+		generalSection.appendChild(E('h3', {}, _('General Settings')));
 
-		var keepalive = safeSection.option(form.Value, 'keepalive_timeout', _('Keepalive Timeout'));
-		keepalive.datatype = 'uinteger';
-		keepalive.placeholder = '65';
+		var maxBodyInput = E('input', { 'type': 'text', 'class': 'cbi-input-text' });
+		maxBodyInput.placeholder = '1m';
+		if (config.client_max_body_size) maxBodyInput.value = config.client_max_body_size;
+		generalSection.appendChild(makeField('cfg-client_max_body_size', _('Client Max Body Size'), maxBodyInput));
 
-		var gzip = safeSection.option(form.Flag, 'gzip', _('Gzip'));
+		var keepaliveInput = E('input', { 'type': 'number', 'class': 'cbi-input-text' });
+		keepaliveInput.placeholder = '65';
+		if (config.keepalive_timeout) keepaliveInput.value = config.keepalive_timeout;
+		generalSection.appendChild(makeField('cfg-keepalive_timeout', _('Keepalive Timeout'), keepaliveInput));
 
-		var serverTokens = safeSection.option(form.ListValue, 'server_tokens', _('Server Tokens'));
-		serverTokens.value('', _('Default'));
-		serverTokens.value('off', _('Off'));
-		serverTokens.value('on', _('On'));
+		generalSection.appendChild(makeFlag('cfg-gzip', _('Gzip'), config.gzip === '1'));
 
-		var sendfile = safeSection.option(form.Flag, 'sendfile', _('Sendfile'));
+		var serverTokensSelect = E('select', { 'class': 'cbi-input-select' }, [
+			E('option', { 'value': '' }, _('Default')),
+			E('option', { 'value': 'off' }, _('Off')),
+			E('option', { 'value': 'on' }, _('On'))
+		]);
+		if (config.server_tokens) serverTokensSelect.value = config.server_tokens;
+		generalSection.appendChild(makeField('cfg-server_tokens', _('Server Tokens'), serverTokensSelect));
 
-		var accessLog = safeSection.option(form.Value, 'access_log', _('Access Log'));
-		accessLog.placeholder = '/var/log/nginx/access.log';
+		generalSection.appendChild(makeFlag('cfg-sendfile', _('Sendfile'), config.sendfile === '1'));
 
-		var errorLog = safeSection.option(form.Value, 'error_log', _('Error Log'));
-		errorLog.placeholder = '/var/log/nginx/error.log';
+		var accessLogInput = E('input', { 'type': 'text', 'class': 'cbi-input-text' });
+		accessLogInput.placeholder = '/var/log/nginx/access.log';
+		if (config.access_log) accessLogInput.value = config.access_log;
+		generalSection.appendChild(makeField('cfg-access_log', _('Access Log'), accessLogInput));
 
-		var sslProtocols = safeSection.option(form.Value, 'ssl_protocols', _('SSL Protocols'));
-		sslProtocols.placeholder = 'TLSv1.2 TLSv1.3';
+		var errorLogInput = E('input', { 'type': 'text', 'class': 'cbi-input-text' });
+		errorLogInput.placeholder = '/var/log/nginx/error.log';
+		if (config.error_log) errorLogInput.value = config.error_log;
+		generalSection.appendChild(makeField('cfg-error_log', _('Error Log'), errorLogInput));
 
-		var sslCiphers = safeSection.option(form.Value, 'ssl_ciphers', _('SSL Ciphers'));
-		sslCiphers.placeholder = 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
+		container.appendChild(generalSection);
 
-		return m.render().then(function(node) {
-			/* Read-only View Section */
-			var readonlySection = E('div', { 'class': 'cbi-section' });
-			readonlySection.appendChild(E('h3', {}, _('Read-only View')));
+		/* ========== SSL Settings ========== */
+		var sslSection = E('div', { 'class': 'cbi-section' });
+		sslSection.appendChild(E('h3', {}, _('SSL Settings')));
 
-			var readonlyBtns = E('div', { 'class': 'nm-btn-group', 'style': 'margin-bottom: 0.5em;' });
+		var sslProtocolsInput = E('input', { 'type': 'text', 'class': 'cbi-input-text' });
+		sslProtocolsInput.placeholder = 'TLSv1.2 TLSv1.3';
+		if (config.ssl_protocols) sslProtocolsInput.value = config.ssl_protocols;
+		sslSection.appendChild(makeField('cfg-ssl_protocols', _('SSL Protocols'), sslProtocolsInput));
 
-			readonlyBtns.appendChild(E('button', {
-				'class': 'cbi-button',
-				'click': function() {
-					callGetNginxT().then(function(result) {
-						ui.showModal(_('nginx -T Output'), [
-							E('pre', { 'class': 'nm-code-block' }, (result && result.content) || ''),
-							E('div', { 'class': 'right', 'style': 'margin-top: 8px;' }, [
-								E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
-							])
-						]);
-					});
-				}
-			}, _('View nginx -T')));
+		var sslCiphersInput = E('input', { 'type': 'text', 'class': 'cbi-input-text' });
+		sslCiphersInput.placeholder = 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
+		if (config.ssl_ciphers) sslCiphersInput.value = config.ssl_ciphers;
+		sslSection.appendChild(makeField('cfg-ssl_ciphers', _('SSL Ciphers'), sslCiphersInput));
 
-			readonlyBtns.appendChild(E('button', {
-				'class': 'cbi-button',
-				'click': function() {
-					callGetFileReadonly('/etc/nginx/uci.conf.template').then(function(result) {
-						ui.showModal(_('/etc/nginx/uci.conf.template'), [
-							E('pre', { 'class': 'nm-code-block' }, (result && result.content) || _('File not found')),
-							E('div', { 'class': 'right', 'style': 'margin-top: 8px;' }, [
-								E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
-							])
-						]);
-					});
-				}
-			}, _('View uci.conf.template')));
+		container.appendChild(sslSection);
 
-			readonlySection.appendChild(readonlyBtns);
-			node.appendChild(readonlySection);
+		/* ========== Save Button ========== */
+		var saveBtnGroup = E('div', { 'class': 'nm-btn-group' });
+		saveBtnGroup.appendChild(E('button', {
+			'class': 'cbi-button cbi-button-apply',
+			'click': function() { saveConfig(); }
+		}, _('Save')));
+		container.appendChild(saveBtnGroup);
 
-			/* Danger Zone Section */
-			var dangerZone = E('div', { 'class': 'cbi-section', 'style': 'border-left: 5px solid var(--danger-color, #d94b4b);' });
-			dangerZone.appendChild(E('h3', {}, _('Danger Zone')));
+		/* ========== Read-only View Section ========== */
+		var readonlySection = E('div', { 'class': 'cbi-section' });
+		readonlySection.appendChild(E('h3', {}, _('Read-only View')));
 
-			var dangerWarning = E('div', { 'class': 'alert-message warning' });
-			dangerWarning.appendChild(E('p', {}, _('Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point.')));
-			dangerZone.appendChild(dangerWarning);
+		var readonlyBtns = E('div', { 'class': 'nm-btn-group', 'style': 'margin-bottom: 0.5em;' });
 
-			var dangerToggle = E('button', {
-				'class': 'cbi-button cbi-button-reset',
-				'style': 'margin-bottom: 1em;',
-				'click': function() {
-					var current = uci.get('nginx_manager', 'global', 'dangerous_core_edit') || '0';
-					var newVal = current === '1' ? '0' : '1';
-					uci.set('nginx_manager', 'global', 'dangerous_core_edit', newVal);
-					return uci.save().then(function() {
-						return uci.apply();
-					}).then(function() {
-						ui.addNotification(null, E('p', {}, newVal === '1' ? _('Dangerous edit mode enabled') : _('Dangerous edit mode disabled')), newVal === '1' ? 'warning' : 'info');
-						setTimeout(function() { location.reload(); }, 500);
-					}).catch(function(err) {
-						ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || err)), 'error');
-					});
-				}
-			}, config.dangerous_core_edit === '1' ? _('Disable Dangerous Edit') : _('Enable Dangerous Edit'));
-
-			dangerZone.appendChild(dangerToggle);
-
-			if (config.dangerous_core_edit === '1') {
-				var files = [
-					{ path: '/etc/nginx/uci.conf.template', label: 'uci.conf.template' },
-					{ path: '/etc/nginx/nginx.conf', label: 'nginx.conf' }
-				];
-
-				files.forEach(function(file) {
-					var fileDiv = E('div', { 'class': 'nm-danger-file' });
-					fileDiv.appendChild(E('h5', {}, file.label));
-
-					var textarea = E('textarea', {
-						'class': 'cbi-input-textarea nm-danger-editor',
-						'id': 'editor-' + file.label.replace(/[^a-z]/g, '')
-					});
-
-					callGetFileReadonly(file.path).then(function(result) {
-						if (result && result.content) {
-							textarea.value = result.content;
-						} else {
-							textarea.value = _('File not found or not readable');
-							textarea.disabled = true;
-						}
-					});
-
-					fileDiv.appendChild(textarea);
-
-					fileDiv.appendChild(E('button', {
-						'class': 'cbi-button cbi-button-reset',
-						'click': function() {
-							ui.showModal(_('Confirm Save'), [
-								E('p', {}, _('Saving this file may break Nginx configuration. A backup will be created first. Continue?')),
-								E('div', { 'class': 'right' }, [
-									E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
-									E('button', {
-										'class': 'cbi-button cbi-button-reset',
-										'click': function() {
-											ui.hideModal();
-											callSetFileDangerous({
-												path: file.path,
-												content: textarea.value
-											}).then(function(result) {
-												if (result && result.error) {
-													ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (result.detail || result.error)), 'error');
-												} else {
-													ui.addNotification(null, E('p', {}, _('File saved successfully')), 'info');
-												}
-											});
-										}
-									}, _('Save'))
-								])
-							]);
-						}
-					}, _('Save')));
-
-					dangerZone.appendChild(fileDiv);
+		readonlyBtns.appendChild(E('button', {
+			'class': 'cbi-button',
+			'click': function() {
+				callGetNginxT().then(function(result) {
+					ui.showModal(_('nginx -T Output'), [
+						E('pre', { 'class': 'nm-code-block' }, (result && result.content) || ''),
+						E('div', { 'class': 'right', 'style': 'margin-top: 8px;' }, [
+							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
+						])
+					]);
 				});
 			}
+		}, _('View nginx -T')));
 
-			node.appendChild(dangerZone);
+		readonlyBtns.appendChild(E('button', {
+			'class': 'cbi-button',
+			'click': function() {
+				callGetFileReadonly('/etc/nginx/uci.conf.template').then(function(result) {
+					ui.showModal(_('/etc/nginx/uci.conf.template'), [
+						E('pre', { 'class': 'nm-code-block' }, (result && result.content) || _('File not found')),
+						E('div', { 'class': 'right', 'style': 'margin-top: 8px;' }, [
+							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
+						])
+					]);
+				});
+			}
+		}, _('View uci.conf.template')));
 
-			return utils.appendFooter(node, {
-				project: 'Nginx Manager',
-				repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
+		readonlySection.appendChild(readonlyBtns);
+		container.appendChild(readonlySection);
+
+		/* ========== Danger Zone Section ========== */
+		var dangerZone = E('div', { 'class': 'cbi-section', 'style': 'border-left: 5px solid var(--danger-color, #d94b4b);' });
+		dangerZone.appendChild(E('h3', {}, _('Danger Zone')));
+
+		var dangerWarning = E('div', { 'class': 'alert-message warning' });
+		dangerWarning.appendChild(E('p', {}, _('Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point.')));
+		dangerZone.appendChild(dangerWarning);
+
+		var dangerToggle = E('button', {
+			'class': 'cbi-button cbi-button-reset',
+			'style': 'margin-bottom: 1em;',
+			'click': function() {
+				var current = uci.get('nginx_manager', 'global', 'dangerous_core_edit') || '0';
+				var newVal = current === '1' ? '0' : '1';
+				uci.set('nginx_manager', 'global', 'dangerous_core_edit', newVal);
+				return uci.save().then(function() {
+					return uci.apply();
+				}).then(function() {
+					ui.addNotification(null, E('p', {}, newVal === '1' ? _('Dangerous edit mode enabled') : _('Dangerous edit mode disabled')), newVal === '1' ? 'warning' : 'info');
+					setTimeout(function() { location.reload(); }, 500);
+				}).catch(function(err) {
+					ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || err)), 'error');
+				});
+			}
+		}, config.dangerous_core_edit === '1' ? _('Disable Dangerous Edit') : _('Enable Dangerous Edit'));
+
+		dangerZone.appendChild(dangerToggle);
+
+		if (config.dangerous_core_edit === '1') {
+			var files = [
+				{ path: '/etc/nginx/uci.conf.template', label: 'uci.conf.template' },
+				{ path: '/etc/nginx/nginx.conf', label: 'nginx.conf' }
+			];
+
+			files.forEach(function(file) {
+				var fileDiv = E('div', { 'class': 'nm-danger-file' });
+				fileDiv.appendChild(E('h5', {}, file.label));
+
+				var textarea = E('textarea', {
+					'class': 'cbi-input-textarea nm-danger-editor',
+					'id': 'editor-' + file.label.replace(/[^a-z]/g, '')
+				});
+
+				callGetFileReadonly(file.path).then(function(result) {
+					if (result && result.content) {
+						textarea.value = result.content;
+					} else {
+						textarea.value = _('File not found or not readable');
+						textarea.disabled = true;
+					}
+				});
+
+				fileDiv.appendChild(textarea);
+
+				fileDiv.appendChild(E('button', {
+					'class': 'cbi-button cbi-button-reset',
+					'click': function() {
+						ui.showModal(_('Confirm Save'), [
+							E('p', {}, _('Saving this file may break Nginx configuration. A backup will be created first. Continue?')),
+							E('div', { 'class': 'right' }, [
+								E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+								E('button', {
+									'class': 'cbi-button cbi-button-reset',
+									'click': function() {
+										ui.hideModal();
+										callSetFileDangerous({
+											path: file.path,
+											content: textarea.value
+										}).then(function(result) {
+											if (result && result.error) {
+												ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (result.detail || result.error)), 'error');
+											} else {
+												ui.addNotification(null, E('p', {}, _('File saved successfully')), 'info');
+											}
+										}).catch(function(err) {
+											ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || err)), 'error');
+										});
+									}
+								}, _('Save'))
+							])
+						]);
+					}
+				}, _('Save')));
+
+				dangerZone.appendChild(fileDiv);
 			});
-		});
-	},
+		}
 
-	handleSave: function(ev) {
-		var data = {};
+		container.appendChild(dangerZone);
 
-		var fields = ['client_max_body_size', 'keepalive_timeout', 'gzip', 'server_tokens', 'sendfile',
-			'access_log', 'error_log', 'ssl_protocols', 'ssl_ciphers'];
+		/* ---- save logic ---- */
+		function saveConfig() {
+			var data = {};
+			data.client_max_body_size = maxBodyInput.value.trim();
+			data.keepalive_timeout = keepaliveInput.value.trim();
+			data.gzip = document.getElementById('cfg-gzip').checked ? '1' : '0';
+			data.server_tokens = serverTokensSelect.value;
+			data.sendfile = document.getElementById('cfg-sendfile').checked ? '1' : '0';
+			data.access_log = accessLogInput.value.trim();
+			data.error_log = errorLogInput.value.trim();
+			data.ssl_protocols = sslProtocolsInput.value.trim();
+			data.ssl_ciphers = sslCiphersInput.value.trim();
 
-		fields.forEach(function(field) {
-			var el = document.querySelector('[data-name="' + field + '"] input, [data-name="' + field + '"] select');
-			if (el) {
-				if (el.type === 'checkbox') {
-					data[field] = el.checked ? '1' : '0';
+			return callSetCoreConfigSafe(data).then(function(result) {
+				if (result && result.error) {
+					ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + result.error), 'error');
 				} else {
-					data[field] = el.value;
+					ui.addNotification(null, E('p', {}, _('Core config saved and applied')), 'info');
 				}
-			}
-		});
+			}).catch(function(err) {
+				ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || JSON.stringify(err))), 'error');
+			});
+		}
 
-		return callSetCoreConfigSafe(data).then(function(result) {
-			if (result && result.error) {
-				ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + result.error), 'error');
-			} else {
-				ui.addNotification(null, E('p', {}, _('Core config saved and applied')), 'info');
-			}
-		}).catch(function(err) {
-			ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || JSON.stringify(err))), 'error');
+		return utils.appendFooter(container, {
+			project: 'Nginx Manager',
+			repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
 		});
 	},
 
-	handleSaveApply: function(ev) {
-		return this.handleSave(ev);
-	},
-
+	handleSave: null,
+	handleSaveApply: null,
 	handleReset: null
 });

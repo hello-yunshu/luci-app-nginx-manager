@@ -124,7 +124,7 @@ return view.extend({
 										ui.showModal(_('Redirecting'), [E('p', {}, _('Site created, redirecting to edit page...'))]);
 										setTimeout(function() {
 											ui.hideModal();
-											location.href = L.url('admin/services/nginx-manager/site-edit', name);
+											location.href = L.url('admin/services/nginx-manager/sites/edit', name);
 										}, 500);
 									}
 								});
@@ -181,7 +181,7 @@ return view.extend({
 			actionsCell.appendChild(E('button', {
 				'class': 'cbi-button',
 				'click': function() {
-					location.href = L.url('admin/services/nginx-manager/site-edit', site.id);
+					location.href = L.url('admin/services/nginx-manager/sites/edit', site.id);
 				}
 			}, _('Edit')));
 

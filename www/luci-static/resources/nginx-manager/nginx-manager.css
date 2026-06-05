@@ -45,10 +45,10 @@
 
 /* === Table Action Cell === */
 .nm-actions {
-	display: flex !important;
-	flex-wrap: wrap !important;
-	gap: 0.5em !important;
-	align-items: center !important;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5em;
+	align-items: center;
 }
 
 .nm-actions button,
@@ -58,11 +58,11 @@
 
 /* === Modal Button Row === */
 .modal .right {
-	display: flex !important;
-	flex-wrap: wrap !important;
-	gap: 0.5em !important;
-	justify-content: flex-end !important;
-	align-items: center !important;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5em;
+	justify-content: flex-end;
+	align-items: center;
 }
 
 .modal .right button,

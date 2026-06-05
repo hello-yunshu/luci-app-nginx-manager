@@ -9,6 +9,9 @@ msgstr ""
 msgid "/etc/nginx/uci.conf.template"
 msgstr ""
 
+msgid "ACME certificate requested"
+msgstr ""
+
 msgid "Access Log"
 msgstr ""
 
@@ -24,6 +27,12 @@ msgstr ""
 msgid "All Sites"
 msgstr ""
 
+msgid "All interfaces"
+msgstr ""
+
+msgid "Are you sure you want to delete this backup?"
+msgstr ""
+
 msgid "Are you sure you want to delete this certificate?"
 msgstr ""
 
@@ -33,7 +42,16 @@ msgstr ""
 msgid "Are you sure you want to restore this backup? A backup of the current configuration will be created first."
 msgstr ""
 
+msgid "Auto (ACME)"
+msgstr ""
+
+msgid "Auto-switches to 443 when SSL is enabled."
+msgstr ""
+
 msgid "Back to Sites"
+msgstr ""
+
+msgid "Backend Address"
 msgstr ""
 
 msgid "Backend / Root"
@@ -46,6 +64,9 @@ msgid "Backup Time"
 msgstr ""
 
 msgid "Backup created"
+msgstr ""
+
+msgid "Backup deleted"
 msgstr ""
 
 msgid "Backup restored"
@@ -84,7 +105,7 @@ msgstr ""
 msgid "Certificates"
 msgstr ""
 
-msgid "Click \"Refresh\" to view logs"
+msgid "Clearing..."
 msgstr ""
 
 msgid "Clear"
@@ -94,6 +115,9 @@ msgid "Client Max Body Size"
 msgstr ""
 
 msgid "Close"
+msgstr ""
+
+msgid "Common Proxy Headers"
 msgstr ""
 
 msgid "Compare"
@@ -109,6 +133,9 @@ msgid "Confirm Restore"
 msgstr ""
 
 msgid "Confirm Save"
+msgstr ""
+
+msgid "Config Test Result"
 msgstr ""
 
 msgid "Configuration test failed"
@@ -127,6 +154,9 @@ msgid "Create Backup"
 msgstr ""
 
 msgid "Creating site..."
+msgstr ""
+
+msgid "Custom Proxy Headers"
 msgstr ""
 
 msgid "Custom Server Block"
@@ -162,6 +192,9 @@ msgstr ""
 msgid "Domain"
 msgstr ""
 
+msgid "Domain is required for ACME certificates"
+msgstr ""
+
 msgid "Domain is required for self-signed certificates"
 msgstr ""
 
@@ -195,7 +228,22 @@ msgstr ""
 msgid "Expiring Soon"
 msgstr ""
 
+msgid "Failed to clear logs"
+msgstr ""
+
+msgid "Failed to delete certificate"
+msgstr ""
+
+msgid "Failed to generate self-signed certificate"
+msgstr ""
+
+msgid "Failed to issue ACME certificate"
+msgstr ""
+
 msgid "Failed to load logs"
+msgstr ""
+
+msgid "Failed to upload certificate"
 msgstr ""
 
 msgid "File Missing"
@@ -213,13 +261,25 @@ msgstr ""
 msgid "Filter"
 msgstr ""
 
+msgid "General Settings"
+msgstr ""
+
 msgid "Generated Config"
 msgstr ""
 
 msgid "Generating..."
 msgstr ""
 
+msgid "gRPC"
+msgstr ""
+
+msgid "gRPC uses grpc:// or grpcs:// scheme."
+msgstr ""
+
 msgid "Gzip"
+msgstr ""
+
+msgid "HTTP"
 msgstr ""
 
 msgid "HTTP to HTTPS Redirect"
@@ -240,10 +300,16 @@ msgstr ""
 msgid "Last Reload"
 msgstr ""
 
-msgid "Line Count"
+msgid "Leave empty for all interfaces, or specify an IP (e.g. 127.0.0.1)."
 msgstr ""
 
 msgid "Listen"
+msgstr ""
+
+msgid "Listen Address"
+msgstr ""
+
+msgid "Listen Port"
 msgstr ""
 
 msgid "Listening Ports"
@@ -253,6 +319,9 @@ msgid "Loading..."
 msgstr ""
 
 msgid "Log Output"
+msgstr ""
+
+msgid "Log cleared"
 msgstr ""
 
 msgid "Log Settings"
@@ -306,6 +375,9 @@ msgstr ""
 msgid "No log entries found"
 msgstr ""
 
+msgid "No output"
+msgstr ""
+
 msgid "No sites configured. Click \"Add Site\" to create one."
 msgstr ""
 
@@ -319,6 +391,9 @@ msgid "Off"
 msgstr ""
 
 msgid "On"
+msgstr ""
+
+msgid "One directive per line."
 msgstr ""
 
 msgid "OpenWrt"
@@ -348,6 +423,9 @@ msgstr ""
 msgid "Proxy Pass"
 msgstr ""
 
+msgid "Proxy Type"
+msgstr ""
+
 msgid "Read-only View"
 msgstr ""
 
@@ -364,6 +442,9 @@ msgid "Refresh"
 msgstr ""
 
 msgid "Reload"
+msgstr ""
+
+msgid "Requesting..."
 msgstr ""
 
 msgid "Restoring..."
@@ -400,9 +481,6 @@ msgid "SSL Protocols"
 msgstr ""
 
 msgid "SSL Settings"
-msgstr ""
-
-msgid "Safe Settings"
 msgstr ""
 
 msgid "Save"
@@ -460,6 +538,9 @@ msgid "Sites"
 msgstr ""
 
 msgid "Source"
+msgstr ""
+
+msgid "Start"
 msgstr ""
 
 msgid "Static Website"

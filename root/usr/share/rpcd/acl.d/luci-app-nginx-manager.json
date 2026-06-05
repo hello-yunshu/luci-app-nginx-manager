@@ -34,6 +34,7 @@
 					"reload_nginx",
 					"restart_nginx",
 					"start_nginx",
+					"clear_logs",
 					"set_cert",
 					"delete_cert",
 					"upload_cert",

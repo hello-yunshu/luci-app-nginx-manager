@@ -633,48 +633,140 @@ handle_get_logs() {
 	echo "${lines}" | grep -qE '^[0-9]+$' || lines="200"
 	[ "${lines}" -gt 500 ] && lines="500"
 
-	local log_path
-	case "${log_type}" in
-		error)
-			if [ -n "${site}" ]; then
-				log_path="/var/log/nginx/${site}.error.log"
-			else
-				log_path="/var/log/nginx/error.log"
-			fi
-			;;
-		access)
-			if [ -n "${site}" ]; then
-				log_path="/var/log/nginx/${site}.access.log"
-			else
-				log_path="/var/log/nginx/access.log"
-			fi
-			;;
-		*)
-			json_init
-			json_add_string "error" "invalid log type"
-			json_dump
-			return
-			;;
-	esac
+	local log_paths log_path content found
+	log_paths="$(resolve_log_paths "${log_type}" "${site}")" || {
+		json_init
+		json_add_string "error" "invalid log request"
+		json_dump
+		return
+	}
 
-	if [ ! -f "${log_path}" ]; then
+	if [ -z "${log_paths}" ]; then
 		json_init
 		json_add_string "error" "log file not found"
-		json_add_string "path" "${log_path}"
 		json_dump
 		return
 	fi
 
-	local content
-	if [ -n "${filter}" ]; then
-		content="$(tail -n "${lines}" "${log_path}" | grep -F "${filter}")"
-	else
-		content="$(tail -n "${lines}" "${log_path}")"
+	content=""
+	found="0"
+	for log_path in ${log_paths}; do
+		[ -f "${log_path}" ] || continue
+		found="1"
+		if [ -n "${content}" ]; then
+			content="${content}
+"
+		fi
+		content="${content}==> ${log_path} <=="
+		if [ -n "${filter}" ]; then
+			content="${content}
+$(tail -n "${lines}" "${log_path}" | grep -F "${filter}" || true)"
+		else
+			content="${content}
+$(tail -n "${lines}" "${log_path}")"
+		fi
+	done
+
+	if [ "${found}" != "1" ]; then
+		json_init
+		json_add_string "error" "log file not found"
+		json_dump
+		return
 	fi
 
 	json_init
 	json_add_string "content" "${content}"
-	json_add_string "path" "${log_path}"
+	json_add_string "path" "${log_paths}"
+	json_dump
+}
+
+resolve_log_paths() {
+	local log_type="$1"
+	local site="$2"
+	local site_name log_path found
+
+	if [ -n "${site}" ]; then
+		validate_name "${site}" || return 1
+		site_name="$(uci -q get "nginx_manager.${site}.name")" || site_name="${site}"
+		validate_name "${site_name}" || return 1
+	fi
+
+	case "${log_type}" in
+		error)
+			if [ -n "${site}" ]; then
+				echo "/var/log/nginx/${site_name}.error.log"
+			else
+				found="0"
+				for log_path in /var/log/nginx/error.log /var/log/nginx/*.error.log; do
+					[ -f "${log_path}" ] || continue
+					echo "${log_path}"
+					found="1"
+				done
+				[ "${found}" = "1" ] || true
+			fi
+			;;
+		access)
+			if [ -n "${site}" ]; then
+				echo "/var/log/nginx/${site_name}.access.log"
+			else
+				found="0"
+				for log_path in /var/log/nginx/access.log /var/log/nginx/*.access.log; do
+					[ -f "${log_path}" ] || continue
+					echo "${log_path}"
+					found="1"
+				done
+				[ "${found}" = "1" ] || true
+			fi
+			;;
+		*)
+			return 1
+			;;
+	esac
+}
+
+handle_clear_logs() {
+	local log_type site log_paths log_path cleared
+
+	json_get_var log_type "type"
+	json_get_var site "site"
+
+	log_paths="$(resolve_log_paths "${log_type}" "${site}")" || {
+		json_init
+		json_add_string "error" "invalid log request"
+		json_dump
+		return
+	}
+
+	if [ -z "${log_paths}" ]; then
+		json_init
+		json_add_string "error" "log file not found"
+		json_dump
+		return
+	fi
+
+	cleared="0"
+	for log_path in ${log_paths}; do
+		[ -f "${log_path}" ] || continue
+		printf '' > "${log_path}" || {
+			json_init
+			json_add_string "error" "failed to clear log file"
+			json_add_string "path" "${log_path}"
+			json_dump
+			return
+		}
+		cleared="1"
+	done
+
+	if [ "${cleared}" != "1" ]; then
+		json_init
+		json_add_string "error" "log file not found"
+		json_dump
+		return
+	fi
+
+	json_init
+	json_add_string "result" "ok"
+	json_add_string "path" "${log_paths}"
 	json_dump
 }
 
@@ -1125,6 +1217,11 @@ case "$1" in
 		json_add_string "site" ""
 		json_close_object
 
+		json_add_object "clear_logs"
+		json_add_string "type" ""
+		json_add_string "site" ""
+		json_close_object
+
 		json_add_object "get_core_config"
 		json_close_object
 
@@ -1202,6 +1299,7 @@ case "$1" in
 			acme_renew)         handle_acme_renew ;;
 			check_cert_expiry)  handle_check_cert_expiry ;;
 			get_logs)           handle_get_logs ;;
+			clear_logs)         handle_clear_logs ;;
 			get_core_config)    handle_get_core_config ;;
 			set_core_config_safe) handle_set_core_config_safe ;;
 			get_nginx_T)        handle_get_nginx_T ;;
