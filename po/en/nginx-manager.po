@@ -9,11 +9,32 @@ msgstr "-- None --"
 msgid "/etc/nginx/uci.conf.template"
 msgstr "/etc/nginx/uci.conf.template"
 
+msgid "ACME certificate issued successfully"
+msgstr "ACME certificate issued successfully"
+
+msgid "ACME certificate renewed successfully"
+msgstr "ACME certificate renewed successfully"
+
 msgid "ACME certificate requested"
 msgstr "ACME certificate requested"
 
 msgid "Access Log"
 msgstr "Access Log"
+
+msgid "acme config not found"
+msgstr "acme config not found"
+
+msgid "acme issue failed"
+msgstr "acme issue failed"
+
+msgid "acme package not installed"
+msgstr "acme package not installed"
+
+msgid "acme renew failed"
+msgstr "acme renew failed"
+
+msgid "not an acme certificate"
+msgstr "not an acme certificate"
 
 msgid "Actions"
 msgstr "Actions"
@@ -95,6 +116,12 @@ msgstr "Certificate Name"
 
 msgid "Certificate deleted"
 msgstr "Certificate deleted"
+
+msgid "certificate id already exists"
+msgstr "certificate id already exists"
+
+msgid "cert not found"
+msgstr "cert not found"
 
 msgid "Certificate name is required"
 msgstr "Certificate name is required"
@@ -240,6 +267,9 @@ msgstr "Failed to generate self-signed certificate"
 msgid "Failed to issue ACME certificate"
 msgstr "Failed to issue ACME certificate"
 
+msgid "Failed to renew ACME certificate"
+msgstr "Failed to renew ACME certificate"
+
 msgid "Failed to load logs"
 msgstr "Failed to load logs"
 
@@ -291,6 +321,12 @@ msgstr "Index File"
 msgid "Invalid site name"
 msgstr "Invalid site name"
 
+msgid "invalid domain"
+msgstr "invalid domain"
+
+msgid "invalid id"
+msgstr "invalid id"
+
 msgid "Keepalive Timeout"
 msgstr "Keepalive Timeout"
 
@@ -341,6 +377,12 @@ msgstr "Manual"
 
 msgid "Missing"
 msgstr "Missing"
+
+msgid "missing domain"
+msgstr "missing domain"
+
+msgid "missing id"
+msgstr "missing id"
 
 msgid "Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point."
 msgstr "Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point."
@@ -411,6 +453,9 @@ msgstr "Permission denied. Make sure UCI changes are applied."
 msgid "Please wait..."
 msgstr "Please wait..."
 
+msgid "Please wait, ACME certificate issuance may take a while..."
+msgstr "Please wait, ACME certificate issuance may take a while..."
+
 msgid "Plugin Version"
 msgstr "Plugin Version"
 
@@ -446,6 +491,12 @@ msgstr "Reload"
 
 msgid "Requesting..."
 msgstr "Requesting..."
+
+msgid "Renew"
+msgstr "Renew"
+
+msgid "Renewing..."
+msgstr "Renewing..."
 
 msgid "Restoring..."
 msgstr "Restoring..."

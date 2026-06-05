@@ -15,11 +15,32 @@ msgstr "-- 无 --"
 msgid "/etc/nginx/uci.conf.template"
 msgstr "/etc/nginx/uci.conf.template"
 
+msgid "ACME certificate issued successfully"
+msgstr "ACME 证书签发成功"
+
+msgid "ACME certificate renewed successfully"
+msgstr "ACME 证书续期成功"
+
 msgid "ACME certificate requested"
 msgstr "ACME 证书已申请"
 
 msgid "Access Log"
 msgstr "访问日志"
+
+msgid "acme config not found"
+msgstr "ACME 配置未找到"
+
+msgid "acme issue failed"
+msgstr "ACME 签发失败"
+
+msgid "acme package not installed"
+msgstr "ACME 包未安装，请先安装 acme 和 luci-app-acme"
+
+msgid "acme renew failed"
+msgstr "ACME 续期失败"
+
+msgid "not an acme certificate"
+msgstr "非 ACME 证书"
 
 msgid "Actions"
 msgstr "操作"
@@ -101,6 +122,12 @@ msgstr "证书名称"
 
 msgid "Certificate deleted"
 msgstr "证书已删除"
+
+msgid "certificate id already exists"
+msgstr "证书名称已存在"
+
+msgid "cert not found"
+msgstr "证书未找到"
 
 msgid "Certificate name is required"
 msgstr "证书名称为必填"
@@ -246,6 +273,9 @@ msgstr "自签名证书生成失败"
 msgid "Failed to issue ACME certificate"
 msgstr "ACME 证书申请失败"
 
+msgid "Failed to renew ACME certificate"
+msgstr "ACME 证书续期失败"
+
 msgid "Failed to load logs"
 msgstr "日志加载失败"
 
@@ -297,6 +327,12 @@ msgstr "首页文件"
 msgid "Invalid site name"
 msgstr "站点名称无效"
 
+msgid "invalid domain"
+msgstr "域名无效"
+
+msgid "invalid id"
+msgstr "ID 无效"
+
 msgid "Keepalive Timeout"
 msgstr "Keepalive 超时"
 
@@ -347,6 +383,12 @@ msgstr "手动上传"
 
 msgid "Missing"
 msgstr "缺失"
+
+msgid "missing domain"
+msgstr "缺少域名"
+
+msgid "missing id"
+msgstr "缺少 ID"
 
 msgid "Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point."
 msgstr "修改核心配置可能导致 Nginx 无法启动，甚至导致 LuCI 后台不可访问。请确保 SSH 可用，或保留 uhttpd 作为备用入口。"
@@ -417,6 +459,9 @@ msgstr "权限不足，请确保 UCI 更改已应用。"
 msgid "Please wait..."
 msgstr "请稍候..."
 
+msgid "Please wait, ACME certificate issuance may take a while..."
+msgstr "请稍候，ACME 证书签发可能需要一些时间..."
+
 msgid "Plugin Version"
 msgstr "插件版本"
 
@@ -452,6 +497,12 @@ msgstr "重新加载"
 
 msgid "Requesting..."
 msgstr "正在请求..."
+
+msgid "Renew"
+msgstr "续期"
+
+msgid "Renewing..."
+msgstr "正在续期..."
 
 msgid "Restoring..."
 msgstr "正在恢复..."

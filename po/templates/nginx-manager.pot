@@ -9,10 +9,31 @@ msgstr ""
 msgid "/etc/nginx/uci.conf.template"
 msgstr ""
 
+msgid "ACME certificate issued successfully"
+msgstr ""
+
+msgid "ACME certificate renewed successfully"
+msgstr ""
+
 msgid "ACME certificate requested"
 msgstr ""
 
 msgid "Access Log"
+msgstr ""
+
+msgid "acme config not found"
+msgstr ""
+
+msgid "acme issue failed"
+msgstr ""
+
+msgid "acme package not installed"
+msgstr ""
+
+msgid "acme renew failed"
+msgstr ""
+
+msgid "not an acme certificate"
 msgstr ""
 
 msgid "Actions"
@@ -94,6 +115,12 @@ msgid "Certificate Name"
 msgstr ""
 
 msgid "Certificate deleted"
+msgstr ""
+
+msgid "certificate id already exists"
+msgstr ""
+
+msgid "cert not found"
 msgstr ""
 
 msgid "Certificate name is required"
@@ -240,6 +267,9 @@ msgstr ""
 msgid "Failed to issue ACME certificate"
 msgstr ""
 
+msgid "Failed to renew ACME certificate"
+msgstr ""
+
 msgid "Failed to load logs"
 msgstr ""
 
@@ -291,6 +321,12 @@ msgstr ""
 msgid "Invalid site name"
 msgstr ""
 
+msgid "invalid domain"
+msgstr ""
+
+msgid "invalid id"
+msgstr ""
+
 msgid "Keepalive Timeout"
 msgstr ""
 
@@ -340,6 +376,12 @@ msgid "Manual"
 msgstr ""
 
 msgid "Missing"
+msgstr ""
+
+msgid "missing domain"
+msgstr ""
+
+msgid "missing id"
 msgstr ""
 
 msgid "Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point."
@@ -411,6 +453,9 @@ msgstr ""
 msgid "Please wait..."
 msgstr ""
 
+msgid "Please wait, ACME certificate issuance may take a while..."
+msgstr ""
+
 msgid "Plugin Version"
 msgstr ""
 
@@ -445,6 +490,12 @@ msgid "Reload"
 msgstr ""
 
 msgid "Requesting..."
+msgstr ""
+
+msgid "Renew"
+msgstr ""
+
+msgid "Renewing..."
 msgstr ""
 
 msgid "Restoring..."
