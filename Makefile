@@ -3,14 +3,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-nginx-manager
-PKG_VERSION:=1.1.0
+PKG_VERSION:=1.1.1
 PKG_RELEASE:=1
 
 PKG_LICENSE:=AGPL-3.0-only
 PKG_MAINTAINER:=yunshu
 
 LUCI_TITLE:=Nginx Manager for LuCI
-LUCI_DEPENDS:=+luci-base +nginx-ssl +rpcd +rpcd-mod-file +openssl-util
+LUCI_DEPENDS:=+luci-base +nginx-ssl +nginx-util +rpcd +rpcd-mod-file +openssl-util +acme
 LUCI_PKGARCH:=all
 
 include $(INCLUDE_DIR)/package.mk
@@ -114,7 +114,7 @@ NGINX_MGR_CONF
 		uci set nginx_manager.global.test_before_reload='1'
 		uci set nginx_manager.global.advanced_mode='0'
 		uci set nginx_manager.global.dangerous_core_edit='0'
-		uci set nginx_manager.global.max_backups='20'
+		uci set nginx_manager.global.max_backups='5'
 		uci set nginx_manager.global.client_max_body_size=''
 		uci set nginx_manager.global.keepalive_timeout=''
 		uci set nginx_manager.global.gzip='0'

@@ -35,11 +35,19 @@ load_global_config() {
 	BACKUP_DIR="$(uci -q get nginx_manager.global.backup_dir)" || BACKUP_DIR="/etc/nginx-manager/backups"
 	AUTO_BACKUP="$(uci -q get nginx_manager.global.auto_backup)" || AUTO_BACKUP="1"
 	TEST_BEFORE_RELOAD="$(uci -q get nginx_manager.global.test_before_reload)" || TEST_BEFORE_RELOAD="1"
-	MAX_BACKUPS="$(uci -q get nginx_manager.global.max_backups)" || MAX_BACKUPS="20"
+	MAX_BACKUPS="$(uci -q get nginx_manager.global.max_backups)" || MAX_BACKUPS="5"
+	case "${MAX_BACKUPS}" in
+		''|*[!0-9]*) MAX_BACKUPS="5" ;;
+	esac
+	[ "${MAX_BACKUPS}" -lt 1 ] && MAX_BACKUPS="1"
 }
 
 validate_name() {
-	echo "$1" | grep -qE '^[a-zA-Z0-9._-]+$'
+	echo "$1" | grep -qE '^[a-zA-Z0-9_][a-zA-Z0-9._-]*$'
+}
+
+validate_uci_id() {
+	echo "$1" | grep -qE '^[a-zA-Z0-9_]+$'
 }
 
 validate_port() {
@@ -59,6 +67,15 @@ validate_path() {
 			return 1
 			;;
 	esac
+}
+
+generate_acme_challenge_location() {
+	cat <<'EOF'
+    location ^~ /.well-known/acme-challenge/ {
+        alias /var/run/acme/challenge/;
+        default_type text/plain;
+    }
+EOF
 }
 
 detect_nginx_conf() {
@@ -152,7 +169,7 @@ get_script_version() {
 }
 
 create_backup() {
-	[ "$AUTO_BACKUP" = "1" ] || return 0
+	[ "$AUTO_BACKUP" = "1" ] || [ "$1" = "force" ] || return 0
 
 	local timestamp
 	timestamp="$(date '+%Y-%m-%d-%H%M%S')"
@@ -230,9 +247,6 @@ generate_redirect_block() {
 server {
     listen ${listen_addr}:80;
     server_name ${server_name};
-
-    return 301 https://\$host\$request_uri;
-}
 EOF
 	else
 		cat <<EOF
@@ -240,11 +254,18 @@ server {
     listen 80;
     listen [::]:80;
     server_name ${server_name};
-
-    return 301 https://\$host\$request_uri;
-}
 EOF
 	fi
+
+	generate_acme_challenge_location
+
+	cat <<EOF
+
+    location / {
+        return 301 https://\$host\$request_uri;
+    }
+}
+EOF
 }
 
 generate_ssl_directives() {
@@ -321,6 +342,7 @@ generate_reverse_proxy_site() {
 	local proxy_type custom_proxy_headers listen_addr
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
+	validate_name "${name}" || name="${section}"
 	server_name="$(uci -q get "nginx_manager.${section}.server_name")" || return 1
 	proxy_pass="$(uci -q get "nginx_manager.${section}.proxy_pass")" || return 1
 	websocket="$(uci -q get "nginx_manager.${section}.websocket")" || websocket="0"
@@ -357,6 +379,9 @@ generate_reverse_proxy_site() {
 		echo "    server_name ${server_name};"
 
 		generate_log_directives "${name}" "${access_log}" "${error_log}"
+
+		echo ""
+		generate_acme_challenge_location
 
 		echo ""
 		echo "    location / {"
@@ -439,6 +464,7 @@ generate_static_site() {
 	local access_log error_log enabled listen_addr
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
+	validate_name "${name}" || name="${section}"
 	server_name="$(uci -q get "nginx_manager.${section}.server_name")" || return 1
 	root="$(uci -q get "nginx_manager.${section}.root")" || return 1
 	index="$(uci -q get "nginx_manager.${section}.index")" || index="index.html"
@@ -474,6 +500,9 @@ generate_static_site() {
 		generate_log_directives "${name}" "${access_log}" "${error_log}"
 
 		echo ""
+		generate_acme_challenge_location
+
+		echo ""
 		echo "    location / {"
 		echo "        try_files \$uri \$uri/ =404;"
 		echo "    }"
@@ -490,6 +519,7 @@ generate_custom_site() {
 	local name custom_block enabled
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
+	validate_name "${name}" || name="${section}"
 	custom_block="$(uci -q get "nginx_manager.${section}.custom_server_block")" || return 1
 	enabled="$(uci -q get "nginx_manager.${section}.enabled")" || enabled="1"
 
@@ -510,6 +540,7 @@ generate_redirect_site() {
 	local access_log error_log listen_addr
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
+	validate_name "${name}" || name="${section}"
 	server_name="$(uci -q get "nginx_manager.${section}.server_name")" || return 1
 	redirect_target="$(uci -q get "nginx_manager.${section}.redirect_target")" || return 1
 	redirect_https="$(uci -q get "nginx_manager.${section}.redirect_https")" || redirect_https="0"
@@ -538,8 +569,13 @@ generate_redirect_site() {
 
 		echo "    server_name ${server_name};"
 		generate_log_directives "${name}" "${access_log}" "${error_log}"
+
 		echo ""
-		echo "    return 301 ${redirect_target};"
+		generate_acme_challenge_location
+		echo ""
+		echo "    location / {"
+		echo "        return 301 ${redirect_target};"
+		echo "    }"
 		echo "}"
 	} > "${output_file}"
 
@@ -777,8 +813,11 @@ render_single_site() {
 	local section="$1"
 	local mode name
 
+	validate_uci_id "${section}" || return 1
+
 	mode="$(uci -q get "nginx_manager.${section}.mode")" || mode="reverse_proxy"
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
+	validate_name "${name}" || name="${section}"
 
 	load_global_config
 
@@ -848,6 +887,7 @@ do_check_env() {
 	local _nginx_ssl=0
 	local _nginx_util=0
 	local _openssl_util=0
+	local _acme=0
 	local _rpcd_bin=0
 	local _initd_nginx=0
 	local _uci_template=0
@@ -862,6 +902,10 @@ do_check_env() {
 
 	if command -v openssl >/dev/null 2>&1; then
 		_openssl_util=1
+	fi
+
+	if [ -x /etc/init.d/acme ]; then
+		_acme=1
 	fi
 
 	if command -v rpcd >/dev/null 2>&1 || [ -x /sbin/rpcd ]; then
@@ -899,10 +943,11 @@ do_check_env() {
 	_version="$(get_script_version)"
 	[ -z "${_version}" ] && _version="unknown"
 
-	printf '{"nginx_ssl":%d,"nginx_util":%d,"openssl_util":%d,"rpcd":%d,"initd_nginx":%d,"uci_template":%d,"openwrt_version":"%s","package_manager":"%s","version":"%s"}\n' \
+	printf '{"nginx_ssl":%d,"nginx_util":%d,"openssl_util":%d,"acme":%d,"rpcd":%d,"initd_nginx":%d,"uci_template":%d,"openwrt_version":"%s","package_manager":"%s","version":"%s"}\n' \
 		"${_nginx_ssl}" \
 		"${_nginx_util}" \
 		"${_openssl_util}" \
+		"${_acme}" \
 		"${_rpcd_bin}" \
 		"${_initd_nginx}" \
 		"${_uci_template}" \
@@ -998,7 +1043,7 @@ case "$1" in
 		;;
 	backup)
 		load_global_config
-		create_backup
+		create_backup force
 		;;
 	--status)
 		do_status

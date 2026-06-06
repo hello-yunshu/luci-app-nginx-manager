@@ -10,6 +10,7 @@ CERT_DIR=""
 BACKUP_DIR=""
 NGINX_MANAGER_GEN="/usr/sbin/nginx-manager-gen"
 NGINX_CONF_PATH=""
+ACME_CHALLENGE_DIR="/var/run/acme/challenge"
 
 detect_nginx_conf() {
 	[ -n "${NGINX_CONF_PATH}" ] && return
@@ -26,8 +27,26 @@ load_global_config() {
 	BACKUP_DIR="$(uci -q get nginx_manager.global.backup_dir)" || BACKUP_DIR="/etc/nginx-manager/backups"
 }
 
+get_max_backups() {
+	local max_backups
+	max_backups="$(uci -q get nginx_manager.global.max_backups)" || max_backups="5"
+	case "${max_backups}" in
+		''|*[!0-9]*) max_backups="5" ;;
+	esac
+	[ "${max_backups}" -lt 1 ] && max_backups="1"
+	printf '%s' "${max_backups}"
+}
+
 validate_name() {
-	echo "$1" | grep -qE '^[a-zA-Z0-9._-]+$'
+	echo "$1" | grep -qE '^[a-zA-Z0-9_][a-zA-Z0-9._-]*$'
+}
+
+validate_uci_id() {
+	echo "$1" | grep -qE '^[a-zA-Z0-9_]+$'
+}
+
+validate_backup_id() {
+	echo "$1" | grep -qE '^20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9](-[A-Za-z0-9._-]+)?$'
 }
 
 validate_domain() {
@@ -48,6 +67,75 @@ run_apply_or_error() {
 	fi
 
 	return 0
+}
+
+prepare_acme_challenge_config() {
+	local cert_id="$1"
+	local domain="$2"
+	local challenge_conf test_output reload_output
+
+	load_global_config
+
+	mkdir -p "${ACME_CHALLENGE_DIR}" || {
+		echo "failed to create ${ACME_CHALLENGE_DIR}"
+		return 1
+	}
+
+	"${NGINX_MANAGER_GEN}" generate >/dev/null 2>&1 || {
+		echo "failed to generate nginx manager config"
+		return 1
+	}
+
+	mkdir -p "${MANAGED_DIR}/sites" || {
+		echo "failed to create ${MANAGED_DIR}/sites"
+		return 1
+	}
+
+	challenge_conf="${MANAGED_DIR}/sites/00-acme-challenge-${cert_id}.conf"
+	cat > "${challenge_conf}" <<EOF
+# Generated temporarily by luci-app-nginx-manager for ACME HTTP-01 validation.
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${domain};
+
+    location ^~ /.well-known/acme-challenge/ {
+        alias ${ACME_CHALLENGE_DIR}/;
+        default_type text/plain;
+    }
+
+    location / {
+        return 404;
+    }
+}
+EOF
+
+	detect_nginx_conf
+	test_output="$(nginx -t -c "${NGINX_CONF_PATH}" 2>&1)" || {
+		rm -f "${challenge_conf}"
+		echo "${test_output}"
+		return 1
+	}
+
+	reload_output="$(/etc/init.d/nginx reload 2>&1)" || {
+		rm -f "${challenge_conf}"
+		echo "${reload_output}"
+		return 1
+	}
+
+	return 0
+}
+
+cleanup_acme_challenge_config() {
+	local cert_id="$1"
+	local challenge_conf
+
+	load_global_config
+	challenge_conf="${MANAGED_DIR}/sites/00-acme-challenge-${cert_id}.conf"
+	rm -f "${challenge_conf}"
+
+	detect_nginx_conf
+	nginx -t -c "${NGINX_CONF_PATH}" >/dev/null 2>&1 && /etc/init.d/nginx reload >/dev/null 2>&1
 }
 
 get_cert_expiry() {
@@ -115,6 +203,7 @@ handle_get_site() {
 	local site_id
 	json_get_var site_id "id"
 	[ -z "${site_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_uci_id "${site_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 
 	config_load nginx_manager
 
@@ -210,7 +299,7 @@ handle_set_site() {
 	json_get_var enabled "enabled"
 
 	[ -z "${site_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
-	validate_name "${site_id}" || { json_init; json_add_string "error" "invalid site id"; json_dump; return; }
+	validate_uci_id "${site_id}" || { json_init; json_add_string "error" "invalid site id"; json_dump; return; }
 	[ -z "${name}" ] && name="${site_id}"
 	validate_name "${name}" || { json_init; json_add_string "error" "invalid name"; json_dump; return; }
 
@@ -310,7 +399,7 @@ handle_delete_site() {
 	local site_id
 	json_get_var site_id "id"
 	[ -z "${site_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
-	validate_name "${site_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+	validate_uci_id "${site_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 
 	uci -q get "nginx_manager.${site_id}" >/dev/null 2>&1 || {
 		json_init
@@ -333,6 +422,7 @@ handle_enable_site() {
 	local site_id
 	json_get_var site_id "id"
 	[ -z "${site_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_uci_id "${site_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 
 	uci -q get "nginx_manager.${site_id}" >/dev/null 2>&1 || {
 		json_init
@@ -355,6 +445,7 @@ handle_disable_site() {
 	local site_id
 	json_get_var site_id "id"
 	[ -z "${site_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_uci_id "${site_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 
 	uci -q get "nginx_manager.${site_id}" >/dev/null 2>&1 || {
 		json_init
@@ -377,6 +468,7 @@ handle_render_site() {
 	local site_id
 	json_get_var site_id "id"
 	[ -z "${site_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_uci_id "${site_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 
 	local rendered
 	rendered="$("${NGINX_MANAGER_GEN}" render "${site_id}" 2>&1)"
@@ -440,6 +532,7 @@ handle_get_cert() {
 	local cert_id
 	json_get_var cert_id "id"
 	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_uci_id "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 
 	config_load nginx_manager
 
@@ -476,7 +569,7 @@ handle_set_cert() {
 	json_get_var auto_renew "auto_renew"
 
 	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
-	validate_name "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+	validate_uci_id "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 
 	uci set "nginx_manager.${cert_id}=cert"
 	[ -n "${name}" ] && uci set "nginx_manager.${cert_id}.name=${name}"
@@ -497,6 +590,7 @@ handle_delete_cert() {
 	local cert_id
 	json_get_var cert_id "id"
 	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_uci_id "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 
 	uci -q get "nginx_manager.${cert_id}" >/dev/null 2>&1 || {
 		json_init
@@ -538,7 +632,7 @@ handle_upload_cert() {
 	json_get_var domain "domain"
 
 	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
-	validate_name "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+	validate_uci_id "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 	[ -z "${cert_content}" ] && { json_init; json_add_string "error" "missing cert_content"; json_dump; return; }
 	[ -z "${key_content}" ] && { json_init; json_add_string "error" "missing key_content"; json_dump; return; }
 
@@ -573,7 +667,7 @@ handle_issue_self_signed() {
 	json_get_var domain "domain"
 
 	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
-	validate_name "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+	validate_uci_id "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 	[ -z "${domain}" ] && { json_init; json_add_string "error" "missing domain"; json_dump; return; }
 
 	load_global_config
@@ -701,7 +795,7 @@ resolve_log_paths() {
 	local site_name log_path found
 
 	if [ -n "${site}" ]; then
-		validate_name "${site}" || return 1
+		validate_uci_id "${site}" || return 1
 		site_name="$(uci -q get "nginx_manager.${site}.name")" || site_name="${site}"
 		validate_name "${site_name}" || return 1
 	fi
@@ -785,26 +879,46 @@ handle_clear_logs() {
 	json_dump
 }
 
-# Read a directive value from nginx config files
-# Returns "on" or "off" for boolean directives, or the raw value for others
+# Read a directive value from the effective nginx configuration (nginx -T)
+# This covers all included files, not just the main config
+_NGINX_T_CACHE=""
 _read_nginx_directive() {
 	local directive="$1"
+
+	# Cache nginx -T output to avoid running it multiple times
+	if [ -z "${_NGINX_T_CACHE}" ]; then
+		detect_nginx_conf
+		_NGINX_T_CACHE="$(nginx -T -c "${NGINX_CONF_PATH}" 2>/dev/null)" || _NGINX_T_CACHE=""
+	fi
+
 	local value=""
+	if [ -n "${_NGINX_T_CACHE}" ]; then
+		# Search for the directive in http{} top-level context only.
+		# These directives appear with minimal indentation (0-4 spaces) inside http{},
+		# while server{} and location{} directives have deeper indentation (8+ spaces).
+		value="$(printf '%s\n' "${_NGINX_T_CACHE}" | \
+			grep -E "^[[:space:]]{0,4}${directive}[[:space:]]+" | head -1 | \
+			sed "s/.*${directive}[[:space:]]*//; s/[[:space:]]*;.*//")"
+	fi
 
-	# Search in uci.conf.template first, then nginx.conf
-	local conf_files="/etc/nginx/uci.conf.template /etc/nginx/nginx.conf"
-
-	for conf_file in ${conf_files}; do
-		[ -f "${conf_file}" ] || continue
-		value="$(grep -E "^[[:space:]]*${directive}[[:space:]]+" "${conf_file}" 2>/dev/null | head -1 | sed "s/.*${directive}[[:space:]]*//; s/[[:space:]]*;.*//")"
-		[ -n "${value}" ] && break
-	done
+	# Fallback: search main config files if nginx -T didn't work
+	if [ -z "${value}" ]; then
+		local conf_files="/etc/nginx/uci.conf.template /etc/nginx/nginx.conf"
+		for conf_file in ${conf_files}; do
+			[ -f "${conf_file}" ] || continue
+			value="$(grep -E "^[[:space:]]*${directive}[[:space:]]+" "${conf_file}" 2>/dev/null | head -1 | sed "s/.*${directive}[[:space:]]*//; s/[[:space:]]*;.*//")"
+			[ -n "${value}" ] && break
+		done
+	fi
 
 	echo "${value}"
 }
 
 handle_get_core_config() {
 	load_global_config
+
+	# Reset nginx -T cache for fresh read
+	_NGINX_T_CACHE=""
 
 	local gzip_val sendfile_val server_tokens_val
 	local max_body_val keepalive_val access_log_val error_log_val
@@ -966,6 +1080,7 @@ handle_set_file_dangerous() {
 	esac
 
 	load_global_config
+	detect_nginx_conf
 	local timestamp
 	timestamp="$(date '+%Y-%m-%d-%H%M%S')"
 	local backup_path="${BACKUP_DIR}/${timestamp}"
@@ -1005,6 +1120,7 @@ handle_list_backups() {
 	load_global_config
 
 	json_init
+	json_add_string "max_backups" "$(get_max_backups)"
 	json_add_array "backups"
 
 	for backup_dir in "${BACKUP_DIR}"/20*; do
@@ -1029,10 +1145,71 @@ handle_list_backups() {
 	json_dump
 }
 
+cleanup_old_backups() {
+	local max_backups count prune_count
+
+	load_global_config
+	max_backups="$(get_max_backups)"
+	count="$(ls -1d "${BACKUP_DIR}"/20* 2>/dev/null | wc -l)"
+	[ "${count}" -gt "${max_backups}" ] || return 0
+
+	prune_count=$((count - max_backups))
+	ls -1d "${BACKUP_DIR}"/20* 2>/dev/null | head -n "${prune_count}" | while read -r old_backup; do
+		rm -rf "${old_backup}"
+	done
+}
+
+handle_get_backup_settings() {
+	load_global_config
+
+	json_init
+	json_add_string "backup_dir" "${BACKUP_DIR}"
+	json_add_string "max_backups" "$(get_max_backups)"
+	json_dump
+}
+
+handle_set_backup_settings() {
+	local max_backups
+	json_get_var max_backups "max_backups"
+
+	case "${max_backups}" in
+		''|*[!0-9]*)
+			json_init
+			json_add_string "error" "invalid max_backups"
+			json_dump
+			return
+			;;
+	esac
+
+	if [ "${max_backups}" -lt 1 ] || [ "${max_backups}" -gt 100 ]; then
+		json_init
+		json_add_string "error" "max_backups must be between 1 and 100"
+		json_dump
+		return
+	fi
+
+	uci set "nginx_manager.global.max_backups=${max_backups}"
+	uci commit nginx_manager
+	cleanup_old_backups
+
+	json_init
+	json_add_string "result" "ok"
+	json_add_string "max_backups" "${max_backups}"
+	json_dump
+}
+
 handle_create_backup() {
 	load_global_config
 
-	"${NGINX_MANAGER_GEN}" backup >/dev/null 2>&1
+	local backup_output
+	backup_output="$("${NGINX_MANAGER_GEN}" backup 2>&1)"
+	if [ $? -ne 0 ]; then
+		json_init
+		json_add_string "error" "backup failed"
+		json_add_string "detail" "${backup_output}"
+		json_dump
+		return
+	fi
 
 	json_init
 	json_add_string "result" "ok"
@@ -1043,8 +1220,10 @@ handle_restore_backup() {
 	local backup_id
 	json_get_var backup_id "id"
 	[ -z "${backup_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_backup_id "${backup_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 
 	load_global_config
+	detect_nginx_conf
 
 	local backup_path="${BACKUP_DIR}/${backup_id}"
 	[ -d "${backup_path}" ] || {
@@ -1097,6 +1276,7 @@ handle_diff_backup() {
 	local backup_id
 	json_get_var backup_id "id"
 	[ -z "${backup_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_backup_id "${backup_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 
 	load_global_config
 
@@ -1122,6 +1302,7 @@ handle_delete_backup() {
 	local backup_id
 	json_get_var backup_id "id"
 	[ -z "${backup_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_backup_id "${backup_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 
 	load_global_config
 
@@ -1133,7 +1314,12 @@ handle_delete_backup() {
 		return
 	}
 
-	rm -rf "${backup_path}"
+	if ! rm -rf "${backup_path}"; then
+		json_init
+		json_add_string "error" "failed to delete backup"
+		json_dump
+		return
+	fi
 
 	json_init
 	json_add_string "result" "ok"
@@ -1147,9 +1333,10 @@ handle_acme_issue() {
 	json_get_var domain "domain"
 
 	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
-	validate_name "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+	validate_uci_id "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 	[ -z "${domain}" ] && { json_init; json_add_string "error" "missing domain"; json_dump; return; }
 	validate_domain "${domain}" || { json_init; json_add_string "error" "invalid domain"; json_dump; return; }
+	echo "${domain}" | grep -q '\*' && { json_init; json_add_string "error" "wildcard domains not supported for acme"; json_dump; return; }
 
 	# Check for duplicate cert_id
 	uci -q get "nginx_manager.${cert_id}" >/dev/null 2>&1 && {
@@ -1178,17 +1365,30 @@ handle_acme_issue() {
 	uci set "acme.${cert_id}=cert"
 	uci set "acme.${cert_id}.enabled=1"
 	uci set "acme.${cert_id}.validation_method=webroot"
-	uci set "acme.${cert_id}.webroot=/www"
-	uci set "acme.${cert_id}.keylength=ec-256"
-	uci set "acme.${cert_id}.update_nginx=1"
+	uci set "acme.${cert_id}.key_type=ec256"
 	uci delete "acme.${cert_id}.domains" 2>/dev/null
 	uci add_list "acme.${cert_id}.domains=${domain}"
 	uci commit acme
 
+	local challenge_output
+	challenge_output="$(prepare_acme_challenge_config "${cert_id}" "${domain}" 2>&1)"
+	if [ $? -ne 0 ]; then
+		uci delete "acme.${cert_id}" 2>/dev/null
+		uci commit acme
+
+		json_init
+		json_add_string "error" "acme challenge config failed"
+		json_add_string "detail" "${challenge_output}"
+		json_dump
+		return
+	fi
+
 	# Run acme to issue the certificate
 	local acme_output
-	acme_output="$(/etc/init.d/acme start 2>&1)"
+	acme_output="$(/etc/init.d/acme restart 2>&1)"
 	local acme_exit=$?
+
+	cleanup_acme_challenge_config "${cert_id}"
 
 	# Check if certificate was issued successfully
 	local acme_cert="/etc/ssl/acme/${domain}.fullchain.crt"
@@ -1237,6 +1437,7 @@ handle_acme_renew() {
 	json_get_var cert_id "id"
 
 	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_uci_id "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 
 	# Check if acme package is installed
 	if [ ! -x /etc/init.d/acme ]; then
@@ -1247,10 +1448,11 @@ handle_acme_renew() {
 	fi
 
 	# Verify cert exists in nginx_manager
-	local cert_type
+	local cert_type domain
 	cert_type="$(uci -q get "nginx_manager.${cert_id}.type")" || {
 		json_init; json_add_string "error" "cert not found"; json_dump; return
 	}
+	domain="$(uci -q get "nginx_manager.${cert_id}.domain")" || domain=""
 
 	if [ "${cert_type}" != "acme" ]; then
 		json_init
@@ -1258,6 +1460,8 @@ handle_acme_renew() {
 		json_dump
 		return
 	fi
+	[ -z "${domain}" ] && { json_init; json_add_string "error" "missing domain"; json_dump; return; }
+	echo "${domain}" | grep -q '\*' && { json_init; json_add_string "error" "wildcard domains not supported for acme"; json_dump; return; }
 
 	# Verify cert exists in acme config
 	uci -q get "acme.${cert_id}" >/dev/null 2>&1 || {
@@ -1268,10 +1472,22 @@ handle_acme_renew() {
 	uci set "acme.${cert_id}.enabled=1"
 	uci commit acme
 
+	local challenge_output
+	challenge_output="$(prepare_acme_challenge_config "${cert_id}" "${domain}" 2>&1)"
+	if [ $? -ne 0 ]; then
+		json_init
+		json_add_string "error" "acme challenge config failed"
+		json_add_string "detail" "${challenge_output}"
+		json_dump
+		return
+	fi
+
 	# Run acme renewal
 	local acme_output
-	acme_output="$(/etc/init.d/acme start 2>&1)"
+	acme_output="$(/etc/init.d/acme restart 2>&1)"
 	local acme_exit=$?
+
+	cleanup_acme_challenge_config "${cert_id}"
 
 	if [ ${acme_exit} -ne 0 ]; then
 		json_init
@@ -1448,6 +1664,13 @@ case "$1" in
 		json_add_object "list_backups"
 		json_close_object
 
+		json_add_object "get_backup_settings"
+		json_close_object
+
+		json_add_object "set_backup_settings"
+		json_add_string "max_backups" ""
+		json_close_object
+
 		json_add_object "create_backup"
 		json_close_object
 
@@ -1502,6 +1725,8 @@ case "$1" in
 			get_file_readonly)  handle_get_file_readonly ;;
 			set_file_dangerous) handle_set_file_dangerous ;;
 			list_backups)       handle_list_backups ;;
+			get_backup_settings) handle_get_backup_settings ;;
+			set_backup_settings) handle_set_backup_settings ;;
 			create_backup)      handle_create_backup ;;
 			restore_backup)     handle_restore_backup ;;
 			diff_backup)        handle_diff_backup ;;

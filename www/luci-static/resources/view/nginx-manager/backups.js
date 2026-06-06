@@ -18,6 +18,13 @@ var callCreateBackup = rpc.declare({
 	expect: {}
 });
 
+var callSetBackupSettings = rpc.declare({
+	object: 'nginx_manager',
+	method: 'set_backup_settings',
+	params: ['max_backups'],
+	expect: {}
+});
+
 var callRestoreBackup = rpc.declare({
 	object: 'nginx_manager',
 	method: 'restore_backup',
@@ -46,6 +53,7 @@ return view.extend({
 
 	render: function(data) {
 		var backups = (data && data.backups) || [];
+		var maxBackups = (data && data.max_backups) || '5';
 
 		var page = E('div', { 'class': 'cbi-map' });
 
@@ -55,6 +63,45 @@ return view.extend({
 
 		var section = E('div', { 'class': 'cbi-section' });
 		section.appendChild(E('h3', {}, _('Backup Management')));
+
+		var settingsRow = E('div', { 'class': 'cbi-value' }, [
+			E('label', { 'class': 'cbi-value-title', 'for': 'backup-max-backups' }, _('Maximum Backups')),
+			E('div', { 'class': 'cbi-value-field' }, [
+				E('input', {
+					'id': 'backup-max-backups',
+					'type': 'number',
+					'class': 'cbi-input-text',
+					'min': '1',
+					'max': '100',
+					'value': maxBackups,
+					'style': 'width: 6em;'
+				}),
+				E('button', {
+					'class': 'cbi-button cbi-button-apply',
+					'style': 'margin-left: 8px;',
+					'click': function() {
+						var input = document.getElementById('backup-max-backups');
+						var value = input ? input.value.trim() : '';
+
+						if (!/^[0-9]+$/.test(value) || +value < 1 || +value > 100) {
+							ui.addNotification(null, E('p', {}, _('Maximum backups must be between 1 and 100')), 'error');
+							return;
+						}
+
+						callSetBackupSettings(value).then(function(result) {
+							if (result && result.error) {
+								ui.addNotification(null, E('p', {}, result.error), 'error');
+							} else {
+								ui.addNotification(null, E('p', {}, _('Backup settings saved')), 'info');
+								setTimeout(function() { location.reload(); }, 500);
+							}
+						});
+					}
+				}, _('Save'))
+			])
+		]);
+
+		section.appendChild(settingsRow);
 
 		var createBtn = E('button', {
 			'class': 'cbi-button cbi-button-apply',

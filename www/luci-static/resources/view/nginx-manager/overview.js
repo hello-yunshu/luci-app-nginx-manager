@@ -328,6 +328,7 @@ return view.extend({
 			{ key: 'nginx_ssl', label: 'nginx-ssl' },
 			{ key: 'nginx_util', label: 'nginx-util' },
 			{ key: 'openssl_util', label: 'openssl-util' },
+			{ key: 'acme', label: 'acme' },
 			{ key: 'rpcd', label: 'rpcd' },
 			{ key: 'initd_nginx', label: 'init.d nginx' },
 			{ key: 'uci_template', label: 'uci.conf.template' }

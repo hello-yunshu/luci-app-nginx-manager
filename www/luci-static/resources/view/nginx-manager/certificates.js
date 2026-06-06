@@ -159,6 +159,10 @@ return view.extend({
 										ui.addNotification(null, E('p', {}, _('Domain is required for ACME certificates')), 'error');
 										return;
 									}
+									if (certDomain.includes('*')) {
+										ui.addNotification(null, E('p', {}, _('Wildcard domains are not supported for ACME certificates')), 'error');
+										return;
+									}
 									ui.showModal(_('Requesting...'), [E('p', {}, _('Please wait, ACME certificate issuance may take a while...'))]);
 									callAcmeIssue(certName, certDomain).then(function(result) {
 										ui.hideModal();

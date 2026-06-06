@@ -30,11 +30,14 @@ msgstr "访问日志"
 msgid "acme config not found"
 msgstr "ACME 配置未找到"
 
+msgid "acme challenge config failed"
+msgstr "ACME 验证配置生成失败"
+
 msgid "acme issue failed"
 msgstr "ACME 签发失败"
 
 msgid "acme package not installed"
-msgstr "ACME 包未安装，请先安装 acme 和 luci-app-acme"
+msgstr "ACME 包未安装，请先安装 acme"
 
 msgid "acme renew failed"
 msgstr "ACME 续期失败"
@@ -98,6 +101,9 @@ msgstr "备份已删除"
 
 msgid "Backup restored"
 msgstr "备份已恢复"
+
+msgid "Backup settings saved"
+msgstr "备份设置已保存"
 
 msgid "Backups"
 msgstr "备份"
@@ -381,6 +387,12 @@ msgstr "管理站点数"
 msgid "Manual"
 msgstr "手动上传"
 
+msgid "Maximum Backups"
+msgstr "最多保留备份数"
+
+msgid "Maximum backups must be between 1 and 100"
+msgstr "最多保留备份数必须在 1 到 100 之间"
+
 msgid "Missing"
 msgstr "缺失"
 
@@ -647,6 +659,12 @@ msgstr "查看 nginx -T"
 
 msgid "View uci.conf.template"
 msgstr "查看 uci.conf.template"
+
+msgid "Wildcard domains are not supported for ACME certificates"
+msgstr "ACME 证书不支持通配符域名"
+
+msgid "wildcard domains not supported for acme"
+msgstr "ACME 证书不支持通配符域名"
 
 msgid "WebSocket"
 msgstr "WebSocket"

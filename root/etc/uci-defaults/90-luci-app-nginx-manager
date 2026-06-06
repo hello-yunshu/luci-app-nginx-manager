@@ -26,7 +26,7 @@ uci -q get nginx_manager.global >/dev/null 2>&1 || {
 	uci set nginx_manager.global.test_before_reload='1'
 	uci set nginx_manager.global.advanced_mode='0'
 	uci set nginx_manager.global.dangerous_core_edit='0'
-	uci set nginx_manager.global.max_backups='20'
+	uci set nginx_manager.global.max_backups='5'
 	uci set nginx_manager.global.client_max_body_size=''
 	uci set nginx_manager.global.keepalive_timeout=''
 	uci set nginx_manager.global.gzip='0'
