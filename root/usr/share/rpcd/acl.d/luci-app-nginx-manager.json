@@ -42,6 +42,7 @@
 					"issue_self_signed",
 					"acme_issue",
 					"acme_renew",
+					"acme_status",
 					"set_core_config_safe",
 					"set_file_dangerous",
 					"create_backup",

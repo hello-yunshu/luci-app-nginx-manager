@@ -21,6 +21,12 @@ msgstr "ACME 证书签发成功"
 msgid "ACME certificate renewed successfully"
 msgstr "ACME 证书续期成功"
 
+msgid "ACME operation timed out"
+msgstr "ACME 操作超时"
+
+msgid "Unknown ACME task status"
+msgstr "未知的 ACME 任务状态"
+
 msgid "ACME certificate requested"
 msgstr "ACME 证书已申请"
 
