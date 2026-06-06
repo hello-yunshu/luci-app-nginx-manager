@@ -474,6 +474,9 @@ msgstr "Please wait..."
 msgid "Please wait, ACME certificate issuance may take a while..."
 msgstr "Please wait, ACME certificate issuance may take a while..."
 
+msgid "Please wait, ACME renewal may take a while..."
+msgstr "Please wait, ACME renewal may take a while..."
+
 msgid "Plugin Version"
 msgstr "Plugin Version"
 
