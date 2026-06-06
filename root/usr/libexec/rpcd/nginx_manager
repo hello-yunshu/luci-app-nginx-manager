@@ -45,6 +45,12 @@ validate_uci_id() {
 	echo "$1" | grep -qE '^[a-zA-Z0-9_]+$'
 }
 
+# Sanitize a user-provided ID for UCI section names:
+# dots and hyphens are converted to underscores
+sanitize_uci_id() {
+	echo "$1" | sed 's/[^a-zA-Z0-9_]/_/g'
+}
+
 validate_backup_id() {
 	echo "$1" | grep -qE '^20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9](-[A-Za-z0-9._-]+)?$'
 }
@@ -623,16 +629,17 @@ handle_delete_cert() {
 }
 
 handle_upload_cert() {
-	local cert_id name cert_content key_content domain
+	local cert_name name cert_content key_content domain cert_id
 
-	json_get_var cert_id "id"
+	json_get_var cert_name "id"
 	json_get_var name "name"
 	json_get_var cert_content "cert_content"
 	json_get_var key_content "key_content"
 	json_get_var domain "domain"
 
-	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
-	validate_uci_id "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+	[ -z "${cert_name}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_name "${cert_name}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+	cert_id="$(sanitize_uci_id "${cert_name}")"
 	[ -z "${cert_content}" ] && { json_init; json_add_string "error" "missing cert_content"; json_dump; return; }
 	[ -z "${key_content}" ] && { json_init; json_add_string "error" "missing key_content"; json_dump; return; }
 
@@ -646,7 +653,7 @@ handle_upload_cert() {
 	chmod 600 "${cert_subdir}/privkey.pem"
 
 	uci set "nginx_manager.${cert_id}=cert"
-	uci set "nginx_manager.${cert_id}.name=${name:-${cert_id}}"
+	uci set "nginx_manager.${cert_id}.name=${name:-${cert_name}}"
 	uci set "nginx_manager.${cert_id}.type=manual"
 	uci set "nginx_manager.${cert_id}.cert_path=${cert_subdir}/fullchain.pem"
 	uci set "nginx_manager.${cert_id}.key_path=${cert_subdir}/privkey.pem"
@@ -660,14 +667,15 @@ handle_upload_cert() {
 }
 
 handle_issue_self_signed() {
-	local cert_id name domain
+	local cert_name name domain cert_id
 
-	json_get_var cert_id "id"
+	json_get_var cert_name "id"
 	json_get_var name "name"
 	json_get_var domain "domain"
 
-	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
-	validate_uci_id "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+	[ -z "${cert_name}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_name "${cert_name}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+	cert_id="$(sanitize_uci_id "${cert_name}")"
 	[ -z "${domain}" ] && { json_init; json_add_string "error" "missing domain"; json_dump; return; }
 
 	load_global_config
@@ -685,7 +693,7 @@ handle_issue_self_signed() {
 	chmod 600 "${cert_subdir}/privkey.pem"
 
 	uci set "nginx_manager.${cert_id}=cert"
-	uci set "nginx_manager.${cert_id}.name=${name:-${cert_id}}"
+	uci set "nginx_manager.${cert_id}.name=${name:-${cert_name}}"
 	uci set "nginx_manager.${cert_id}.type=self_signed"
 	uci set "nginx_manager.${cert_id}.cert_path=${cert_subdir}/fullchain.pem"
 	uci set "nginx_manager.${cert_id}.key_path=${cert_subdir}/privkey.pem"
@@ -1327,13 +1335,14 @@ handle_delete_backup() {
 }
 
 handle_acme_issue() {
-	local cert_id domain
+	local cert_name domain cert_id
 
-	json_get_var cert_id "id"
+	json_get_var cert_name "id"
 	json_get_var domain "domain"
 
-	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
-	validate_uci_id "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+	[ -z "${cert_name}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_name "${cert_name}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+	cert_id="$(sanitize_uci_id "${cert_name}")"
 	[ -z "${domain}" ] && { json_init; json_add_string "error" "missing domain"; json_dump; return; }
 	validate_domain "${domain}" || { json_init; json_add_string "error" "invalid domain"; json_dump; return; }
 	echo "${domain}" | grep -q '\*' && { json_init; json_add_string "error" "wildcard domains not supported for acme"; json_dump; return; }
@@ -1415,7 +1424,7 @@ handle_acme_issue() {
 	ln -sf "${acme_key}" "${cert_subdir}/privkey.pem"
 
 	uci set "nginx_manager.${cert_id}=cert"
-	uci set "nginx_manager.${cert_id}.name=${cert_id}"
+	uci set "nginx_manager.${cert_id}.name=${cert_name}"
 	uci set "nginx_manager.${cert_id}.type=acme"
 	uci set "nginx_manager.${cert_id}.cert_path=${cert_subdir}/fullchain.pem"
 	uci set "nginx_manager.${cert_id}.key_path=${cert_subdir}/privkey.pem"
