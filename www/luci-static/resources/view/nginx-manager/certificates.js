@@ -133,6 +133,10 @@ return view.extend({
 									ui.addNotification(null, E('p', {}, _('Certificate name is required')), 'error');
 									return;
 								}
+								if (!/^[a-zA-Z0-9_][a-zA-Z0-9._-]*$/.test(certName)) {
+									ui.addNotification(null, E('p', {}, _('Certificate name must start with a letter, number or underscore, and can contain letters, numbers, dots, hyphens and underscores')), 'error');
+									return;
+								}
 
 								ui.hideModal();
 

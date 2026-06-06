@@ -660,6 +660,9 @@ msgstr "查看 nginx -T"
 msgid "View uci.conf.template"
 msgstr "查看 uci.conf.template"
 
+msgid "Certificate name must start with a letter, number or underscore, and can contain letters, numbers, dots, hyphens and underscores"
+msgstr "证书名称须以字母、数字或下划线开头，可包含字母、数字、点号、连字符和下划线"
+
 msgid "Wildcard domains are not supported for ACME certificates"
 msgstr "ACME 证书不支持通配符域名"
 

@@ -654,6 +654,9 @@ msgstr "View nginx -T"
 msgid "View uci.conf.template"
 msgstr "View uci.conf.template"
 
+msgid "Certificate name must start with a letter, number or underscore, and can contain letters, numbers, dots, hyphens and underscores"
+msgstr "Certificate name must start with a letter, number or underscore, and can contain letters, numbers, dots, hyphens and underscores"
+
 msgid "Wildcard domains are not supported for ACME certificates"
 msgstr "Wildcard domains are not supported for ACME certificates"
 
