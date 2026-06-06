@@ -4,7 +4,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-nginx-manager
 PKG_VERSION:=1.1.1
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_LICENSE:=AGPL-3.0-only
 PKG_MAINTAINER:=yunshu
@@ -115,6 +115,8 @@ NGINX_MGR_CONF
 		uci set nginx_manager.global.advanced_mode='0'
 		uci set nginx_manager.global.dangerous_core_edit='0'
 		uci set nginx_manager.global.max_backups='5'
+		uci set nginx_manager.global.log_max_size_kb='1024'
+		uci set nginx_manager.global.log_trim_interval='300'
 		uci set nginx_manager.global.client_max_body_size=''
 		uci set nginx_manager.global.keepalive_timeout=''
 		uci set nginx_manager.global.gzip='0'
@@ -126,6 +128,17 @@ NGINX_MGR_CONF
 		uci set nginx_manager.global.ssl_ciphers=''
 		uci commit nginx_manager
 	}
+
+	changed=0; \
+	uci -q get nginx_manager.global.log_max_size_kb >/dev/null 2>&1 || { \
+		uci set nginx_manager.global.log_max_size_kb='1024'; \
+		changed=1; \
+	}; \
+	uci -q get nginx_manager.global.log_trim_interval >/dev/null 2>&1 || { \
+		uci set nginx_manager.global.log_trim_interval='300'; \
+		changed=1; \
+	}; \
+	[ "$${changed}" = "1" ] && uci commit nginx_manager; \
 
 	uci -q get luci.languages.zh_cn >/dev/null || uci -q set luci.languages.zh_cn='简体中文'; \
 	uci -q commit luci; \

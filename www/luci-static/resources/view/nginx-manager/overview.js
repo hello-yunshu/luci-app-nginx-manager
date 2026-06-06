@@ -326,7 +326,6 @@ return view.extend({
 
 		var depChecks = [
 			{ key: 'nginx_ssl', label: 'nginx-ssl' },
-			{ key: 'nginx_util', label: 'nginx-util' },
 			{ key: 'openssl_util', label: 'openssl-util' },
 			{ key: 'acme', label: 'acme' },
 			{ key: 'rpcd', label: 'rpcd' },

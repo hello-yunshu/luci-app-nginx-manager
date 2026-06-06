@@ -74,6 +74,7 @@
 - `gzip` — 压缩开关与类型
 - `server_tokens` — 版本信息显示
 - `sendfile` — 零拷贝传输
+- `log_max_size_kb` / `log_trim_interval` — 自动限制 Nginx 日志大小
 - `ssl_protocols` / `ssl_ciphers` — SSL 协议与加密套件
 
 ## 安装
@@ -103,7 +104,7 @@ sha256sum -c sha256sums.txt
 ### 依赖
 
 ```
-luci-base  nginx-ssl  nginx-util  rpcd  rpcd-mod-file  openssl-util  acme
+luci-base  nginx-ssl  rpcd  rpcd-mod-file  openssl-util  acme
 ```
 
 ## 使用指南
@@ -218,6 +219,8 @@ htdocs/luci-static/resources/
 | `advanced_mode` | boolean | 0 | 高级模式 |
 | `dangerous_core_edit` | boolean | 0 | 危险编辑模式 |
 | `max_backups` | integer | 5 | 最大备份数量 |
+| `log_max_size_kb` | integer | 1024 | 自动日志修剪大小上限（KB），0 表示禁用 |
+| `log_trim_interval` | integer | 300 | 自动日志修剪间隔（秒） |
 
 ### site section
 

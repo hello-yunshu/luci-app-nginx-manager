@@ -5,7 +5,6 @@
 'require ui';
 'require rpc';
 'require nginx-manager/utils as utils';
-'require uci';
 
 var callGetCoreConfig = rpc.declare({
 	object: 'nginx_manager',
@@ -16,6 +15,13 @@ var callGetCoreConfig = rpc.declare({
 var callSetCoreConfigSafe = rpc.declare({
 	object: 'nginx_manager',
 	method: 'set_core_config_safe',
+	expect: {}
+});
+
+var callSetDangerousCoreEdit = rpc.declare({
+	object: 'nginx_manager',
+	method: 'set_dangerous_core_edit',
+	params: ['enabled'],
 	expect: {}
 });
 
@@ -112,6 +118,16 @@ return view.extend({
 		if (config.error_log) errorLogInput.value = config.error_log;
 		generalSection.appendChild(makeField('cfg-error_log', _('Error Log'), errorLogInput));
 
+		var logMaxSizeInput = E('input', { 'type': 'number', 'class': 'cbi-input-text', 'min': '0' });
+		logMaxSizeInput.placeholder = '1024';
+		logMaxSizeInput.value = config.log_max_size_kb || '1024';
+		generalSection.appendChild(makeField('cfg-log_max_size_kb', _('Log Max Size (KB)'), logMaxSizeInput, _('Set 0 to disable automatic log trimming.')));
+
+		var logTrimIntervalInput = E('input', { 'type': 'number', 'class': 'cbi-input-text', 'min': '60' });
+		logTrimIntervalInput.placeholder = '300';
+		logTrimIntervalInput.value = config.log_trim_interval || '300';
+		generalSection.appendChild(makeField('cfg-log_trim_interval', _('Log Trim Interval (Seconds)'), logTrimIntervalInput));
+
 		container.appendChild(generalSection);
 
 		/* ========== SSL Settings ========== */
@@ -133,6 +149,7 @@ return view.extend({
 		/* ========== Save Button ========== */
 		var saveBtnGroup = E('div', { 'class': 'nm-btn-group' });
 		saveBtnGroup.appendChild(E('button', {
+			'type': 'button',
 			'class': 'cbi-button cbi-button-apply',
 			'click': function() { saveConfig(); }
 		}, _('Save')));
@@ -145,13 +162,14 @@ return view.extend({
 		var readonlyBtns = E('div', { 'class': 'nm-btn-group', 'style': 'margin-bottom: 0.5em;' });
 
 		readonlyBtns.appendChild(E('button', {
+			'type': 'button',
 			'class': 'cbi-button',
 			'click': function() {
 				callGetNginxT().then(function(result) {
 					ui.showModal(_('nginx -T Output'), [
 						E('pre', { 'class': 'nm-code-block' }, (result && result.content) || ''),
 						E('div', { 'class': 'right', 'style': 'margin-top: 8px;' }, [
-							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
+							E('button', { 'type': 'button', 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
 						])
 					]);
 				});
@@ -159,13 +177,14 @@ return view.extend({
 		}, _('View nginx -T')));
 
 		readonlyBtns.appendChild(E('button', {
+			'type': 'button',
 			'class': 'cbi-button',
 			'click': function() {
 				callGetFileReadonly('/etc/nginx/uci.conf.template').then(function(result) {
 					ui.showModal(_('/etc/nginx/uci.conf.template'), [
 						E('pre', { 'class': 'nm-code-block' }, (result && result.content) || _('File not found')),
 						E('div', { 'class': 'right', 'style': 'margin-top: 8px;' }, [
-							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
+							E('button', { 'type': 'button', 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
 						])
 					]);
 				});
@@ -184,18 +203,24 @@ return view.extend({
 		dangerZone.appendChild(dangerWarning);
 
 		var dangerToggle = E('button', {
+			'type': 'button',
 			'class': 'cbi-button cbi-button-reset',
 			'style': 'margin-bottom: 1em;',
 			'click': function() {
-				var current = uci.get('nginx_manager', 'global', 'dangerous_core_edit') || '0';
+				var button = this;
+				var current = config.dangerous_core_edit || '0';
 				var newVal = current === '1' ? '0' : '1';
-				uci.set('nginx_manager', 'global', 'dangerous_core_edit', newVal);
-				return uci.save().then(function() {
-					return utils.safeApply();
-				}).then(function() {
+				button.disabled = true;
+				return callSetDangerousCoreEdit(newVal).then(function(result) {
+					if (result && result.error) {
+						button.disabled = false;
+						ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (result.detail || result.error)), 'error');
+						return;
+					}
 					ui.addNotification(null, E('p', {}, newVal === '1' ? _('Dangerous edit mode enabled') : _('Dangerous edit mode disabled')), newVal === '1' ? 'warning' : 'info');
 					setTimeout(function() { location.reload(); }, 500);
 				}).catch(function(err) {
+					button.disabled = false;
 					ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || err)), 'error');
 				});
 			}
@@ -230,13 +255,15 @@ return view.extend({
 				fileDiv.appendChild(textarea);
 
 				fileDiv.appendChild(E('button', {
+					'type': 'button',
 					'class': 'cbi-button cbi-button-reset',
 					'click': function() {
 						ui.showModal(_('Confirm Save'), [
 							E('p', {}, _('Saving this file may break Nginx configuration. A backup will be created first. Continue?')),
 							E('div', { 'class': 'right' }, [
-								E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+								E('button', { 'type': 'button', 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 								E('button', {
+									'type': 'button',
 									'class': 'cbi-button cbi-button-reset',
 									'click': function() {
 										ui.hideModal();
@@ -275,6 +302,8 @@ return view.extend({
 			data.sendfile = document.getElementById('cfg-sendfile').checked ? '1' : '0';
 			data.access_log = accessLogInput.value.trim();
 			data.error_log = errorLogInput.value.trim();
+			data.log_max_size_kb = logMaxSizeInput.value.trim();
+			data.log_trim_interval = logTrimIntervalInput.value.trim();
 			data.ssl_protocols = sslProtocolsInput.value.trim();
 			data.ssl_ciphers = sslCiphersInput.value.trim();
 
