@@ -225,7 +225,7 @@ handle_get_site() {
 	json_add_string "id" "${site_id}"
 
 	local opt
-	for opt in name mode server_name listen_addr listen_port proxy_pass root index websocket proxy_type custom_proxy_headers redirect_https \
+	for opt in name mode server_name listen_addr listen_port proxy_pass root index websocket proxy_type grpc_path grpc_pass custom_proxy_headers redirect_https \
 		proxy_host proxy_xff proxy_xfp proxy_xri ssl_cert access_log error_log \
 		custom_server_block redirect_target enabled; do
 		local val
@@ -278,7 +278,7 @@ handle_set_site() {
 	local site_id name mode server_name proxy_pass root index
 	local websocket proxy_type custom_proxy_headers redirect_https proxy_host proxy_xff proxy_xfp proxy_xri
 	local ssl_cert access_log error_log custom_server_block redirect_target enabled
-	local listen_addr listen_port
+	local listen_addr listen_port grpc_path grpc_pass
 
 	json_get_var site_id "id"
 	json_get_var name "name"
@@ -291,6 +291,8 @@ handle_set_site() {
 	json_get_var index "index"
 	json_get_var websocket "websocket"
 	json_get_var proxy_type "proxy_type"
+	json_get_var grpc_path "grpc_path"
+	json_get_var grpc_pass "grpc_pass"
 	json_get_var custom_proxy_headers "custom_proxy_headers"
 	json_get_var redirect_https "redirect_https"
 	json_get_var proxy_host "proxy_host"
@@ -322,6 +324,30 @@ handle_set_site() {
 		http|grpc|websocket|"") ;;
 		*) { json_init; json_add_string "error" "invalid proxy_type"; json_dump; return; } ;;
 	esac
+
+	# gRPC passthrough validation: grpc_path must start with / if provided
+	if [ -n "${grpc_path}" ]; then
+		case "${grpc_path}" in
+			/*) ;;
+			*) { json_init; json_add_string "error" "grpc_path must start with /"; json_dump; return; } ;;
+		esac
+	fi
+
+	# gRPC passthrough validation: grpc_pass must use grpc:// or grpcs:// if provided
+	if [ -n "${grpc_pass}" ]; then
+		case "${grpc_pass}" in
+			grpc://*|grpcs://*) ;;
+			*) { json_init; json_add_string "error" "invalid grpc_pass, must use grpc:// or grpcs://"; json_dump; return; } ;;
+		esac
+	fi
+
+	# gRPC passthrough requires both grpc_path and grpc_pass
+	if [ -n "${grpc_path}" ] && [ -z "${grpc_pass}" ]; then
+		{ json_init; json_add_string "error" "grpc_pass is required when grpc_path is set"; json_dump; return; }
+	fi
+	if [ -n "${grpc_pass}" ] && [ -z "${grpc_path}" ]; then
+		{ json_init; json_add_string "error" "grpc_path is required when grpc_pass is set"; json_dump; return; }
+	fi
 
 	if [ "${mode}" = "reverse_proxy" ] && [ -n "${proxy_pass}" ]; then
 		case "${proxy_pass}" in
@@ -361,7 +387,15 @@ handle_set_site() {
 	[ -n "${root}" ] && uci set "nginx_manager.${site_id}.root=${root}"
 	[ -n "${index}" ] && uci set "nginx_manager.${site_id}.index=${index}"
 	[ -n "${websocket}" ] && uci set "nginx_manager.${site_id}.websocket=${websocket}"
-	[ -n "${proxy_type}" ] && uci set "nginx_manager.${site_id}.proxy_type=${proxy_type}"
+	# Backward compat: migrate proxy_type=websocket → http + websocket=1
+	if [ "${proxy_type}" = "websocket" ]; then
+		uci set "nginx_manager.${site_id}.proxy_type=http"
+		uci set "nginx_manager.${site_id}.websocket=1"
+	else
+		[ -n "${proxy_type}" ] && uci set "nginx_manager.${site_id}.proxy_type=${proxy_type}"
+	fi
+	[ -n "${grpc_path}" ] && uci set "nginx_manager.${site_id}.grpc_path=${grpc_path}" || uci -q delete "nginx_manager.${site_id}.grpc_path"
+	[ -n "${grpc_pass}" ] && uci set "nginx_manager.${site_id}.grpc_pass=${grpc_pass}" || uci -q delete "nginx_manager.${site_id}.grpc_pass"
 	[ -n "${custom_proxy_headers}" ] && uci set "nginx_manager.${site_id}.custom_proxy_headers=${custom_proxy_headers}"
 	[ -n "${redirect_https}" ] && uci set "nginx_manager.${site_id}.redirect_https=${redirect_https}"
 	[ -n "${proxy_host}" ] && uci set "nginx_manager.${site_id}.proxy_host=${proxy_host}"
@@ -1685,6 +1719,8 @@ case "$1" in
 		json_add_string "index" ""
 		json_add_string "websocket" ""
 		json_add_string "proxy_type" ""
+		json_add_string "grpc_path" ""
+		json_add_string "grpc_pass" ""
 		json_add_string "custom_proxy_headers" ""
 		json_add_string "redirect_https" ""
 		json_add_string "proxy_host" ""

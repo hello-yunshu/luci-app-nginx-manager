@@ -44,7 +44,7 @@ var callSetSite = rpc.declare({
 	object: 'nginx_manager',
 	method: 'set_site',
 	params: ['id', 'name', 'mode', 'server_name', 'listen_addr', 'listen_port', 'proxy_pass', 'root', 'index',
-		'websocket', 'proxy_type', 'custom_proxy_headers', 'redirect_https', 'proxy_host', 'proxy_xff', 'proxy_xfp', 'proxy_xri',
+		'websocket', 'proxy_type', 'grpc_path', 'grpc_pass', 'custom_proxy_headers', 'redirect_https', 'proxy_host', 'proxy_xff', 'proxy_xfp', 'proxy_xri',
 		'ssl_cert', 'access_log', 'error_log', 'custom_server_block', 'redirect_target', 'enabled'],
 	expect: {}
 });
@@ -116,7 +116,7 @@ return view.extend({
 								}
 								ui.hideModal();
 								ui.showModal(_('Creating site...'), [E('p', {}, _('Please wait...'))]);
-								callSetSite(name, name, mode, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '1').then(function(result) {
+								callSetSite(name, name, mode, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '1').then(function(result) {
 									ui.hideModal();
 									if (result && result.error) {
 										ui.addNotification(null, E('p', {}, result.error), 'error');

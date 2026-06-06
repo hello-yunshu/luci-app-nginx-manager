@@ -387,6 +387,7 @@ generate_reverse_proxy_site() {
 	local proxy_host proxy_xff proxy_xfp proxy_xri
 	local ssl_cert access_log error_log enabled
 	local proxy_type custom_proxy_headers listen_addr
+	local grpc_path grpc_pass
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
 	validate_name "${name}" || name="${section}"
@@ -405,6 +406,8 @@ generate_reverse_proxy_site() {
 	proxy_type="$(uci -q get "nginx_manager.${section}.proxy_type")" || proxy_type="http"
 	custom_proxy_headers="$(uci -q get "nginx_manager.${section}.custom_proxy_headers")" || custom_proxy_headers=""
 	listen_addr="$(uci -q get "nginx_manager.${section}.listen_addr")" || listen_addr=""
+	grpc_path="$(uci -q get "nginx_manager.${section}.grpc_path")" || grpc_path=""
+	grpc_pass="$(uci -q get "nginx_manager.${section}.grpc_pass")" || grpc_pass=""
 
 	local output_file="${BUILD_DIR}/${name}.conf"
 	{
@@ -448,6 +451,16 @@ generate_reverse_proxy_site() {
 		generate_custom_proxy_headers "${custom_proxy_headers}"
 
 		echo "    }"
+
+		# gRPC passthrough: additional location block for HTTP mode
+		if [ "${proxy_type}" != "grpc" ] && [ -n "${grpc_path}" ] && [ -n "${grpc_pass}" ]; then
+			echo ""
+			echo "    location ${grpc_path} {"
+			echo "        grpc_pass ${grpc_pass};"
+			generate_grpc_headers "${proxy_host}" "${proxy_xff}" "${proxy_xfp}" "${proxy_xri}"
+			echo "    }"
+		fi
+
 		echo "}"
 	} > "${output_file}"
 

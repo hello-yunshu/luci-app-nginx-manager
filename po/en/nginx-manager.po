@@ -678,6 +678,24 @@ msgstr "Wildcard domains are not supported for ACME certificates"
 msgid "WebSocket"
 msgstr "WebSocket"
 
+msgid "WebSocket Support"
+msgstr "WebSocket Support"
+
+msgid "gRPC Passthrough"
+msgstr "gRPC Passthrough"
+
+msgid "gRPC Path"
+msgstr "gRPC Path"
+
+msgid "URL path for gRPC traffic, e.g. /grpc or /api.Service"
+msgstr "URL path for gRPC traffic, e.g. /grpc or /api.Service"
+
+msgid "gRPC Backend Address"
+msgstr "gRPC Backend Address"
+
+msgid "Uses grpc:// or grpcs:// scheme."
+msgstr "Uses grpc:// or grpcs:// scheme."
+
 msgid "X-Forwarded-For"
 msgstr "X-Forwarded-For"
 
