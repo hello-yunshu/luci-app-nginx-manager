@@ -74,6 +74,7 @@ Adjust common parameters through a visual editor — no manual file editing need
 - `gzip` — Compression toggle and types
 - `server_tokens` — Version info visibility
 - `sendfile` — Zero-copy file transfer
+- `log_max_size_kb` / `log_trim_interval` — Automatic Nginx log size limiting
 - `ssl_protocols` / `ssl_ciphers` — SSL protocol and cipher suite selection
 
 ## Installation
@@ -103,7 +104,7 @@ sha256sum -c sha256sums.txt
 ### Dependencies
 
 ```
-luci-base  nginx-ssl  nginx-util  rpcd  rpcd-mod-file  openssl-util  acme
+luci-base  nginx-ssl  rpcd  rpcd-mod-file  openssl-util  acme
 ```
 
 ## Usage Guide
@@ -218,6 +219,8 @@ htdocs/luci-static/resources/
 | `advanced_mode` | boolean | 0 | Advanced mode |
 | `dangerous_core_edit` | boolean | 0 | Dangerous edit mode |
 | `max_backups` | integer | 5 | Maximum backup count |
+| `log_max_size_kb` | integer | 1024 | Auto log trim size limit in KB; 0 disables trimming |
+| `log_trim_interval` | integer | 300 | Auto log trim interval in seconds |
 
 ### Site Section
 

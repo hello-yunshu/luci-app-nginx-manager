@@ -12,6 +12,7 @@ TEST_BEFORE_RELOAD=""
 MAX_BACKUPS=""
 LOCK_FILE="/tmp/nginx-manager-gen.lock"
 NGINX_CONF_PATH=""
+LOG_MAX_SIZE_KB=""
 
 log_info() {
 	logger -t nginx-manager -p daemon.info "$1"
@@ -36,10 +37,14 @@ load_global_config() {
 	AUTO_BACKUP="$(uci -q get nginx_manager.global.auto_backup)" || AUTO_BACKUP="1"
 	TEST_BEFORE_RELOAD="$(uci -q get nginx_manager.global.test_before_reload)" || TEST_BEFORE_RELOAD="1"
 	MAX_BACKUPS="$(uci -q get nginx_manager.global.max_backups)" || MAX_BACKUPS="5"
+	LOG_MAX_SIZE_KB="$(uci -q get nginx_manager.global.log_max_size_kb)" || LOG_MAX_SIZE_KB="1024"
 	case "${MAX_BACKUPS}" in
 		''|*[!0-9]*) MAX_BACKUPS="5" ;;
 	esac
 	[ "${MAX_BACKUPS}" -lt 1 ] && MAX_BACKUPS="1"
+	case "${LOG_MAX_SIZE_KB}" in
+		''|*[!0-9]*) LOG_MAX_SIZE_KB="1024" ;;
+	esac
 }
 
 validate_name() {
@@ -314,6 +319,48 @@ generate_log_directives() {
 	if [ "${error_log}" = "1" ]; then
 		echo "    error_log /var/log/nginx/${name}.error.log;"
 	fi
+}
+
+trim_log_file() {
+	local log_path="$1"
+	local max_bytes size tmp_file
+
+	[ -f "${log_path}" ] || return 0
+	case "${log_path}" in
+		/var/log/nginx/*.log)
+			;;
+		*)
+			return 0
+			;;
+	esac
+
+	[ "${LOG_MAX_SIZE_KB}" -gt 0 ] || return 0
+	max_bytes="$((LOG_MAX_SIZE_KB * 1024))"
+	size="$(wc -c < "${log_path}" 2>/dev/null | tr -d ' ')" || return 0
+	case "${size}" in
+		''|*[!0-9]*) return 0 ;;
+	esac
+	[ "${size}" -gt "${max_bytes}" ] || return 0
+
+	tmp_file="/tmp/nginx-manager-log-trim.$$"
+	if tail -c "${max_bytes}" "${log_path}" > "${tmp_file}" 2>/dev/null; then
+		cat "${tmp_file}" > "${log_path}" 2>/dev/null || true
+		log_info "Trimmed ${log_path} from ${size} bytes to ${max_bytes} bytes"
+	fi
+	rm -f "${tmp_file}"
+}
+
+trim_nginx_logs() {
+	local log_path
+
+	load_global_config
+	[ "${LOG_MAX_SIZE_KB}" -gt 0 ] || return 0
+	[ -d /var/log/nginx ] || return 0
+
+	for log_path in /var/log/nginx/*.log; do
+		[ -f "${log_path}" ] || continue
+		trim_log_file "${log_path}"
+	done
 }
 
 generate_grpc_headers() {
@@ -803,6 +850,7 @@ apply_config() {
 	fi
 
 	date '+%Y-%m-%d %H:%M:%S' > /tmp/nginx-manager-last-reload
+	trim_nginx_logs
 	log_info "Configuration applied and nginx reloaded"
 
 	exec 9>&-
@@ -885,7 +933,6 @@ do_status() {
 
 do_check_env() {
 	local _nginx_ssl=0
-	local _nginx_util=0
 	local _openssl_util=0
 	local _acme=0
 	local _rpcd_bin=0
@@ -894,10 +941,6 @@ do_check_env() {
 
 	if command -v nginx >/dev/null 2>&1 && nginx -V 2>&1 | grep -q "http_ssl_module"; then
 		_nginx_ssl=1
-	fi
-
-	if command -v nginx-util >/dev/null 2>&1; then
-		_nginx_util=1
 	fi
 
 	if command -v openssl >/dev/null 2>&1; then
@@ -943,9 +986,8 @@ do_check_env() {
 	_version="$(get_script_version)"
 	[ -z "${_version}" ] && _version="unknown"
 
-	printf '{"nginx_ssl":%d,"nginx_util":%d,"openssl_util":%d,"acme":%d,"rpcd":%d,"initd_nginx":%d,"uci_template":%d,"openwrt_version":"%s","package_manager":"%s","version":"%s"}\n' \
+	printf '{"nginx_ssl":%d,"openssl_util":%d,"acme":%d,"rpcd":%d,"initd_nginx":%d,"uci_template":%d,"openwrt_version":"%s","package_manager":"%s","version":"%s"}\n' \
 		"${_nginx_ssl}" \
-		"${_nginx_util}" \
 		"${_openssl_util}" \
 		"${_acme}" \
 		"${_rpcd_bin}" \
@@ -1045,6 +1087,9 @@ case "$1" in
 		load_global_config
 		create_backup force
 		;;
+	trim-logs)
+		trim_nginx_logs
+		;;
 	--status)
 		do_status
 		;;
@@ -1064,7 +1109,7 @@ case "$1" in
 		do_start
 		;;
 	*)
-		echo "Usage: $0 {generate|apply|render <section>|test|backup|--status|--check-env|--test-config|--reload|--restart|--start}" >&2
+		echo "Usage: $0 {generate|apply|render <section>|test|backup|trim-logs|--status|--check-env|--test-config|--reload|--restart|--start}" >&2
 		exit 1
 		;;
 esac

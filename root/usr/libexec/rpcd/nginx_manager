@@ -643,6 +643,9 @@ handle_upload_cert() {
 	[ -z "${cert_name}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
 	validate_name "${cert_name}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 	cert_id="$(sanitize_uci_id "${cert_name}")"
+	uci -q get "nginx_manager.${cert_id}" >/dev/null 2>&1 && {
+		json_init; json_add_string "error" "certificate name conflicts with an existing certificate (resolved to ${cert_id})"; json_dump; return
+	}
 	[ -z "${cert_content}" ] && { json_init; json_add_string "error" "missing cert_content"; json_dump; return; }
 	[ -z "${key_content}" ] && { json_init; json_add_string "error" "missing key_content"; json_dump; return; }
 
@@ -679,6 +682,9 @@ handle_issue_self_signed() {
 	[ -z "${cert_name}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
 	validate_name "${cert_name}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 	cert_id="$(sanitize_uci_id "${cert_name}")"
+	uci -q get "nginx_manager.${cert_id}" >/dev/null 2>&1 && {
+		json_init; json_add_string "error" "certificate name conflicts with an existing certificate (resolved to ${cert_id})"; json_dump; return
+	}
 	[ -z "${domain}" ] && { json_init; json_add_string "error" "missing domain"; json_dump; return; }
 
 	load_global_config
@@ -748,6 +754,8 @@ handle_get_logs() {
 	json_get_var lines "lines"
 	json_get_var filter "filter"
 	json_get_var site "site"
+
+	"${NGINX_MANAGER_GEN}" trim-logs >/dev/null 2>&1 || true
 
 	[ -z "${lines}" ] && lines="200"
 	echo "${lines}" | grep -qE '^[0-9]+$' || lines="200"
@@ -928,34 +936,58 @@ _read_nginx_directive() {
 handle_get_core_config() {
 	load_global_config
 
-	# Reset nginx -T cache for fresh read
-	_NGINX_T_CACHE=""
+	# Read nginx -T once for a fresh effective-config snapshot.
+	detect_nginx_conf
+	_NGINX_T_CACHE="$(nginx -T -c "${NGINX_CONF_PATH}" 2>/dev/null)" || _NGINX_T_CACHE="# nginx -T unavailable"
 
 	local gzip_val sendfile_val server_tokens_val
 	local max_body_val keepalive_val access_log_val error_log_val
-	local ssl_protocols_val ssl_ciphers_val
+	local ssl_protocols_val ssl_ciphers_val log_max_size_val log_trim_interval_val _val
 
-	# Read from UCI first
-	max_body_val="$(uci -q get nginx_manager.global.client_max_body_size)" || max_body_val=""
-	keepalive_val="$(uci -q get nginx_manager.global.keepalive_timeout)" || keepalive_val=""
-	gzip_val="$(uci -q get nginx_manager.global.gzip)" || gzip_val=""
-	server_tokens_val="$(uci -q get nginx_manager.global.server_tokens)" || server_tokens_val=""
-	sendfile_val="$(uci -q get nginx_manager.global.sendfile)" || sendfile_val=""
-	access_log_val="$(uci -q get nginx_manager.global.access_log)" || access_log_val=""
-	error_log_val="$(uci -q get nginx_manager.global.error_log)" || error_log_val=""
-	ssl_protocols_val="$(uci -q get nginx_manager.global.ssl_protocols)" || ssl_protocols_val=""
-	ssl_ciphers_val="$(uci -q get nginx_manager.global.ssl_ciphers)" || ssl_ciphers_val=""
+	# Prefer the effective nginx configuration so the UI reflects what is
+	# currently enabled after nginx has expanded its includes.
+	_val="$(_read_nginx_directive client_max_body_size)"
+	max_body_val="${_val}"
+	_val="$(_read_nginx_directive keepalive_timeout)"
+	keepalive_val="${_val}"
+	_val="$(_read_nginx_directive gzip)"
+	case "${_val}" in
+		on) gzip_val="1" ;;
+		off) gzip_val="0" ;;
+		*) gzip_val="" ;;
+	esac
+	_val="$(_read_nginx_directive server_tokens)"
+	case "${_val}" in
+		on|off) server_tokens_val="${_val}" ;;
+		*) server_tokens_val="" ;;
+	esac
+	_val="$(_read_nginx_directive sendfile)"
+	case "${_val}" in
+		on) sendfile_val="1" ;;
+		off) sendfile_val="0" ;;
+		*) sendfile_val="" ;;
+	esac
+	_val="$(_read_nginx_directive access_log)"
+	access_log_val="${_val}"
+	_val="$(_read_nginx_directive error_log)"
+	error_log_val="${_val}"
+	_val="$(_read_nginx_directive ssl_protocols)"
+	ssl_protocols_val="${_val}"
+	_val="$(_read_nginx_directive ssl_ciphers)"
+	ssl_ciphers_val="${_val}"
 
-	# When UCI value is empty, try reading from actual nginx config
-	[ -z "${gzip_val}" ] && { _val="$(_read_nginx_directive gzip)"; [ "${_val}" = "on" ] && gzip_val="1"; [ "${_val}" = "off" ] && gzip_val="0"; }
-	[ -z "${sendfile_val}" ] && { _val="$(_read_nginx_directive sendfile)"; [ "${_val}" = "on" ] && sendfile_val="1"; [ "${_val}" = "off" ] && sendfile_val="0"; }
-	[ -z "${server_tokens_val}" ] && { _val="$(_read_nginx_directive server_tokens)"; [ "${_val}" = "on" ] && server_tokens_val="on"; [ "${_val}" = "off" ] && server_tokens_val="off"; }
-	[ -z "${max_body_val}" ] && max_body_val="$(_read_nginx_directive client_max_body_size)"
-	[ -z "${keepalive_val}" ] && keepalive_val="$(_read_nginx_directive keepalive_timeout)"
-	[ -z "${access_log_val}" ] && access_log_val="$(_read_nginx_directive access_log)"
-	[ -z "${error_log_val}" ] && error_log_val="$(_read_nginx_directive error_log)"
-	[ -z "${ssl_protocols_val}" ] && ssl_protocols_val="$(_read_nginx_directive ssl_protocols)"
-	[ -z "${ssl_ciphers_val}" ] && ssl_ciphers_val="$(_read_nginx_directive ssl_ciphers)"
+	# Fall back to UCI when nginx -T is unavailable or the directive is absent.
+	[ -z "${max_body_val}" ] && max_body_val="$(uci -q get nginx_manager.global.client_max_body_size || true)"
+	[ -z "${keepalive_val}" ] && keepalive_val="$(uci -q get nginx_manager.global.keepalive_timeout || true)"
+	[ -z "${gzip_val}" ] && gzip_val="$(uci -q get nginx_manager.global.gzip || true)"
+	[ -z "${server_tokens_val}" ] && server_tokens_val="$(uci -q get nginx_manager.global.server_tokens || true)"
+	[ -z "${sendfile_val}" ] && sendfile_val="$(uci -q get nginx_manager.global.sendfile || true)"
+	[ -z "${access_log_val}" ] && access_log_val="$(uci -q get nginx_manager.global.access_log || true)"
+	[ -z "${error_log_val}" ] && error_log_val="$(uci -q get nginx_manager.global.error_log || true)"
+	[ -z "${ssl_protocols_val}" ] && ssl_protocols_val="$(uci -q get nginx_manager.global.ssl_protocols || true)"
+	[ -z "${ssl_ciphers_val}" ] && ssl_ciphers_val="$(uci -q get nginx_manager.global.ssl_ciphers || true)"
+	log_max_size_val="$(uci -q get nginx_manager.global.log_max_size_kb)" || log_max_size_val="1024"
+	log_trim_interval_val="$(uci -q get nginx_manager.global.log_trim_interval)" || log_trim_interval_val="300"
 
 	json_init
 	json_add_string "client_max_body_size" "${max_body_val}"
@@ -965,6 +997,8 @@ handle_get_core_config() {
 	json_add_string "sendfile" "${sendfile_val}"
 	json_add_string "access_log" "${access_log_val}"
 	json_add_string "error_log" "${error_log_val}"
+	json_add_string "log_max_size_kb" "${log_max_size_val}"
+	json_add_string "log_trim_interval" "${log_trim_interval_val}"
 	json_add_string "ssl_protocols" "${ssl_protocols_val}"
 	json_add_string "ssl_ciphers" "${ssl_ciphers_val}"
 	json_add_string "advanced_mode" "$(uci -q get nginx_manager.global.advanced_mode || echo '0')"
@@ -983,7 +1017,7 @@ handle_set_core_config_safe() {
 	}
 
 	local max_body keepalive gzip
-	local server_tokens sendfile access_log error_log ssl_protocols ssl_ciphers
+	local server_tokens sendfile access_log error_log log_max_size log_trim_interval ssl_protocols ssl_ciphers
 
 	json_get_var max_body "client_max_body_size"
 	json_get_var keepalive "keepalive_timeout"
@@ -992,8 +1026,21 @@ handle_set_core_config_safe() {
 	json_get_var sendfile "sendfile"
 	json_get_var access_log "access_log"
 	json_get_var error_log "error_log"
+	json_get_var log_max_size "log_max_size_kb"
+	json_get_var log_trim_interval "log_trim_interval"
 	json_get_var ssl_protocols "ssl_protocols"
 	json_get_var ssl_ciphers "ssl_ciphers"
+
+	case "${log_max_size}" in
+		''|*[!0-9]*)
+			[ -z "${log_max_size}" ] || { json_init; json_add_string "error" "invalid log_max_size_kb"; json_dump; return; }
+			;;
+	esac
+	case "${log_trim_interval}" in
+		''|*[!0-9]*)
+			[ -z "${log_trim_interval}" ] || { json_init; json_add_string "error" "invalid log_trim_interval"; json_dump; return; }
+			;;
+	esac
 
 	[ -n "${max_body}" ] && uci set "nginx_manager.global.client_max_body_size=${max_body}"
 	[ -n "${keepalive}" ] && uci set "nginx_manager.global.keepalive_timeout=${keepalive}"
@@ -1002,12 +1049,37 @@ handle_set_core_config_safe() {
 	[ -n "${sendfile}" ] && uci set "nginx_manager.global.sendfile=${sendfile}"
 	[ -n "${access_log}" ] && uci set "nginx_manager.global.access_log=${access_log}"
 	[ -n "${error_log}" ] && uci set "nginx_manager.global.error_log=${error_log}"
+	[ -n "${log_max_size}" ] && uci set "nginx_manager.global.log_max_size_kb=${log_max_size}"
+	[ -n "${log_trim_interval}" ] && uci set "nginx_manager.global.log_trim_interval=${log_trim_interval}"
 	[ -n "${ssl_protocols}" ] && uci set "nginx_manager.global.ssl_protocols=${ssl_protocols}"
 	[ -n "${ssl_ciphers}" ] && uci set "nginx_manager.global.ssl_ciphers=${ssl_ciphers}"
 
 	uci commit nginx_manager
 
 	run_apply_or_error || return
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
+handle_set_dangerous_core_edit() {
+	local enabled
+	json_get_var enabled "enabled"
+
+	case "${enabled}" in
+		0|1)
+			;;
+		*)
+			json_init
+			json_add_string "error" "invalid enabled value"
+			json_dump
+			return
+			;;
+	esac
+
+	uci set "nginx_manager.global.dangerous_core_edit=${enabled}"
+	uci commit nginx_manager
 
 	json_init
 	json_add_string "result" "ok"
@@ -1729,8 +1801,14 @@ case "$1" in
 		json_add_string "sendfile" ""
 		json_add_string "access_log" ""
 		json_add_string "error_log" ""
+		json_add_string "log_max_size_kb" ""
+		json_add_string "log_trim_interval" ""
 		json_add_string "ssl_protocols" ""
 		json_add_string "ssl_ciphers" ""
+		json_close_object
+
+		json_add_object "set_dangerous_core_edit"
+		json_add_string "enabled" ""
 		json_close_object
 
 		json_add_object "get_nginx_T"
@@ -1806,6 +1884,7 @@ case "$1" in
 			clear_logs)         handle_clear_logs ;;
 			get_core_config)    handle_get_core_config ;;
 			set_core_config_safe) handle_set_core_config_safe ;;
+			set_dangerous_core_edit) handle_set_dangerous_core_edit ;;
 			get_nginx_T)        handle_get_nginx_T ;;
 			get_file_readonly)  handle_get_file_readonly ;;
 			set_file_dangerous) handle_set_file_dangerous ;;
