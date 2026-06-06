@@ -24,6 +24,9 @@ msgstr "Unknown ACME task status"
 msgid "ACME certificate requested"
 msgstr "ACME certificate requested"
 
+msgid "ACME operation already in progress for this certificate"
+msgstr "ACME operation already in progress for this certificate"
+
 msgid "Access Log"
 msgstr "Access Log"
 

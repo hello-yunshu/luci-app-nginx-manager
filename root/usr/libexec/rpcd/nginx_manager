@@ -623,6 +623,9 @@ handle_delete_cert() {
 	uci delete "nginx_manager.${cert_id}"
 	uci commit nginx_manager
 
+	# Clean up any ACME task status file
+	rm -f "/tmp/acme-task-${cert_id}.json"
+
 	json_init
 	json_add_string "result" "ok"
 	json_dump
@@ -1334,21 +1337,28 @@ handle_delete_backup() {
 	json_dump
 }
 
-# Write ACME task status to a temp file
+# Write ACME task status to a temp file (atomic via rename)
 _acme_task_write_status() {
 	local cert_id="$1" status="$2" detail="${3:-}"
 	local task_file="/tmp/acme-task-${cert_id}.json"
+	local tmp_file="${task_file}.tmp"
 	json_init
 	json_add_string "status" "${status}"
 	[ -n "${detail}" ] && json_add_string "detail" "${detail}"
-	json_dump > "${task_file}"
+	json_dump > "${tmp_file}"
+	mv "${tmp_file}" "${task_file}"
+}
+
+# Check if an ACME task is already running for the given cert_id
+_acme_task_is_running() {
+	local cert_id="$1"
+	local task_file="/tmp/acme-task-${cert_id}.json"
+	[ -f "${task_file}" ] && grep -q '"running"' "${task_file}"
 }
 
 # Background worker for ACME issue
 _acme_issue_worker() {
 	local cert_id="$1" cert_name="$2" domain="$3" CERT_DIR="$4"
-
-	_acme_task_write_status "${cert_id}" "running"
 
 	# Run acme to issue the certificate
 	local acme_output
@@ -1406,9 +1416,14 @@ handle_acme_issue() {
 	validate_domain "${domain}" || { json_init; json_add_string "error" "invalid domain"; json_dump; return; }
 	echo "${domain}" | grep -q '\*' && { json_init; json_add_string "error" "wildcard domains not supported for acme"; json_dump; return; }
 
+	# Prevent concurrent ACME operations for the same cert
+	_acme_task_is_running "${cert_id}" && {
+		json_init; json_add_string "error" "ACME operation already in progress for this certificate"; json_dump; return
+	}
+
 	# Check for duplicate cert_id
 	uci -q get "nginx_manager.${cert_id}" >/dev/null 2>&1 && {
-		json_init; json_add_string "error" "certificate id already exists"; json_dump; return
+		json_init; json_add_string "error" "certificate name conflicts with an existing certificate (resolved to ${cert_id})"; json_dump; return
 	}
 
 	# Check if acme package is installed
@@ -1465,8 +1480,6 @@ handle_acme_issue() {
 _acme_renew_worker() {
 	local cert_id="$1" domain="$2"
 
-	_acme_task_write_status "${cert_id}" "running"
-
 	# Run acme renewal
 	local acme_output
 	acme_output="$(/etc/init.d/acme restart 2>&1)"
@@ -1492,6 +1505,13 @@ handle_acme_renew() {
 
 	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
 	validate_uci_id "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+
+	# Prevent concurrent ACME operations for the same cert
+	_acme_task_is_running "${cert_id}" && {
+		json_init; json_add_string "error" "ACME operation already in progress for this certificate"; json_dump; return
+	}
+
+	load_global_config
 
 	# Check if acme package is installed
 	if [ ! -x /etc/init.d/acme ]; then
