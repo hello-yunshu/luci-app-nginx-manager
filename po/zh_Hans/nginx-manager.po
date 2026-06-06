@@ -684,6 +684,24 @@ msgstr "ACME 证书不支持通配符域名"
 msgid "WebSocket"
 msgstr "WebSocket"
 
+msgid "WebSocket Support"
+msgstr "WebSocket 支持"
+
+msgid "gRPC Passthrough"
+msgstr "gRPC 透传"
+
+msgid "gRPC Path"
+msgstr "gRPC 路径"
+
+msgid "URL path for gRPC traffic, e.g. /grpc or /api.Service"
+msgstr "gRPC 流量的 URL 路径，如 /grpc 或 /api.Service"
+
+msgid "gRPC Backend Address"
+msgstr "gRPC 后端地址"
+
+msgid "Uses grpc:// or grpcs:// scheme."
+msgstr "使用 grpc:// 或 grpcs:// 协议。"
+
 msgid "X-Forwarded-For"
 msgstr "X-Forwarded-For"
 

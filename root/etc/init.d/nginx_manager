@@ -42,6 +42,8 @@ validate_nginx_manager_site() {
         'index:string:index.html' \
         'websocket:bool:0' \
         'proxy_type:string:http' \
+        'grpc_path:string' \
+        'grpc_pass:string' \
         'custom_proxy_headers:string' \
         'redirect_https:bool:0' \
         'proxy_host:bool:1' \
