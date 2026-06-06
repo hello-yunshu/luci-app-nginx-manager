@@ -480,6 +480,9 @@ msgstr "请稍候..."
 msgid "Please wait, ACME certificate issuance may take a while..."
 msgstr "请稍候，ACME 证书签发可能需要一些时间..."
 
+msgid "Please wait, ACME renewal may take a while..."
+msgstr "请稍候，ACME 证书续期可能需要一些时间..."
+
 msgid "Plugin Version"
 msgstr "插件版本"
 
