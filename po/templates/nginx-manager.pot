@@ -24,6 +24,9 @@ msgstr ""
 msgid "acme config not found"
 msgstr ""
 
+msgid "acme challenge config failed"
+msgstr ""
+
 msgid "acme issue failed"
 msgstr ""
 
@@ -91,6 +94,9 @@ msgid "Backup deleted"
 msgstr ""
 
 msgid "Backup restored"
+msgstr ""
+
+msgid "Backup settings saved"
 msgstr ""
 
 msgid "Backups"
@@ -373,6 +379,12 @@ msgid "Managed Sites"
 msgstr ""
 
 msgid "Manual"
+msgstr ""
+
+msgid "Maximum Backups"
+msgstr ""
+
+msgid "Maximum backups must be between 1 and 100"
 msgstr ""
 
 msgid "Missing"

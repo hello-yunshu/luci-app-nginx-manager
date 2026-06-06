@@ -107,7 +107,7 @@ jobs:
           if [ "${{ steps.cache-feeds.outputs.cache-hit }}" != "true" ]; then
             ./scripts/feeds update base packages luci
           fi
-          ./scripts/feeds install luci-base nginx-ssl rpcd rpcd-mod-file openssl-util
+          ./scripts/feeds install luci-base nginx-ssl nginx-util rpcd rpcd-mod-file openssl-util acme
 
       - name: Prepare package source
         working-directory: ${{ env.SDKDIR }}
@@ -208,7 +208,7 @@ jobs:
 
             ## Requirements
             - OpenWrt 23.05+
-            - nginx-ssl, nginx-util, rpcd, rpcd-mod-file, openssl-util installed
+            - nginx-ssl, nginx-util, rpcd, rpcd-mod-file, openssl-util, acme installed
           files: |
             release/ipk/*.ipk
             release/apk/*.apk

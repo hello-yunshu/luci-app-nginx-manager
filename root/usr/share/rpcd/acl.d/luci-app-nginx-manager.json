@@ -19,6 +19,7 @@
 					"get_nginx_T",
 					"get_file_readonly",
 					"list_backups",
+					"get_backup_settings",
 					"diff_backup"
 				]
 			}
@@ -44,7 +45,9 @@
 					"set_core_config_safe",
 					"set_file_dangerous",
 					"create_backup",
-					"restore_backup"
+					"restore_backup",
+					"set_backup_settings",
+					"delete_backup"
 				]
 			}
 		}

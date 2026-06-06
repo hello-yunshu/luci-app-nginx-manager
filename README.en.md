@@ -35,7 +35,7 @@ Per-site options:
 
 - **Manual Upload** — Paste certificate and private key; auto-stored with correct permissions
 - **Self-Signed Generation** — One-click self-signed certs for internal testing
-- **ACME Auto-Issuance** — Planned
+- **ACME Auto-Issuance** — HTTP-01 Webroot validation through OpenWrt `acme`
 - Certificate expiry detection — auto-flagged as "expiring" within 30 days
 
 ### Live Logs
@@ -103,7 +103,7 @@ sha256sum -c sha256sums.txt
 ### Dependencies
 
 ```
-luci-base  nginx-ssl  nginx-util  rpcd  rpcd-mod-file  openssl-util
+luci-base  nginx-ssl  nginx-util  rpcd  rpcd-mod-file  openssl-util  acme
 ```
 
 ## Usage Guide
@@ -124,9 +124,10 @@ luci-base  nginx-ssl  nginx-util  rpcd  rpcd-mod-file  openssl-util
 ### Add an SSL Certificate
 
 1. Go to the **Certificates** page
-2. Choose **Upload Certificate** or **Generate Self-Signed**
+2. Choose **Upload Certificate**, **Generate Self-Signed**, or **Auto (ACME)**
 3. For upload: paste the fullchain and private key content
-4. Certificates are stored at `/etc/nginx/certs/luci-manager/<id>/`
+4. ACME mode depends on the `acme` package and uses HTTP-01 Webroot validation; the domain must resolve to the router and public port 80 must be reachable
+5. Certificates are stored at `/etc/nginx/certs/luci-manager/<id>/`
 
 ### View Logs
 
@@ -216,7 +217,7 @@ htdocs/luci-static/resources/
 | `reload_after_save` | boolean | 1 | Auto-reload after save |
 | `advanced_mode` | boolean | 0 | Advanced mode |
 | `dangerous_core_edit` | boolean | 0 | Dangerous edit mode |
-| `max_backups` | integer | 20 | Maximum backup count |
+| `max_backups` | integer | 5 | Maximum backup count |
 
 ### Site Section
 

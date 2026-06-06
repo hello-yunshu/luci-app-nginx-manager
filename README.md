@@ -35,7 +35,7 @@
 
 - **手动上传** — 粘贴证书和私钥内容，自动存储并设置权限
 - **自签名生成** — 一键生成自签名证书，适合内网测试
-- **ACME 自动签发** — 规划中
+- **ACME 自动签发** — 基于 OpenWrt `acme` 的 HTTP-01 Webroot 验证
 - 证书到期检测，30 天内自动标记为「即将过期」
 
 ### 实时日志
@@ -103,7 +103,7 @@ sha256sum -c sha256sums.txt
 ### 依赖
 
 ```
-luci-base  nginx-ssl  nginx-util  rpcd  rpcd-mod-file  openssl-util
+luci-base  nginx-ssl  nginx-util  rpcd  rpcd-mod-file  openssl-util  acme
 ```
 
 ## 使用指南
@@ -124,9 +124,10 @@ luci-base  nginx-ssl  nginx-util  rpcd  rpcd-mod-file  openssl-util
 ### 添加 SSL 证书
 
 1. 进入 **Certificates** 页面
-2. 选择 **上传证书** 或 **生成自签名**
+2. 选择 **上传证书**、**生成自签名** 或 **自动 (ACME)**
 3. 上传模式：粘贴 fullchain 和 privkey 内容
-4. 证书会自动存储到 `/etc/nginx/certs/luci-manager/<id>/`
+4. ACME 模式依赖 `acme` 包，并使用 HTTP-01 Webroot 验证；域名需解析到路由器，公网 80 端口需可访问
+5. 证书会自动存储到 `/etc/nginx/certs/luci-manager/<id>/`
 
 ### 查看日志
 
@@ -216,7 +217,7 @@ htdocs/luci-static/resources/
 | `reload_after_save` | boolean | 1 | 保存后自动重载 |
 | `advanced_mode` | boolean | 0 | 高级模式 |
 | `dangerous_core_edit` | boolean | 0 | 危险编辑模式 |
-| `max_backups` | integer | 20 | 最大备份数量 |
+| `max_backups` | integer | 5 | 最大备份数量 |
 
 ### site section
 

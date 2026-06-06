@@ -191,7 +191,7 @@ return view.extend({
 				var newVal = current === '1' ? '0' : '1';
 				uci.set('nginx_manager', 'global', 'dangerous_core_edit', newVal);
 				return uci.save().then(function() {
-					return uci.apply();
+					return utils.safeApply();
 				}).then(function() {
 					ui.addNotification(null, E('p', {}, newVal === '1' ? _('Dangerous edit mode enabled') : _('Dangerous edit mode disabled')), newVal === '1' ? 'warning' : 'info');
 					setTimeout(function() { location.reload(); }, 500);

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 'require baseclass';
+'require uci';
 
 function loadSharedCSS() {
 	if (!document.getElementById('nm-shared-css')) {
@@ -100,9 +101,36 @@ function renderWithFooter(rendered, options) {
 	});
 }
 
+function getErrorMessage(err) {
+	if (!err)
+		return '';
+	if (err.message)
+		return String(err.message);
+	if (typeof err === 'string')
+		return err;
+	if (typeof err.toString === 'function')
+		return err.toString();
+	return '';
+}
+
+function isApplyNoDataError(err) {
+	var msg = getErrorMessage(err);
+	return err && (err.code === 5 || /ubus code 5|No data|未收到数据/i.test(msg));
+}
+
+function safeApply() {
+	return uci.apply().catch(function(err) {
+		if (isApplyNoDataError(err))
+			return null;
+		throw err;
+	});
+}
+
 return baseclass.extend({
 	loadSharedCSS: loadSharedCSS,
 	renderFooter: renderFooter,
 	appendFooter: appendFooter,
-	renderWithFooter: renderWithFooter
+	renderWithFooter: renderWithFooter,
+	safeApply: safeApply,
+	isApplyNoDataError: isApplyNoDataError
 });

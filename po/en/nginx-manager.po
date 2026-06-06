@@ -24,6 +24,9 @@ msgstr "Access Log"
 msgid "acme config not found"
 msgstr "acme config not found"
 
+msgid "acme challenge config failed"
+msgstr "acme challenge config failed"
+
 msgid "acme issue failed"
 msgstr "acme issue failed"
 
@@ -92,6 +95,9 @@ msgstr "Backup deleted"
 
 msgid "Backup restored"
 msgstr "Backup restored"
+
+msgid "Backup settings saved"
+msgstr "Backup settings saved"
 
 msgid "Backups"
 msgstr "Backups"
@@ -375,6 +381,12 @@ msgstr "Managed Sites"
 msgid "Manual"
 msgstr "Manual"
 
+msgid "Maximum Backups"
+msgstr "Maximum Backups"
+
+msgid "Maximum backups must be between 1 and 100"
+msgstr "Maximum backups must be between 1 and 100"
+
 msgid "Missing"
 msgstr "Missing"
 
@@ -641,6 +653,12 @@ msgstr "View nginx -T"
 
 msgid "View uci.conf.template"
 msgstr "View uci.conf.template"
+
+msgid "Wildcard domains are not supported for ACME certificates"
+msgstr "Wildcard domains are not supported for ACME certificates"
+
+msgid "wildcard domains not supported for acme"
+msgstr "Wildcard domains are not supported for ACME certificates"
 
 msgid "WebSocket"
 msgstr "WebSocket"
