@@ -1334,6 +1334,65 @@ handle_delete_backup() {
 	json_dump
 }
 
+# Write ACME task status to a temp file
+_acme_task_write_status() {
+	local cert_id="$1" status="$2" detail="${3:-}"
+	local task_file="/tmp/acme-task-${cert_id}.json"
+	json_init
+	json_add_string "status" "${status}"
+	[ -n "${detail}" ] && json_add_string "detail" "${detail}"
+	json_dump > "${task_file}"
+}
+
+# Background worker for ACME issue
+_acme_issue_worker() {
+	local cert_id="$1" cert_name="$2" domain="$3" CERT_DIR="$4"
+
+	_acme_task_write_status "${cert_id}" "running"
+
+	# Run acme to issue the certificate
+	local acme_output
+	acme_output="$(/etc/init.d/acme restart 2>&1)"
+	local acme_exit=$?
+
+	cleanup_acme_challenge_config "${cert_id}"
+
+	# Check if certificate was issued successfully
+	local acme_cert="/etc/ssl/acme/${domain}.fullchain.crt"
+	local acme_key="/etc/ssl/acme/${domain}.key"
+
+	if [ ${acme_exit} -ne 0 ] || [ ! -f "${acme_cert}" ] || [ ! -f "${acme_key}" ]; then
+		# Clean up failed acme config
+		uci delete "acme.${cert_id}" 2>/dev/null
+		uci commit acme
+
+		_acme_task_write_status "${cert_id}" "failed" "${acme_output}"
+		return
+	fi
+
+	# Register cert in nginx_manager UCI
+	local cert_subdir="${CERT_DIR}/${cert_id}"
+	mkdir -p "${cert_subdir}"
+
+	# Symlink to acme certificate files
+	ln -sf "${acme_cert}" "${cert_subdir}/fullchain.pem"
+	ln -sf "${acme_key}" "${cert_subdir}/privkey.pem"
+
+	uci set "nginx_manager.${cert_id}=cert"
+	uci set "nginx_manager.${cert_id}.name=${cert_name}"
+	uci set "nginx_manager.${cert_id}.type=acme"
+	uci set "nginx_manager.${cert_id}.cert_path=${cert_subdir}/fullchain.pem"
+	uci set "nginx_manager.${cert_id}.key_path=${cert_subdir}/privkey.pem"
+	uci set "nginx_manager.${cert_id}.domain=${domain}"
+	uci set "nginx_manager.${cert_id}.auto_renew=1"
+	uci commit nginx_manager
+
+	# Reload nginx to pick up the new certificate
+	/etc/init.d/nginx reload >/dev/null 2>&1
+
+	_acme_task_write_status "${cert_id}" "success"
+}
+
 handle_acme_issue() {
 	local cert_name domain cert_id
 
@@ -1392,52 +1451,38 @@ handle_acme_issue() {
 		return
 	fi
 
-	# Run acme to issue the certificate
+	# Write initial status and spawn background worker
+	_acme_task_write_status "${cert_id}" "running"
+	(_acme_issue_worker "${cert_id}" "${cert_name}" "${domain}" "${CERT_DIR}" &)
+
+	json_init
+	json_add_string "task_id" "${cert_id}"
+	json_add_string "status" "running"
+	json_dump
+}
+
+# Background worker for ACME renew
+_acme_renew_worker() {
+	local cert_id="$1" domain="$2"
+
+	_acme_task_write_status "${cert_id}" "running"
+
+	# Run acme renewal
 	local acme_output
 	acme_output="$(/etc/init.d/acme restart 2>&1)"
 	local acme_exit=$?
 
 	cleanup_acme_challenge_config "${cert_id}"
 
-	# Check if certificate was issued successfully
-	local acme_cert="/etc/ssl/acme/${domain}.fullchain.crt"
-	local acme_key="/etc/ssl/acme/${domain}.key"
-
-	if [ ${acme_exit} -ne 0 ] || [ ! -f "${acme_cert}" ] || [ ! -f "${acme_key}" ]; then
-		# Clean up failed acme config
-		uci delete "acme.${cert_id}" 2>/dev/null
-		uci commit acme
-
-		json_init
-		json_add_string "error" "acme issue failed"
-		json_add_string "detail" "${acme_output}"
-		json_dump
+	if [ ${acme_exit} -ne 0 ]; then
+		_acme_task_write_status "${cert_id}" "failed" "${acme_output}"
 		return
 	fi
 
-	# Register cert in nginx_manager UCI
-	local cert_subdir="${CERT_DIR}/${cert_id}"
-	mkdir -p "${cert_subdir}"
-
-	# Symlink to acme certificate files
-	ln -sf "${acme_cert}" "${cert_subdir}/fullchain.pem"
-	ln -sf "${acme_key}" "${cert_subdir}/privkey.pem"
-
-	uci set "nginx_manager.${cert_id}=cert"
-	uci set "nginx_manager.${cert_id}.name=${cert_name}"
-	uci set "nginx_manager.${cert_id}.type=acme"
-	uci set "nginx_manager.${cert_id}.cert_path=${cert_subdir}/fullchain.pem"
-	uci set "nginx_manager.${cert_id}.key_path=${cert_subdir}/privkey.pem"
-	uci set "nginx_manager.${cert_id}.domain=${domain}"
-	uci set "nginx_manager.${cert_id}.auto_renew=1"
-	uci commit nginx_manager
-
-	# Reload nginx to pick up the new certificate
+	# Reload nginx to pick up renewed certificate
 	/etc/init.d/nginx reload >/dev/null 2>&1
 
-	json_init
-	json_add_string "result" "ok"
-	json_dump
+	_acme_task_write_status "${cert_id}" "success"
 }
 
 handle_acme_renew() {
@@ -1491,27 +1536,33 @@ handle_acme_renew() {
 		return
 	fi
 
-	# Run acme renewal
-	local acme_output
-	acme_output="$(/etc/init.d/acme restart 2>&1)"
-	local acme_exit=$?
+	# Write initial status and spawn background worker
+	_acme_task_write_status "${cert_id}" "running"
+	(_acme_renew_worker "${cert_id}" "${domain}" &)
 
-	cleanup_acme_challenge_config "${cert_id}"
+	json_init
+	json_add_string "task_id" "${cert_id}"
+	json_add_string "status" "running"
+	json_dump
+}
 
-	if [ ${acme_exit} -ne 0 ]; then
+handle_acme_status() {
+	local task_id
+	json_get_var task_id "task_id"
+
+	[ -z "${task_id}" ] && { json_init; json_add_string "error" "missing task_id"; json_dump; return; }
+	validate_uci_id "${task_id}" || { json_init; json_add_string "error" "invalid task_id"; json_dump; return; }
+
+	local task_file="/tmp/acme-task-${task_id}.json"
+	if [ ! -f "${task_file}" ]; then
 		json_init
-		json_add_string "error" "acme renew failed"
-		json_add_string "detail" "${acme_output}"
+		json_add_string "status" "unknown"
 		json_dump
 		return
 	fi
 
-	# Reload nginx to pick up renewed certificate
-	/etc/init.d/nginx reload >/dev/null 2>&1
-
-	json_init
-	json_add_string "result" "ok"
-	json_dump
+	# Output the status file content directly
+	cat "${task_file}"
 }
 
 case "$1" in
@@ -1628,6 +1679,10 @@ case "$1" in
 		json_add_string "id" ""
 		json_close_object
 
+		json_add_object "acme_status"
+		json_add_string "task_id" ""
+		json_close_object
+
 		json_add_object "check_cert_expiry"
 		json_close_object
 
@@ -1725,6 +1780,7 @@ case "$1" in
 			issue_self_signed)  handle_issue_self_signed ;;
 			acme_issue)         handle_acme_issue ;;
 			acme_renew)         handle_acme_renew ;;
+			acme_status)        handle_acme_status ;;
 			check_cert_expiry)  handle_check_cert_expiry ;;
 			get_logs)           handle_get_logs ;;
 			clear_logs)         handle_clear_logs ;;

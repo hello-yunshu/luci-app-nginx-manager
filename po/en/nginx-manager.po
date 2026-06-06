@@ -15,6 +15,12 @@ msgstr "ACME certificate issued successfully"
 msgid "ACME certificate renewed successfully"
 msgstr "ACME certificate renewed successfully"
 
+msgid "ACME operation timed out"
+msgstr "ACME operation timed out"
+
+msgid "Unknown ACME task status"
+msgstr "Unknown ACME task status"
+
 msgid "ACME certificate requested"
 msgstr "ACME certificate requested"
 

@@ -40,11 +40,61 @@ var callAcmeRenew = rpc.declare({
 	expect: {}
 });
 
+var callAcmeStatus = rpc.declare({
+	object: 'nginx_manager',
+	method: 'acme_status',
+	params: ['task_id'],
+	expect: {}
+});
+
 var callUploadCert = rpc.declare({
 	object: 'nginx_manager',
 	method: 'upload_cert',
 	expect: {}
 });
+
+var ACME_POLL_INTERVAL = 3000;
+var ACME_POLL_TIMEOUT = 300000;
+
+function pollAcmeStatus(taskId, onSuccess, onFailed) {
+	var startTime = Date.now();
+
+	function poll() {
+		callAcmeStatus(taskId).then(function(result) {
+			var status = (result && result.status) || 'unknown';
+
+			if (status === 'success') {
+				onSuccess();
+				return;
+			}
+
+			if (status === 'failed') {
+				var detail = (result && result.detail) || '';
+				onFailed(detail);
+				return;
+			}
+
+			if (status === 'running') {
+				if (Date.now() - startTime > ACME_POLL_TIMEOUT) {
+					onFailed(_('ACME operation timed out'));
+					return;
+				}
+				setTimeout(poll, ACME_POLL_INTERVAL);
+				return;
+			}
+
+			onFailed(_('Unknown ACME task status') + ': ' + status);
+		}).catch(function(err) {
+			if (Date.now() - startTime > ACME_POLL_TIMEOUT) {
+				onFailed(_('ACME operation timed out'));
+				return;
+			}
+			setTimeout(poll, ACME_POLL_INTERVAL);
+		});
+	}
+
+	poll();
+}
 
 function certStatusLabel(status) {
 	switch (status) {
@@ -169,15 +219,27 @@ return view.extend({
 									}
 									ui.showModal(_('Requesting...'), [E('p', {}, _('Please wait, ACME certificate issuance may take a while...'))]);
 									callAcmeIssue(certName, certDomain).then(function(result) {
-										ui.hideModal();
 										if (result && result.error) {
+											ui.hideModal();
 											var errMsg = _(result.error);
 											if (result.detail) errMsg += ': ' + result.detail;
 											ui.addNotification(null, E('p', {}, _('Failed to issue ACME certificate') + ': ' + errMsg), 'error');
-										} else {
-											ui.addNotification(null, E('p', {}, _('ACME certificate issued successfully')), 'info');
-											setTimeout(function() { location.reload(); }, 500);
+											return;
 										}
+										var taskId = (result && result.task_id) || '';
+										pollAcmeStatus(taskId,
+											function() {
+												ui.hideModal();
+												ui.addNotification(null, E('p', {}, _('ACME certificate issued successfully')), 'info');
+												setTimeout(function() { location.reload(); }, 500);
+											},
+											function(detail) {
+												ui.hideModal();
+												var errMsg = _('Failed to issue ACME certificate');
+												if (detail) errMsg += ': ' + detail;
+												ui.addNotification(null, E('p', {}, errMsg), 'error');
+											}
+										);
 									}).catch(function(err) {
 										ui.hideModal();
 										ui.addNotification(null, E('p', {}, _('Failed to issue ACME certificate') + ': ' + err), 'error');
@@ -270,17 +332,29 @@ return view.extend({
 				actionsCell.appendChild(E('button', {
 					'class': 'cbi-button cbi-button-apply',
 					'click': function() {
-						ui.showModal(_('Renewing...'), [E('p', {}, _('Please wait...'))]);
+						ui.showModal(_('Renewing...'), [E('p', {}, _('Please wait, ACME renewal may take a while...'))]);
 						callAcmeRenew(cert.id).then(function(result) {
-							ui.hideModal();
 							if (result && result.error) {
+								ui.hideModal();
 								var errMsg = _(result.error);
 								if (result.detail) errMsg += ': ' + result.detail;
 								ui.addNotification(null, E('p', {}, _('Failed to renew ACME certificate') + ': ' + errMsg), 'error');
-							} else {
-								ui.addNotification(null, E('p', {}, _('ACME certificate renewed successfully')), 'info');
-								setTimeout(function() { location.reload(); }, 500);
+								return;
 							}
+							var taskId = (result && result.task_id) || '';
+							pollAcmeStatus(taskId,
+								function() {
+									ui.hideModal();
+									ui.addNotification(null, E('p', {}, _('ACME certificate renewed successfully')), 'info');
+									setTimeout(function() { location.reload(); }, 500);
+								},
+								function(detail) {
+									ui.hideModal();
+									var errMsg = _('Failed to renew ACME certificate');
+									if (detail) errMsg += ': ' + detail;
+									ui.addNotification(null, E('p', {}, errMsg), 'error');
+								}
+							);
 						}).catch(function(err) {
 							ui.hideModal();
 							ui.addNotification(null, E('p', {}, _('Failed to renew ACME certificate') + ': ' + err), 'error');
