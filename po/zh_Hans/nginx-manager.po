@@ -30,6 +30,9 @@ msgstr "未知的 ACME 任务状态"
 msgid "ACME certificate requested"
 msgstr "ACME 证书已申请"
 
+msgid "ACME operation already in progress for this certificate"
+msgstr "该证书的 ACME 操作正在进行中"
+
 msgid "Access Log"
 msgstr "访问日志"
 
