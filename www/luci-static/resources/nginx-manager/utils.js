@@ -5,7 +5,6 @@
 'require uci';
 
 var FOOTER_VERSION = '@PKG_VERSION@';
-var FOOTER_VERSION_FALLBACK = '1.1.3';
 
 function loadSharedCSS() {
 	if (!document.getElementById('nm-shared-css')) {
@@ -69,9 +68,7 @@ function footerLink(href, label, icon) {
 
 function footerVersion(version) {
 	var value = version && version !== '-' ? version : FOOTER_VERSION;
-	if (value && value.charAt(0) === '@')
-		value = FOOTER_VERSION_FALLBACK;
-	if (!value || value === '-')
+	if (!value || value === '-' || value.charAt(0) === '@')
 		return '';
 	return /^v/i.test(value) ? value : 'v' + value;
 }
