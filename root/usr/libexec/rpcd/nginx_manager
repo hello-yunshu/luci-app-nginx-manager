@@ -576,10 +576,16 @@ handle_get_cert() {
 
 	config_load nginx_manager
 
-	local exists
-	exists="$(uci -q get "nginx_manager.${cert_id}")" || {
+	local section_type
+	section_type="$(uci -q get "nginx_manager.${cert_id}")" || {
 		json_init
 		json_add_string "error" "cert not found"
+		json_dump
+		return
+	}
+	[ "${section_type}" != "cert" ] && {
+		json_init
+		json_add_string "error" "not a certificate"
 		json_dump
 		return
 	}
@@ -610,6 +616,13 @@ handle_set_cert() {
 
 	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
 	validate_uci_id "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+
+	# Verify it's actually a cert section (prevent overwriting site sections)
+	local _existing_type
+	_existing_type="$(uci -q get "nginx_manager.${cert_id}")" || _existing_type=""
+	if [ -n "${_existing_type}" ] && [ "${_existing_type}" != "cert" ]; then
+		json_init; json_add_string "error" "name conflicts with an existing ${_existing_type} (resolved to ${cert_id})"; json_dump; return
+	fi
 
 	uci set "nginx_manager.${cert_id}=cert"
 	[ -n "${name}" ] && uci set "nginx_manager.${cert_id}.name=${name}"
@@ -1626,7 +1639,11 @@ _acme_renew_worker() {
 
 	cleanup_acme_challenge_config "${cert_id}"
 
-	if [ ${acme_exit} -ne 0 ]; then
+	# Verify renewal actually produced updated cert files (consistent with issue worker)
+	local acme_cert="/etc/ssl/acme/${domain}.fullchain.crt"
+	local acme_key="/etc/ssl/acme/${domain}.key"
+
+	if [ ${acme_exit} -ne 0 ] || [ ! -f "${acme_cert}" ] || [ ! -f "${acme_key}" ]; then
 		_acme_task_write_status "${cert_id}" "failed" "${acme_output}"
 		return
 	fi
