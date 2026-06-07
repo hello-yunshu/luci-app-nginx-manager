@@ -27,6 +27,9 @@ msgstr ""
 msgid "acme challenge config failed"
 msgstr ""
 
+msgid "acme dns api package not installed"
+msgstr ""
+
 msgid "acme issue failed"
 msgstr ""
 
@@ -670,4 +673,70 @@ msgid "days remaining"
 msgstr ""
 
 msgid "nginx -T Output"
+msgstr ""
+
+msgid "ACME operation timed out"
+msgstr ""
+
+msgid "ACME Validation"
+msgstr ""
+
+msgid "Auto (ACME DNS-01)"
+msgstr ""
+
+msgid "Auto (ACME HTTP-01)"
+msgstr ""
+
+msgid "Auto (ACME Standalone)"
+msgstr ""
+
+msgid "DNS API"
+msgstr ""
+
+msgid "DNS API is required for DNS-01 validation"
+msgstr ""
+
+msgid "DNS Credentials"
+msgstr ""
+
+msgid "DNS credentials are required for DNS-01 validation"
+msgstr ""
+
+msgid "DNS Wait Seconds"
+msgstr ""
+
+msgid "DNS-01"
+msgstr ""
+
+msgid "HTTP-01 Webroot"
+msgstr ""
+
+msgid "HTTP-01 Standalone"
+msgstr ""
+
+msgid "Unknown ACME task status"
+msgstr ""
+
+msgid "invalid acme validation method"
+msgstr ""
+
+msgid "invalid dns api"
+msgstr ""
+
+msgid "invalid dns credentials"
+msgstr ""
+
+msgid "invalid dns wait seconds"
+msgstr ""
+
+msgid "missing dns api"
+msgstr ""
+
+msgid "missing dns credentials"
+msgstr ""
+
+msgid "wildcard domains not supported for webroot acme"
+msgstr ""
+
+msgid "wildcard domains not supported for http acme"
 msgstr ""

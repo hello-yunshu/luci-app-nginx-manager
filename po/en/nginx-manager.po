@@ -36,6 +36,9 @@ msgstr "acme config not found"
 msgid "acme challenge config failed"
 msgstr "acme challenge config failed"
 
+msgid "acme dns api package not installed"
+msgstr "ACME DNS API package is not installed"
+
 msgid "acme issue failed"
 msgstr "acme issue failed"
 
@@ -710,3 +713,75 @@ msgstr "days remaining"
 
 msgid "nginx -T Output"
 msgstr "nginx -T Output"
+
+msgid "ACME Validation"
+msgstr "ACME Validation"
+
+msgid "Auto (ACME DNS-01)"
+msgstr "Auto (ACME DNS-01)"
+
+msgid "Auto (ACME HTTP-01)"
+msgstr "Auto (ACME HTTP-01)"
+
+msgid "Auto (ACME Standalone)"
+msgstr "Auto (ACME Standalone)"
+
+msgid "DNS API"
+msgstr "DNS API"
+
+msgid "DNS API is required for DNS-01 validation"
+msgstr "DNS API is required for DNS-01 validation"
+
+msgid "DNS Credentials"
+msgstr "DNS Credentials"
+
+msgid "DNS credentials are required for DNS-01 validation"
+msgstr "DNS credentials are required for DNS-01 validation"
+
+msgid "DNS Wait Seconds"
+msgstr "DNS Wait Seconds"
+
+msgid "DNS-01"
+msgstr "DNS-01"
+
+msgid "HTTP-01 Webroot"
+msgstr "HTTP-01 Webroot"
+
+msgid "HTTP-01 Standalone"
+msgstr "HTTP-01 Standalone"
+
+msgid "invalid acme validation method"
+msgstr "Invalid ACME validation method"
+
+msgid "invalid dns api"
+msgstr "Invalid DNS API"
+
+msgid "invalid dns credentials"
+msgstr "Invalid DNS credentials"
+
+msgid "invalid dns wait seconds"
+msgstr "Invalid DNS wait seconds"
+
+msgid "missing dns api"
+msgstr "Missing DNS API"
+
+msgid "missing dns credentials"
+msgstr "Missing DNS credentials"
+
+msgid "wildcard domains not supported for webroot acme"
+msgstr "Wildcard domains are not supported for ACME webroot validation"
+
+msgid "wildcard domains not supported for http acme"
+msgstr "Wildcard domains are not supported for ACME HTTP-01 validation"
+
+msgid "Configuration saved"
+msgstr "Configuration saved"
+
+msgid "Configuration reset"
+msgstr "Configuration reset"
+
+msgid "Apply failed"
+msgstr "Apply failed"
+
+msgid "Changes saved but not applied because dangerous edit mode is enabled. Disable it to apply changes."
+msgstr "Changes saved but not applied because dangerous edit mode is enabled. Disable it to apply changes."

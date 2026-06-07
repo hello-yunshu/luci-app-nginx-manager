@@ -35,7 +35,7 @@ Per-site options:
 
 - **Manual Upload** — Paste certificate and private key; auto-stored with correct permissions
 - **Self-Signed Generation** — One-click self-signed certs for internal testing
-- **ACME Auto-Issuance** — HTTP-01 Webroot validation through OpenWrt `acme`
+- **ACME Auto-Issuance** — HTTP-01 Webroot, HTTP-01 Standalone, and DNS-01 validation through OpenWrt `acme`
 - Certificate expiry detection — auto-flagged as "expiring" within 30 days
 
 ### Live Logs
@@ -74,7 +74,6 @@ Adjust common parameters through a visual editor — no manual file editing need
 - `gzip` — Compression toggle and types
 - `server_tokens` — Version info visibility
 - `sendfile` — Zero-copy file transfer
-- `log_max_size_kb` / `log_trim_interval` — Automatic Nginx log size limiting
 - `ssl_protocols` / `ssl_ciphers` — SSL protocol and cipher suite selection
 
 ## Installation
@@ -104,7 +103,7 @@ sha256sum -c sha256sums.txt
 ### Dependencies
 
 ```
-luci-base  nginx-ssl  rpcd  rpcd-mod-file  openssl-util  acme
+luci-base  nginx-ssl  rpcd  rpcd-mod-file  openssl-util  acme  acme-acmesh-dnsapi
 ```
 
 ## Usage Guide
@@ -127,8 +126,10 @@ luci-base  nginx-ssl  rpcd  rpcd-mod-file  openssl-util  acme
 1. Go to the **Certificates** page
 2. Choose **Upload Certificate**, **Generate Self-Signed**, or **Auto (ACME)**
 3. For upload: paste the fullchain and private key content
-4. ACME mode depends on the `acme` package and uses HTTP-01 Webroot validation; the domain must resolve to the router and public port 80 must be reachable
-5. Certificates are stored at `/etc/nginx/certs/luci-manager/<id>/`
+4. ACME HTTP-01 Webroot: the domain must resolve to the router and public port 80 must be reachable
+5. ACME HTTP-01 Standalone: acme.sh temporarily listens on port 80; make sure nginx/uhttpd is not using port 80 while issuing
+6. ACME DNS-01: choose a DNS API hook such as `dns_cf` and enter matching `KEY=VALUE` credentials; wildcard certificates are supported and public port 80 is not required
+7. Certificates are stored at `/etc/nginx/certs/luci-manager/<id>/`
 
 ### View Logs
 
@@ -219,8 +220,6 @@ htdocs/luci-static/resources/
 | `advanced_mode` | boolean | 0 | Advanced mode |
 | `dangerous_core_edit` | boolean | 0 | Dangerous edit mode |
 | `max_backups` | integer | 5 | Maximum backup count |
-| `log_max_size_kb` | integer | 1024 | Auto log trim size limit in KB; 0 disables trimming |
-| `log_trim_interval` | integer | 300 | Auto log trim interval in seconds |
 
 ### Site Section
 

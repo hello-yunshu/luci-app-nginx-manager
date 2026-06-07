@@ -27,8 +27,6 @@ uci -q get nginx_manager.global >/dev/null 2>&1 || {
 	uci set nginx_manager.global.advanced_mode='0'
 	uci set nginx_manager.global.dangerous_core_edit='0'
 	uci set nginx_manager.global.max_backups='5'
-	uci set nginx_manager.global.log_max_size_kb='1024'
-	uci set nginx_manager.global.log_trim_interval='300'
 	uci set nginx_manager.global.client_max_body_size=''
 	uci set nginx_manager.global.keepalive_timeout=''
 	uci set nginx_manager.global.gzip='0'
@@ -42,16 +40,17 @@ uci -q get nginx_manager.global >/dev/null 2>&1 || {
 }
 
 changed=0
-uci -q get nginx_manager.global.log_max_size_kb >/dev/null 2>&1 || {
-	uci set nginx_manager.global.log_max_size_kb='1024'
-	changed=1
-}
-uci -q get nginx_manager.global.log_trim_interval >/dev/null 2>&1 || {
-	uci set nginx_manager.global.log_trim_interval='300'
+uci -q get nginx_manager.global.max_backups >/dev/null 2>&1 || {
+	uci set nginx_manager.global.max_backups='20'
 	changed=1
 }
 [ "${changed}" = "1" ] && uci commit nginx_manager
 
 chmod 600 /etc/config/nginx_manager 2>/dev/null
+
+if [ -x /etc/init.d/nginx_manager ]; then
+	/etc/init.d/nginx_manager enable 2>/dev/null
+	/etc/init.d/nginx_manager start 2>/dev/null
+fi
 
 exit 0
