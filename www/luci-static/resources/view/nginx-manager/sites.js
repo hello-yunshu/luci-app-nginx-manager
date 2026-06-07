@@ -45,7 +45,8 @@ var callSetSite = rpc.declare({
 	method: 'set_site',
 	params: ['id', 'name', 'mode', 'server_name', 'listen_addr', 'listen_port', 'proxy_pass', 'root', 'index',
 		'websocket', 'proxy_type', 'grpc_path', 'grpc_pass', 'custom_proxy_headers', 'redirect_https', 'proxy_host', 'proxy_xff', 'proxy_xfp', 'proxy_xri',
-		'ssl_cert', 'access_log', 'error_log', 'custom_server_block', 'redirect_target', 'enabled'],
+		'ssl_cert', 'access_log', 'error_log', 'custom_server_block', 'redirect_target', 'enabled',
+		'proxy_connect_timeout', 'proxy_read_timeout', 'proxy_send_timeout'],
 	expect: {}
 });
 

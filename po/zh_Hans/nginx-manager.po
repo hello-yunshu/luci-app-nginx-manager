@@ -210,6 +210,33 @@ msgstr "正在创建站点..."
 msgid "Custom Proxy Headers"
 msgstr "自定义代理头"
 
+msgid "Proxy Timeouts"
+msgstr "代理超时"
+
+msgid "gRPC Headers"
+msgstr "gRPC 请求头"
+
+msgid "Use grpc_set_header instead of proxy_set_header. One directive per line."
+msgstr "请使用 grpc_set_header 而非 proxy_set_header。每行一条指令。"
+
+msgid "Connect Timeout"
+msgstr "连接超时"
+
+msgid "Timeout for establishing a connection to the backend. Default: 60s."
+msgstr "与后端建立连接的超时时间。默认：60s。"
+
+msgid "Read Timeout"
+msgstr "读取超时"
+
+msgid "Timeout for reading a response from the backend. Default: 60s."
+msgstr "从后端读取响应的超时时间。默认：60s。"
+
+msgid "Send Timeout"
+msgstr "发送超时"
+
+msgid "Timeout for sending a request to the backend. Default: 60s."
+msgstr "向后端发送请求的超时时间。默认：60s。"
+
 msgid "Custom Server Block"
 msgstr "自定义 Server Block"
 
@@ -582,6 +609,18 @@ msgstr "自签名证书"
 msgid "Self-signed certificate generated"
 msgstr "自签名证书已生成"
 
+msgid "TCP NOPUSH"
+msgstr "TCP NOPUSH"
+
+msgid "Optimizes sending large files. Works best with Sendfile enabled."
+msgstr "优化大文件发送，启用 Sendfile 时效果最佳。"
+
+msgid "TCP NODELAY"
+msgstr "TCP NODELAY"
+
+msgid "Disables Nagle algorithm for low-latency delivery. Useful for real-time applications."
+msgstr "禁用 Nagle 算法以降低延迟，适用于实时应用。"
+
 msgid "Sendfile"
 msgstr "Sendfile"
 
@@ -747,6 +786,9 @@ msgstr "DNS-01 验证需要填写 DNS 凭据"
 msgid "DNS Provider"
 msgstr "DNS 服务商"
 
+msgid "-- Please choose --"
+msgstr "-- 请选择 --"
+
 msgid "DNS Wait Seconds"
 msgstr "DNS 等待秒数"
 
@@ -858,8 +900,50 @@ msgstr "配置已保存"
 msgid "Configuration reset"
 msgstr "配置已重置"
 
+msgid "Reset failed"
+msgstr "重置失败"
+
 msgid "Apply failed"
 msgstr "应用失败"
+
+msgid "System Behavior"
+msgstr "系统行为"
+
+msgid "Auto Backup"
+msgstr "自动备份"
+
+msgid "Automatically create a backup before applying configuration changes."
+msgstr "应用配置更改前自动创建备份。"
+
+msgid "Max Backups"
+msgstr "最大备份数"
+
+msgid "Maximum number of backups to keep. Older backups will be automatically deleted."
+msgstr "保留的最大备份数，超出时自动删除最旧的备份。"
+
+msgid "Test Before Reload"
+msgstr "重载前测试"
+
+msgid "Certificate Directory"
+msgstr "证书目录"
+
+msgid "Directory for storing SSL certificates."
+msgstr "SSL 证书存储目录。"
+
+msgid "Managed Config Directory"
+msgstr "管理配置目录"
+
+msgid "Directory for managed site configuration files."
+msgstr "管理站点配置文件的目录。"
+
+msgid "Backup Directory"
+msgstr "备份目录"
+
+msgid "Directory for storing configuration backups."
+msgstr "配置备份存储目录。"
+
+msgid "Run nginx -t to test configuration before reloading. Prevents invalid config from breaking the server."
+msgstr "重载前运行 nginx -t 测试配置，防止无效配置导致服务中断。"
 
 msgid "Changes saved but not applied because dangerous edit mode is enabled. Disable it to apply changes."
 msgstr "更改已保存但未应用，因为危险编辑模式已启用。请禁用后再应用更改。"

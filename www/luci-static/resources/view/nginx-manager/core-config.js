@@ -84,6 +84,15 @@ return view.extend({
 		o = s1.option(form.Flag, 'sendfile', _('Sendfile'));
 		o.rmempty = false;
 
+		o = s1.option(form.Flag, 'tcp_nopush', _('TCP NOPUSH'),
+			_('Optimizes sending large files. Works best with Sendfile enabled.'));
+		o.rmempty = false;
+		o.default = '1';
+
+		o = s1.option(form.Flag, 'tcp_nodelay', _('TCP NODELAY'),
+			_('Disables Nagle algorithm for low-latency delivery. Useful for real-time applications.'));
+		o.rmempty = false;
+
 		o = s1.option(form.Value, 'access_log', _('Access Log'));
 		o.placeholder = '/var/log/nginx/access.log';
 		o.rmempty = true;
@@ -91,6 +100,36 @@ return view.extend({
 		o = s1.option(form.Value, 'error_log', _('Error Log'));
 	o.placeholder = '/var/log/nginx/error.log';
 	o.rmempty = true;
+
+	/* ========== System Behavior ========== */
+		var s3 = m.section(form.TypedSection, 'global', _('System Behavior'));
+		s3.anonymous = true;
+
+		o = s3.option(form.Flag, 'auto_backup', _('Auto Backup'),
+			_('Automatically create a backup before applying configuration changes.'));
+		o.rmempty = false;
+		o.default = '1';
+
+		o = s3.option(form.Value, 'max_backups', _('Max Backups'),
+			_('Maximum number of backups to keep. Older backups will be automatically deleted.'));
+		o.datatype = 'uinteger';
+		o.rmempty = true;
+		o.placeholder = '10';
+
+		o = s3.option(form.Flag, 'test_before_reload', _('Test Before Reload'),
+			_('Run nginx -t to test configuration before reloading. Prevents invalid config from breaking the server.'));
+		o.rmempty = false;
+		o.default = '1';
+
+		o = s3.option(form.Value, 'managed_dir', _('Managed Config Directory'),
+			_('Directory for managed site configuration files.'));
+		o.rmempty = true;
+		o.placeholder = '/etc/nginx/conf.d/luci-manager';
+
+		o = s3.option(form.Value, 'backup_dir', _('Backup Directory'),
+			_('Directory for storing configuration backups.'));
+		o.rmempty = true;
+		o.placeholder = '/etc/nginx-manager/backups';
 
 	/* ========== SSL Settings ========== */
 		var s2 = m.section(form.TypedSection, 'global', _('SSL Settings'));
@@ -103,6 +142,11 @@ return view.extend({
 		o = s2.option(form.Value, 'ssl_ciphers', _('SSL Ciphers'));
 		o.placeholder = 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
 		o.rmempty = true;
+
+		o = s2.option(form.Value, 'cert_dir', _('Certificate Directory'),
+			_('Directory for storing SSL certificates.'));
+		o.rmempty = true;
+		o.placeholder = '/etc/nginx/certs/luci-manager';
 
 		return m.render().then(function(node) {
 			/* ========== Read-only View Section ========== */

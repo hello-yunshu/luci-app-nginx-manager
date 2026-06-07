@@ -29,9 +29,9 @@ load_global_config() {
 
 get_max_backups() {
 	local max_backups
-	max_backups="$(uci -q get nginx_manager.global.max_backups)" || max_backups="5"
+	max_backups="$(uci -q get nginx_manager.global.max_backups)" || max_backups="10"
 	case "${max_backups}" in
-		''|*[!0-9]*) max_backups="5" ;;
+		''|*[!0-9]*) max_backups="10" ;;
 	esac
 	[ "${max_backups}" -lt 1 ] && max_backups="1"
 	printf '%s' "${max_backups}"
@@ -270,7 +270,8 @@ handle_get_site() {
 	local opt
 	for opt in name mode server_name listen_addr listen_port proxy_pass root index websocket proxy_type grpc_path grpc_pass custom_proxy_headers redirect_https \
 		proxy_host proxy_xff proxy_xfp proxy_xri ssl_cert access_log error_log \
-		custom_server_block redirect_target enabled; do
+		custom_server_block redirect_target enabled \
+		proxy_connect_timeout proxy_read_timeout proxy_send_timeout; do
 		local val
 		val="$(uci -q get "nginx_manager.${site_id}.${opt}")" || continue
 		json_add_string "${opt}" "${val}"
@@ -322,6 +323,7 @@ handle_set_site() {
 	local websocket proxy_type custom_proxy_headers redirect_https proxy_host proxy_xff proxy_xfp proxy_xri
 	local ssl_cert access_log error_log custom_server_block redirect_target enabled
 	local listen_addr listen_port grpc_path grpc_pass
+	local proxy_connect_timeout proxy_read_timeout proxy_send_timeout
 
 	json_get_var site_id "id"
 	json_get_var name "name"
@@ -348,6 +350,9 @@ handle_set_site() {
 	json_get_var custom_server_block "custom_server_block"
 	json_get_var redirect_target "redirect_target"
 	json_get_var enabled "enabled"
+	json_get_var proxy_connect_timeout "proxy_connect_timeout"
+	json_get_var proxy_read_timeout "proxy_read_timeout"
+	json_get_var proxy_send_timeout "proxy_send_timeout"
 
 	[ -z "${site_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
 	validate_uci_id "${site_id}" || { json_init; json_add_string "error" "invalid site id"; json_dump; return; }
@@ -451,6 +456,9 @@ handle_set_site() {
 	[ -n "${custom_server_block}" ] && uci set "nginx_manager.${site_id}.custom_server_block=${custom_server_block}"
 	[ -n "${redirect_target}" ] && uci set "nginx_manager.${site_id}.redirect_target=${redirect_target}"
 	[ -n "${enabled}" ] && uci set "nginx_manager.${site_id}.enabled=${enabled}"
+	[ -n "${proxy_connect_timeout}" ] && uci set "nginx_manager.${site_id}.proxy_connect_timeout=${proxy_connect_timeout}" || uci -q delete "nginx_manager.${site_id}.proxy_connect_timeout"
+	[ -n "${proxy_read_timeout}" ] && uci set "nginx_manager.${site_id}.proxy_read_timeout=${proxy_read_timeout}" || uci -q delete "nginx_manager.${site_id}.proxy_read_timeout"
+	[ -n "${proxy_send_timeout}" ] && uci set "nginx_manager.${site_id}.proxy_send_timeout=${proxy_send_timeout}" || uci -q delete "nginx_manager.${site_id}.proxy_send_timeout"
 
 	# Migrate old listen list to new listen_addr/listen_port if present
 	uci -q delete "nginx_manager.${site_id}.listen"

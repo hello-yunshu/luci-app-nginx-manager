@@ -35,7 +35,7 @@ load_global_config() {
 	BACKUP_DIR="$(uci -q get nginx_manager.global.backup_dir)" || BACKUP_DIR="/etc/nginx-manager/backups"
 	AUTO_BACKUP="$(uci -q get nginx_manager.global.auto_backup)" || AUTO_BACKUP="1"
 	TEST_BEFORE_RELOAD="$(uci -q get nginx_manager.global.test_before_reload)" || TEST_BEFORE_RELOAD="1"
-	MAX_BACKUPS="$(uci -q get nginx_manager.global.max_backups)" || MAX_BACKUPS="20"
+	MAX_BACKUPS="$(uci -q get nginx_manager.global.max_backups)" || MAX_BACKUPS="10"
 }
 
 validate_port() {
@@ -345,14 +345,10 @@ generate_log_directives() {
 
 generate_grpc_headers() {
 	local proxy_host="$1"
-	local proxy_xff="$2"
-	local proxy_xfp="$3"
 	local proxy_xri="$4"
 
 	[ "${proxy_host}" = "1" ] && echo "        grpc_set_header Host \$host;"
 	[ "${proxy_xri}" = "1" ] && echo "        grpc_set_header X-Real-IP \$remote_addr;"
-	[ "${proxy_xff}" = "1" ] && echo "        grpc_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;"
-	[ "${proxy_xfp}" = "1" ] && echo "        grpc_set_header X-Forwarded-Proto \$scheme;"
 }
 
 generate_custom_proxy_headers() {
@@ -367,6 +363,7 @@ generate_reverse_proxy_site() {
 	local proxy_host proxy_xff proxy_xfp proxy_xri
 	local ssl_cert access_log error_log enabled
 	local proxy_type custom_proxy_headers listen_addr
+	local proxy_connect_timeout proxy_read_timeout proxy_send_timeout
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
 	server_name="$(uci -q get "nginx_manager.${section}.server_name")" || return 1
@@ -384,6 +381,9 @@ generate_reverse_proxy_site() {
 	proxy_type="$(uci -q get "nginx_manager.${section}.proxy_type")" || proxy_type="http"
 	custom_proxy_headers="$(uci -q get "nginx_manager.${section}.custom_proxy_headers")" || custom_proxy_headers=""
 	listen_addr="$(uci -q get "nginx_manager.${section}.listen_addr")" || listen_addr=""
+	proxy_connect_timeout="$(uci -q get "nginx_manager.${section}.proxy_connect_timeout")" || proxy_connect_timeout=""
+	proxy_read_timeout="$(uci -q get "nginx_manager.${section}.proxy_read_timeout")" || proxy_read_timeout=""
+	proxy_send_timeout="$(uci -q get "nginx_manager.${section}.proxy_send_timeout")" || proxy_send_timeout=""
 
 	local output_file="${BUILD_DIR}/${name}.conf"
 	{
@@ -420,9 +420,15 @@ generate_reverse_proxy_site() {
 		if [ "${proxy_type}" = "grpc" ]; then
 			echo "        grpc_pass ${proxy_pass};"
 			generate_grpc_headers "${proxy_host}" "${proxy_xff}" "${proxy_xfp}" "${proxy_xri}"
+			[ -n "${proxy_connect_timeout}" ] && echo "        grpc_connect_timeout ${proxy_connect_timeout};"
+			[ -n "${proxy_read_timeout}" ] && echo "        grpc_read_timeout ${proxy_read_timeout};"
+			[ -n "${proxy_send_timeout}" ] && echo "        grpc_send_timeout ${proxy_send_timeout};"
 		else
 			echo "        proxy_pass ${proxy_pass};"
 			generate_proxy_headers "${proxy_host}" "${proxy_xff}" "${proxy_xfp}" "${proxy_xri}"
+			[ -n "${proxy_connect_timeout}" ] && echo "        proxy_connect_timeout ${proxy_connect_timeout};"
+			[ -n "${proxy_read_timeout}" ] && echo "        proxy_read_timeout ${proxy_read_timeout};"
+			[ -n "${proxy_send_timeout}" ] && echo "        proxy_send_timeout ${proxy_send_timeout};"
 
 			if [ "${websocket}" = "1" ] || [ "${proxy_type}" = "websocket" ]; then
 				generate_websocket_headers
@@ -704,6 +710,8 @@ _strip_template_directives() {
 	[ -n "${gzip}" ] && directives="${directives} gzip gzip_vary gzip_proxied"
 	[ -n "${server_tokens}" ] && directives="${directives} server_tokens"
 	[ -n "${sendfile}" ] && directives="${directives} sendfile"
+	[ -n "${tcp_nopush}" ] && directives="${directives} tcp_nopush"
+	[ -n "${tcp_nodelay}" ] && directives="${directives} tcp_nodelay"
 	[ -n "${access_log}" ] && directives="${directives} access_log"
 	[ -n "${error_log}" ] && directives="${directives} error_log"
 	[ -n "${ssl_protocols}" ] && directives="${directives} ssl_protocols"
@@ -757,6 +765,7 @@ generate_global_conf() {
 	local output_file="${BUILD_DIR}/00-global.conf"
 	local max_body keepalive gzip
 	local server_tokens sendfile access_log error_log
+	local tcp_nopush tcp_nodelay
 	local ssl_protocols ssl_ciphers
 
 	max_body="$(uci -q get nginx_manager.global.client_max_body_size)" || max_body=""
@@ -764,6 +773,8 @@ generate_global_conf() {
 	gzip="$(uci -q get nginx_manager.global.gzip)" || gzip=""
 	server_tokens="$(uci -q get nginx_manager.global.server_tokens)" || server_tokens=""
 	sendfile="$(uci -q get nginx_manager.global.sendfile)" || sendfile=""
+	tcp_nopush="$(uci -q get nginx_manager.global.tcp_nopush)" || tcp_nopush=""
+	tcp_nodelay="$(uci -q get nginx_manager.global.tcp_nodelay)" || tcp_nodelay=""
 	access_log="$(uci -q get nginx_manager.global.access_log)" || access_log=""
 	error_log="$(uci -q get nginx_manager.global.error_log)" || error_log=""
 	ssl_protocols="$(uci -q get nginx_manager.global.ssl_protocols)" || ssl_protocols=""
@@ -771,6 +782,7 @@ generate_global_conf() {
 
 	[ -z "${max_body}" ] && [ -z "${keepalive}" ] && [ -z "${gzip}" ] && \
 	[ -z "${server_tokens}" ] && [ -z "${sendfile}" ] && \
+	[ -z "${tcp_nopush}" ] && [ -z "${tcp_nodelay}" ] && \
 	[ -z "${access_log}" ] && [ -z "${error_log}" ] && \
 	[ -z "${ssl_protocols}" ] && [ -z "${ssl_ciphers}" ] && {
 		# No directives to generate, restore any previously commented lines
@@ -796,6 +808,18 @@ generate_global_conf() {
 			echo "sendfile on;"
 		elif [ "${sendfile}" = "0" ]; then
 			echo "sendfile off;"
+		fi
+
+		if [ "${tcp_nopush}" = "1" ]; then
+			echo "tcp_nopush on;"
+		elif [ "${tcp_nopush}" = "0" ]; then
+			echo "tcp_nopush off;"
+		fi
+
+		if [ "${tcp_nodelay}" = "1" ]; then
+			echo "tcp_nodelay on;"
+		elif [ "${tcp_nodelay}" = "0" ]; then
+			echo "tcp_nodelay off;"
 		fi
 
 		[ -n "${access_log}" ] && echo "access_log ${access_log};"
