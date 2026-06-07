@@ -702,7 +702,79 @@ msgstr ""
 msgid "DNS credentials are required for DNS-01 validation"
 msgstr ""
 
+msgid "DNS Provider"
+msgstr ""
+
 msgid "DNS Wait Seconds"
+msgstr ""
+
+msgid "Seconds to wait for DNS propagation before validation. Leave empty for default."
+msgstr ""
+
+msgid "Custom DNS API Name"
+msgstr ""
+
+msgid "acme.sh DNS API script name, e.g. dns_myapi. See acme.sh dnsapi wiki for full list."
+msgstr ""
+
+msgid "Custom..."
+msgstr ""
+
+msgid "Optional"
+msgstr ""
+
+msgid "One credential per line in KEY=VALUE format"
+msgstr ""
+
+msgid "API Token from Cloudflare dashboard > My Profile > API Tokens"
+msgstr ""
+
+msgid "Cloudflare Account ID (optional, needed for some tokens)"
+msgstr ""
+
+msgid "Cloudflare Zone ID (optional, needed for some tokens)"
+msgstr ""
+
+msgid "DNSPod API ID from console.dnspod.cn"
+msgstr ""
+
+msgid "DNSPod API Token from console.dnspod.cn"
+msgstr ""
+
+msgid "AccessKey ID from Alibaba Cloud RAM console"
+msgstr ""
+
+msgid "AccessKey Secret from Alibaba Cloud RAM console"
+msgstr ""
+
+msgid "AWS IAM Access Key ID with Route53 permissions"
+msgstr ""
+
+msgid "AWS IAM Secret Access Key"
+msgstr ""
+
+msgid "IAM username from Huawei Cloud console > My Credentials"
+msgstr ""
+
+msgid "Password for the IAM user"
+msgstr ""
+
+msgid "Account name from Huawei Cloud console > My Credentials"
+msgstr ""
+
+msgid "API Key from developer.godaddy.com (Production key)"
+msgstr ""
+
+msgid "API Secret from developer.godaddy.com"
+msgstr ""
+
+msgid "Namecheap account username"
+msgstr ""
+
+msgid "API Key from Namecheap dashboard > Profile > Tools"
+msgstr ""
+
+msgid "Whitelisted IP address for API access"
 msgstr ""
 
 msgid "DNS-01"

@@ -744,8 +744,80 @@ msgstr "DNS 凭据"
 msgid "DNS credentials are required for DNS-01 validation"
 msgstr "DNS-01 验证需要填写 DNS 凭据"
 
+msgid "DNS Provider"
+msgstr "DNS 服务商"
+
 msgid "DNS Wait Seconds"
 msgstr "DNS 等待秒数"
+
+msgid "Seconds to wait for DNS propagation before validation. Leave empty for default."
+msgstr "DNS 记录传播等待时间（秒），留空使用默认值"
+
+msgid "Custom DNS API Name"
+msgstr "自定义 DNS API 名称"
+
+msgid "acme.sh DNS API script name, e.g. dns_myapi. See acme.sh dnsapi wiki for full list."
+msgstr "acme.sh 的 DNS API 脚本名称，如 dns_myapi，完整列表见 acme.sh dnsapi wiki"
+
+msgid "Custom..."
+msgstr "自定义..."
+
+msgid "Optional"
+msgstr "可选"
+
+msgid "One credential per line in KEY=VALUE format"
+msgstr "每行一条凭据，格式为 KEY=VALUE"
+
+msgid "API Token from Cloudflare dashboard > My Profile > API Tokens"
+msgstr "来自 Cloudflare 控制台 > 我的资料 > API 令牌 的 API 令牌"
+
+msgid "Cloudflare Account ID (optional, needed for some tokens)"
+msgstr "Cloudflare 账户 ID（可选，部分令牌需要）"
+
+msgid "Cloudflare Zone ID (optional, needed for some tokens)"
+msgstr "Cloudflare 区域 ID（可选，部分令牌需要）"
+
+msgid "DNSPod API ID from console.dnspod.cn"
+msgstr "来自 console.dnspod.cn 的 DNSPod API ID"
+
+msgid "DNSPod API Token from console.dnspod.cn"
+msgstr "来自 console.dnspod.cn 的 DNSPod API Token"
+
+msgid "AccessKey ID from Alibaba Cloud RAM console"
+msgstr "来自阿里云 RAM 控制台的 AccessKey ID"
+
+msgid "AccessKey Secret from Alibaba Cloud RAM console"
+msgstr "来自阿里云 RAM 控制台的 AccessKey Secret"
+
+msgid "AWS IAM Access Key ID with Route53 permissions"
+msgstr "具有 Route53 权限的 AWS IAM 访问密钥 ID"
+
+msgid "AWS IAM Secret Access Key"
+msgstr "AWS IAM 秘密访问密钥"
+
+msgid "IAM username from Huawei Cloud console > My Credentials"
+msgstr "来自华为云控制台 > 我的凭证 的 IAM 用户名"
+
+msgid "Password for the IAM user"
+msgstr "IAM 用户的登录密码"
+
+msgid "Account name from Huawei Cloud console > My Credentials"
+msgstr "来自华为云控制台 > 我的凭证 的帐号名"
+
+msgid "API Key from developer.godaddy.com (Production key)"
+msgstr "来自 developer.godaddy.com 的 API 密钥（生产环境密钥）"
+
+msgid "API Secret from developer.godaddy.com"
+msgstr "来自 developer.godaddy.com 的 API 密钥密码"
+
+msgid "Namecheap account username"
+msgstr "Namecheap 账户用户名"
+
+msgid "API Key from Namecheap dashboard > Profile > Tools"
+msgstr "来自 Namecheap 控制台 > 资料 > 工具 的 API 密钥"
+
+msgid "Whitelisted IP address for API access"
+msgstr "已加入 API 白名单的 IP 地址"
 
 msgid "DNS-01"
 msgstr "DNS-01"
