@@ -78,8 +78,8 @@ msgstr "Are you sure you want to restore this backup? A backup of the current co
 msgid "Auto (ACME)"
 msgstr "Auto (ACME)"
 
-msgid "Auto-switches to 443 when SSL is enabled."
-msgstr "Auto-switches to 443 when SSL is enabled."
+msgid "SSL can be enabled on any port, no need to switch to 443."
+msgstr "SSL can be enabled on any port, no need to switch to 443."
 
 msgid "Back to Sites"
 msgstr "Back to Sites"

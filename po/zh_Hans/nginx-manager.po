@@ -84,8 +84,8 @@ msgstr "确定要恢复此备份吗？恢复前会先创建当前配置的备份
 msgid "Auto (ACME)"
 msgstr "自动 (ACME)"
 
-msgid "Auto-switches to 443 when SSL is enabled."
-msgstr "启用 SSL 时自动切换为 443。"
+msgid "SSL can be enabled on any port, no need to switch to 443."
+msgstr "任意端口均可启用 SSL，无需切换到 443。"
 
 msgid "Back to Sites"
 msgstr "返回站点列表"
