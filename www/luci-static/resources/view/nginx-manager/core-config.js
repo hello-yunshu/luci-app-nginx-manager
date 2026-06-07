@@ -14,6 +14,12 @@ var callSyncCoreFromNginx = rpc.declare({
 	expect: {}
 });
 
+var callApplyCoreConfig = rpc.declare({
+	object: 'nginx_manager',
+	method: 'apply_core_config',
+	expect: {}
+});
+
 var callSetDangerousCoreEdit = rpc.declare({
 	object: 'nginx_manager',
 	method: 'set_dangerous_core_edit',
@@ -264,7 +270,13 @@ return view.extend({
 				return;
 			}
 			return utils.safeApply().then(function() {
-				ui.addNotification(null, E('p', {}, _('Core config saved and applied')), 'info');
+				return callApplyCoreConfig();
+			}).then(function(result) {
+				if (result && result.error) {
+					ui.addNotification(null, E('p', {}, _('Apply failed') + ': ' + (result.detail || result.error)), 'error');
+				} else {
+					ui.addNotification(null, E('p', {}, _('Core config saved and applied')), 'info');
+				}
 			});
 		}).catch(function(err) {
 			ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || err)), 'error');
