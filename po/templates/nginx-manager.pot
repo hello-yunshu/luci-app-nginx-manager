@@ -72,7 +72,7 @@ msgstr ""
 msgid "Auto (ACME)"
 msgstr ""
 
-msgid "Auto-switches to 443 when SSL is enabled."
+msgid "SSL can be enabled on any port, no need to switch to 443."
 msgstr ""
 
 msgid "Back to Sites"
@@ -183,6 +183,21 @@ msgstr ""
 msgid "Core config saved and applied"
 msgstr ""
 
+msgid "Configuration saved"
+msgstr ""
+
+msgid "Configuration reset"
+msgstr ""
+
+msgid "Reset failed"
+msgstr ""
+
+msgid "Apply failed"
+msgstr ""
+
+msgid "Changes saved but not applied because dangerous edit mode is enabled. Disable it to apply changes."
+msgstr ""
+
 msgid "Create"
 msgstr ""
 
@@ -193,6 +208,33 @@ msgid "Creating site..."
 msgstr ""
 
 msgid "Custom Proxy Headers"
+msgstr ""
+
+msgid "Proxy Timeouts"
+msgstr ""
+
+msgid "gRPC Headers"
+msgstr ""
+
+msgid "Use grpc_set_header instead of proxy_set_header. One directive per line."
+msgstr ""
+
+msgid "Connect Timeout"
+msgstr ""
+
+msgid "Timeout for establishing a connection to the backend. Default: 60s."
+msgstr ""
+
+msgid "Read Timeout"
+msgstr ""
+
+msgid "Timeout for reading a response from the backend. Default: 60s."
+msgstr ""
+
+msgid "Send Timeout"
+msgstr ""
+
+msgid "Timeout for sending a request to the backend. Default: 60s."
 msgstr ""
 
 msgid "Custom Server Block"
@@ -310,6 +352,21 @@ msgid "Generating..."
 msgstr ""
 
 msgid "gRPC"
+msgstr ""
+
+msgid "gRPC Passthrough"
+msgstr ""
+
+msgid "gRPC Path"
+msgstr ""
+
+msgid "URL path for gRPC traffic, e.g. /grpc or /api.Service"
+msgstr ""
+
+msgid "gRPC Backend Address"
+msgstr ""
+
+msgid "Uses grpc:// or grpcs:// scheme."
 msgstr ""
 
 msgid "gRPC uses grpc:// or grpcs:// scheme."
@@ -564,6 +621,18 @@ msgstr ""
 msgid "Self-signed certificate generated"
 msgstr ""
 
+msgid "TCP NOPUSH"
+msgstr ""
+
+msgid "Optimizes sending large files. Works best with Sendfile enabled."
+msgstr ""
+
+msgid "TCP NODELAY"
+msgstr ""
+
+msgid "Disables Nagle algorithm for low-latency delivery. Useful for real-time applications."
+msgstr ""
+
 msgid "Sendfile"
 msgstr ""
 
@@ -660,6 +729,9 @@ msgstr ""
 msgid "WebSocket"
 msgstr ""
 
+msgid "WebSocket Support"
+msgstr ""
+
 msgid "X-Forwarded-For"
 msgstr ""
 
@@ -703,6 +775,9 @@ msgid "DNS credentials are required for DNS-01 validation"
 msgstr ""
 
 msgid "DNS Provider"
+msgstr ""
+
+msgid "-- Please choose --"
 msgstr ""
 
 msgid "DNS Wait Seconds"
@@ -807,8 +882,62 @@ msgstr ""
 msgid "missing dns credentials"
 msgstr ""
 
+msgid "System Behavior"
+msgstr ""
+
+msgid "Auto Backup"
+msgstr ""
+
+msgid "Automatically create a backup before applying configuration changes."
+msgstr ""
+
+msgid "Max Backups"
+msgstr ""
+
+msgid "Maximum number of backups to keep. Older backups will be automatically deleted."
+msgstr ""
+
+msgid "Test Before Reload"
+msgstr ""
+
+msgid "Certificate Directory"
+msgstr ""
+
+msgid "Directory for storing SSL certificates."
+msgstr ""
+
+msgid "Managed Config Directory"
+msgstr ""
+
+msgid "Directory for managed site configuration files."
+msgstr ""
+
+msgid "Backup Directory"
+msgstr ""
+
+msgid "Directory for storing configuration backups."
+msgstr ""
+
+msgid "Run nginx -t to test configuration before reloading. Prevents invalid config from breaking the server."
+msgstr ""
+
 msgid "wildcard domains not supported for webroot acme"
 msgstr ""
 
 msgid "wildcard domains not supported for http acme"
+msgstr ""
+
+msgid "Wildcard domains are not supported for ACME certificates"
+msgstr ""
+
+msgid "Please wait, ACME renewal may take a while..."
+msgstr ""
+
+msgid "ACME operation already in progress for this certificate"
+msgstr ""
+
+msgid "Certificate name must start with a letter, number or underscore, and can contain letters, numbers, dots, hyphens and underscores"
+msgstr ""
+
+msgid "wildcard domains not supported for acme"
 msgstr ""

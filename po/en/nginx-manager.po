@@ -204,6 +204,33 @@ msgstr "Creating site..."
 msgid "Custom Proxy Headers"
 msgstr "Custom Proxy Headers"
 
+msgid "Proxy Timeouts"
+msgstr "Proxy Timeouts"
+
+msgid "gRPC Headers"
+msgstr "gRPC Headers"
+
+msgid "Use grpc_set_header instead of proxy_set_header. One directive per line."
+msgstr "Use grpc_set_header instead of proxy_set_header. One directive per line."
+
+msgid "Connect Timeout"
+msgstr "Connect Timeout"
+
+msgid "Timeout for establishing a connection to the backend. Default: 60s."
+msgstr "Timeout for establishing a connection to the backend. Default: 60s."
+
+msgid "Read Timeout"
+msgstr "Read Timeout"
+
+msgid "Timeout for reading a response from the backend. Default: 60s."
+msgstr "Timeout for reading a response from the backend. Default: 60s."
+
+msgid "Send Timeout"
+msgstr "Send Timeout"
+
+msgid "Timeout for sending a request to the backend. Default: 60s."
+msgstr "Timeout for sending a request to the backend. Default: 60s."
+
 msgid "Custom Server Block"
 msgstr "Custom Server Block"
 
@@ -576,6 +603,18 @@ msgstr "Self-Signed Certificate"
 msgid "Self-signed certificate generated"
 msgstr "Self-signed certificate generated"
 
+msgid "TCP NOPUSH"
+msgstr "TCP NOPUSH"
+
+msgid "Optimizes sending large files. Works best with Sendfile enabled."
+msgstr "Optimizes sending large files. Works best with Sendfile enabled."
+
+msgid "TCP NODELAY"
+msgstr "TCP NODELAY"
+
+msgid "Disables Nagle algorithm for low-latency delivery. Useful for real-time applications."
+msgstr "Disables Nagle algorithm for low-latency delivery. Useful for real-time applications."
+
 msgid "Sendfile"
 msgstr "Sendfile"
 
@@ -741,6 +780,9 @@ msgstr "DNS credentials are required for DNS-01 validation"
 msgid "DNS Provider"
 msgstr "DNS Provider"
 
+msgid "-- Please choose --"
+msgstr "-- Please choose --"
+
 msgid "DNS Wait Seconds"
 msgstr "DNS Wait Seconds"
 
@@ -852,8 +894,50 @@ msgstr "Configuration saved"
 msgid "Configuration reset"
 msgstr "Configuration reset"
 
+msgid "Reset failed"
+msgstr "Reset failed"
+
 msgid "Apply failed"
 msgstr "Apply failed"
+
+msgid "System Behavior"
+msgstr "System Behavior"
+
+msgid "Auto Backup"
+msgstr "Auto Backup"
+
+msgid "Automatically create a backup before applying configuration changes."
+msgstr "Automatically create a backup before applying configuration changes."
+
+msgid "Max Backups"
+msgstr "Max Backups"
+
+msgid "Maximum number of backups to keep. Older backups will be automatically deleted."
+msgstr "Maximum number of backups to keep. Older backups will be automatically deleted."
+
+msgid "Test Before Reload"
+msgstr "Test Before Reload"
+
+msgid "Certificate Directory"
+msgstr "Certificate Directory"
+
+msgid "Directory for storing SSL certificates."
+msgstr "Directory for storing SSL certificates."
+
+msgid "Managed Config Directory"
+msgstr "Managed Config Directory"
+
+msgid "Directory for managed site configuration files."
+msgstr "Directory for managed site configuration files."
+
+msgid "Backup Directory"
+msgstr "Backup Directory"
+
+msgid "Directory for storing configuration backups."
+msgstr "Directory for storing configuration backups."
+
+msgid "Run nginx -t to test configuration before reloading. Prevents invalid config from breaking the server."
+msgstr "Run nginx -t to test configuration before reloading. Prevents invalid config from breaking the server."
 
 msgid "Changes saved but not applied because dangerous edit mode is enabled. Disable it to apply changes."
 msgstr "Changes saved but not applied because dangerous edit mode is enabled. Disable it to apply changes."
