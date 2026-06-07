@@ -51,6 +51,37 @@ sanitize_uci_id() {
 	echo "$1" | sed 's/[^a-zA-Z0-9_]/_/g'
 }
 
+_RESOLVED_CERT_ID=""
+_RESOLVE_CERT_ID_ERROR=""
+resolve_new_cert_id() {
+	local existing_type prefixed_id
+
+	_RESOLVED_CERT_ID="$(sanitize_uci_id "$1")"
+	_RESOLVE_CERT_ID_ERROR=""
+
+	existing_type="$(uci -q get "nginx_manager.${_RESOLVED_CERT_ID}")" || existing_type=""
+	[ -z "${existing_type}" ] && return 0
+
+	if [ "${existing_type}" = "cert" ]; then
+		_RESOLVE_CERT_ID_ERROR="certificate name conflicts with an existing certificate (resolved to ${_RESOLVED_CERT_ID})"
+		return 1
+	fi
+
+	prefixed_id="cert_${_RESOLVED_CERT_ID}"
+	existing_type="$(uci -q get "nginx_manager.${prefixed_id}")" || existing_type=""
+	if [ -z "${existing_type}" ]; then
+		_RESOLVED_CERT_ID="${prefixed_id}"
+		return 0
+	fi
+
+	if [ "${existing_type}" = "cert" ]; then
+		_RESOLVE_CERT_ID_ERROR="certificate name conflicts with an existing certificate (resolved to ${prefixed_id})"
+	else
+		_RESOLVE_CERT_ID_ERROR="name conflicts with an existing ${existing_type} (resolved to ${prefixed_id})"
+	fi
+	return 1
+}
+
 validate_backup_id() {
 	echo "$1" | grep -qE '^20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9](-[A-Za-z0-9._-]+)?$'
 }
@@ -732,15 +763,8 @@ handle_upload_cert() {
 
 	[ -z "${cert_name}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
 	validate_name "${cert_name}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
-	cert_id="$(sanitize_uci_id "${cert_name}")"
-	local _existing_type
-	_existing_type="$(uci -q get "nginx_manager.${cert_id}")" || _existing_type=""
-	[ "${_existing_type}" = "cert" ] && {
-		json_init; json_add_string "error" "certificate name conflicts with an existing certificate (resolved to ${cert_id})"; json_dump; return
-	}
-	[ -n "${_existing_type}" ] && {
-		json_init; json_add_string "error" "name conflicts with an existing ${_existing_type} (resolved to ${cert_id})"; json_dump; return
-	}
+	resolve_new_cert_id "${cert_name}" || { json_init; json_add_string "error" "${_RESOLVE_CERT_ID_ERROR}"; json_dump; return; }
+	cert_id="${_RESOLVED_CERT_ID}"
 	[ -z "${cert_content}" ] && { json_init; json_add_string "error" "missing cert_content"; json_dump; return; }
 	[ -z "${key_content}" ] && { json_init; json_add_string "error" "missing key_content"; json_dump; return; }
 
@@ -776,15 +800,8 @@ handle_issue_self_signed() {
 
 	[ -z "${cert_name}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
 	validate_name "${cert_name}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
-	cert_id="$(sanitize_uci_id "${cert_name}")"
-	local _existing_type
-	_existing_type="$(uci -q get "nginx_manager.${cert_id}")" || _existing_type=""
-	[ "${_existing_type}" = "cert" ] && {
-		json_init; json_add_string "error" "certificate name conflicts with an existing certificate (resolved to ${cert_id})"; json_dump; return
-	}
-	[ -n "${_existing_type}" ] && {
-		json_init; json_add_string "error" "name conflicts with an existing ${_existing_type} (resolved to ${cert_id})"; json_dump; return
-	}
+	resolve_new_cert_id "${cert_name}" || { json_init; json_add_string "error" "${_RESOLVE_CERT_ID_ERROR}"; json_dump; return; }
+	cert_id="${_RESOLVED_CERT_ID}"
 	[ -z "${domain}" ] && { json_init; json_add_string "error" "missing domain"; json_dump; return; }
 
 	load_global_config
@@ -1644,7 +1661,6 @@ handle_acme_issue() {
 
 	[ -z "${cert_name}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
 	validate_name "${cert_name}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
-	cert_id="$(sanitize_uci_id "${cert_name}")"
 	[ -z "${domain}" ] && { json_init; json_add_string "error" "missing domain"; json_dump; return; }
 	validate_domain "${domain}" || { json_init; json_add_string "error" "invalid domain"; json_dump; return; }
 	[ -z "${validation_method}" ] && validation_method="webroot"
@@ -1672,19 +1688,13 @@ handle_acme_issue() {
 		validate_positive_number "${dns_wait}" || { json_init; json_add_string "error" "invalid dns wait seconds"; json_dump; return; }
 	fi
 
+	# Check for duplicate cert_id
+	resolve_new_cert_id "${cert_name}" || { json_init; json_add_string "error" "${_RESOLVE_CERT_ID_ERROR}"; json_dump; return; }
+	cert_id="${_RESOLVED_CERT_ID}"
+
 	# Prevent concurrent ACME operations for the same cert
 	_acme_task_is_running "${cert_id}" && {
 		json_init; json_add_string "error" "ACME operation already in progress for this certificate"; json_dump; return
-	}
-
-	# Check for duplicate cert_id
-	local _existing_type
-	_existing_type="$(uci -q get "nginx_manager.${cert_id}")" || _existing_type=""
-	[ "${_existing_type}" = "cert" ] && {
-		json_init; json_add_string "error" "certificate name conflicts with an existing certificate (resolved to ${cert_id})"; json_dump; return
-	}
-	[ -n "${_existing_type}" ] && {
-		json_init; json_add_string "error" "name conflicts with an existing ${_existing_type} (resolved to ${cert_id})"; json_dump; return
 	}
 
 	# Check if acme package is installed

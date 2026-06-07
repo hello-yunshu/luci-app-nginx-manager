@@ -105,8 +105,6 @@ return view.extend({
 		o.rmempty = true;
 
 		return m.render().then(function(node) {
-			var pageActions = node.querySelector('.cbi-page-actions');
-
 			/* ========== Read-only View Section ========== */
 			var readonlySection = E('div', { 'class': 'cbi-section' });
 			readonlySection.appendChild(E('h3', {}, _('Read-only View')));
@@ -144,7 +142,7 @@ return view.extend({
 			}, _('View uci.conf.template')));
 
 			readonlySection.appendChild(readonlyBtns);
-			pageActions.parentNode.insertBefore(readonlySection, pageActions);
+			node.appendChild(readonlySection);
 
 			/* ========== Danger Zone Section ========== */
 			var dangerous = (uci.get('nginx_manager', 'global', 'dangerous_core_edit') || '0') === '1';
@@ -244,7 +242,7 @@ return view.extend({
 				});
 			}
 
-			pageActions.parentNode.insertBefore(dangerZone, pageActions);
+			node.appendChild(dangerZone);
 
 			/* ========== Footer ========== */
 			utils.appendFooter(node, {
