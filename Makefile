@@ -71,7 +71,7 @@ define Package/luci-app-nginx-manager/install
 	$(INSTALL_DIR) $(1)/www/luci-static/resources/nginx-manager
 	$(INSTALL_DATA) ./www/luci-static/resources/nginx-manager/nginx-manager.css $(1)/www/luci-static/resources/nginx-manager/nginx-manager.css
 	$(INSTALL_DATA) ./www/luci-static/resources/nginx-manager/utils.js $(1)/www/luci-static/resources/nginx-manager/utils.js
-	$(SED) 's/@PKG_VERSION@/$(PKG_VERSION)/' $(1)/www/luci-static/resources/nginx-manager/utils.js
+	$(SED) 's/@PKG_VERSION@/$(PKG_VERSION)/g' $(1)/www/luci-static/resources/nginx-manager/utils.js
 
 	$(INSTALL_DIR) $(1)/www/luci-static/resources/view/nginx-manager
 	$(INSTALL_DATA) ./www/luci-static/resources/view/nginx-manager/overview.js $(1)/www/luci-static/resources/view/nginx-manager/overview.js
