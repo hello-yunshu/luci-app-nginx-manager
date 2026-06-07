@@ -6,6 +6,40 @@
 'require rpc';
 'require nginx-manager/utils as utils';
 
+var DNS_API_INFO = {
+	'dns_cf':  { name: 'Cloudflare',       keys: [
+		{ key: 'CF_Token', desc: _('API Token from Cloudflare dashboard > My Profile > API Tokens') },
+		{ key: 'CF_Account_ID', desc: _('Cloudflare Account ID (optional, needed for some tokens)'), optional: true },
+		{ key: 'CF_Zone_ID', desc: _('Cloudflare Zone ID (optional, needed for some tokens)'), optional: true }
+	] },
+	'dns_dp':  { name: 'DNSPod / Tencent', keys: [
+		{ key: 'DP_Id', desc: _('DNSPod API ID from console.dnspod.cn') },
+		{ key: 'DP_Key', desc: _('DNSPod API Token from console.dnspod.cn') }
+	] },
+	'dns_ali': { name: 'Alibaba Cloud',    keys: [
+		{ key: 'Ali_Key', desc: _('AccessKey ID from Alibaba Cloud RAM console') },
+		{ key: 'Ali_Secret', desc: _('AccessKey Secret from Alibaba Cloud RAM console') }
+	] },
+	'dns_huaweicloud': { name: 'Huawei Cloud', keys: [
+		{ key: 'HUAWEICLOUD_Username', desc: _('IAM username from Huawei Cloud console > My Credentials') },
+		{ key: 'HUAWEICLOUD_Password', desc: _('Password for the IAM user') },
+		{ key: 'HUAWEICLOUD_DomainName', desc: _('Account name from Huawei Cloud console > My Credentials') }
+	] },
+	'dns_aws': { name: 'AWS Route53',      keys: [
+		{ key: 'AWS_ACCESS_KEY_ID', desc: _('AWS IAM Access Key ID with Route53 permissions') },
+		{ key: 'AWS_SECRET_ACCESS_KEY', desc: _('AWS IAM Secret Access Key') }
+	] },
+	'dns_gd':  { name: 'GoDaddy',          keys: [
+		{ key: 'GD_Key', desc: _('API Key from developer.godaddy.com (Production key)') },
+		{ key: 'GD_Secret', desc: _('API Secret from developer.godaddy.com') }
+	] },
+	'dns_namecheap': { name: 'Namecheap',  keys: [
+		{ key: 'NAMECHEAP_USERNAME', desc: _('Namecheap account username') },
+		{ key: 'NAMECHEAP_API_KEY', desc: _('API Key from Namecheap dashboard > Profile > Tools') },
+		{ key: 'NAMECHEAP_SOURCEIP', desc: _('Whitelisted IP address for API access') }
+	] }
+};
+
 var callListCerts = rpc.declare({
 	object: 'nginx_manager',
 	method: 'list_certs',
@@ -165,17 +199,28 @@ return view.extend({
 					E('option', { 'value': 'dns' }, _('DNS-01')),
 					E('option', { 'value': 'standalone' }, _('HTTP-01 Standalone'))
 				]);
-				var dnsApiInput = E('input', {
+				var dnsApiSelectOptions = [E('option', { 'value': '' }, _('-- Please choose --'))];
+				var dnsApiKeys = Object.keys(DNS_API_INFO);
+				for (var k = 0; k < dnsApiKeys.length; k++) {
+					var apiId = dnsApiKeys[k];
+					dnsApiSelectOptions.push(E('option', { 'value': apiId }, apiId + ' (' + DNS_API_INFO[apiId].name + ')'));
+				}
+				dnsApiSelectOptions.push(E('option', { 'value': '_custom' }, _('Custom...')));
+				var dnsApiSelect = E('select', { 'id': 'new-acme-dns-api', 'class': 'cbi-input-select' }, dnsApiSelectOptions);
+				var dnsApiCustomInput = E('input', {
 					'type': 'text',
-					'id': 'new-acme-dns-api',
+					'id': 'new-acme-dns-api-custom',
 					'class': 'cbi-input-text',
-					'placeholder': 'dns_cf'
+					'placeholder': 'dns_xx',
+					'style': 'display:none'
 				});
+				var dnsCredsContainer = E('div', { 'id': 'new-acme-dns-creds-container' });
 				var dnsCredentialsInput = E('textarea', {
 					'id': 'new-acme-dns-credentials',
 					'class': 'cbi-input-textarea nm-modal-textarea',
 					'rows': 5,
-					'placeholder': 'CF_Token=...'
+					'placeholder': 'KEY=VALUE\nKEY2=VALUE2',
+					'style': 'display:none'
 				});
 				var dnsWaitInput = E('input', {
 					'type': 'number',
@@ -185,21 +230,74 @@ return view.extend({
 					'placeholder': '120'
 				});
 
+				function updateDnsCredsFields() {
+					var apiId = dnsApiSelect.value;
+					var info = DNS_API_INFO[apiId];
+					var customRow = document.getElementById('cert-dns-api-custom-row');
+					var credsRow = document.getElementById('cert-dns-creds-row');
+					var credsDesc = document.getElementById('cert-dns-creds-desc');
+					var isDns = certTypeSelect.value === 'acme' && acmeMethodSelect.value === 'dns';
+					dnsCredsContainer.innerHTML = '';
+					dnsCredentialsInput.style.display = 'none';
+
+					if (!isDns) {
+						if (customRow) customRow.style.display = 'none';
+						if (credsRow) credsRow.style.display = 'none';
+						dnsApiCustomInput.style.display = 'none';
+						return;
+					}
+
+					if (credsRow) credsRow.style.display = '';
+
+					if (apiId === '_custom') {
+						dnsApiCustomInput.style.display = '';
+						if (customRow) customRow.style.display = '';
+						dnsCredentialsInput.style.display = '';
+						if (credsDesc) credsDesc.style.display = '';
+					} else if (info) {
+						dnsApiCustomInput.style.display = 'none';
+						if (customRow) customRow.style.display = 'none';
+						if (credsDesc) credsDesc.style.display = 'none';
+						for (var i = 0; i < info.keys.length; i++) {
+							var keyInfo = info.keys[i];
+							var keyName = keyInfo.key;
+							var row = E('div', { 'class': 'cbi-value' }, [
+								E('label', { 'class': 'cbi-value-title', 'style': 'font-weight:normal' }, keyName + (keyInfo.optional ? ' (' + _('Optional') + ')' : '')),
+								E('div', { 'style': 'display:flex;flex-direction:column;gap:2px;flex:1' }, [
+									E('input', { 'type': 'text', 'class': 'cbi-input-text', 'data-cred-key': keyName, 'placeholder': keyName + '=...' }),
+									keyInfo.desc ? E('div', { 'class': 'cbi-value-description' }, keyInfo.desc) : null
+								])
+							]);
+							dnsCredsContainer.appendChild(row);
+						}
+					} else {
+						dnsApiCustomInput.style.display = 'none';
+						if (customRow) customRow.style.display = 'none';
+						if (credsDesc) credsDesc.style.display = 'none';
+					}
+				}
+
 				function updateAcmeRows() {
 					var domainRow = document.getElementById('cert-domain-row');
 					var acmeMethodRow = document.getElementById('cert-acme-method-row');
-					var dnsRows = document.querySelectorAll('.cert-dns-row');
 					var isAcme = certTypeSelect.value === 'acme';
 					var isDns = isAcme && acmeMethodSelect.value === 'dns';
 
 					if (domainRow) domainRow.style.display = certTypeSelect.value === 'manual' ? 'none' : '';
 					if (acmeMethodRow) acmeMethodRow.style.display = isAcme ? '' : 'none';
-					for (var i = 0; i < dnsRows.length; i++)
-						dnsRows[i].style.display = isDns ? '' : 'none';
+
+					// Toggle basic DNS rows (provider select + wait)
+					var dnsBasicRows = document.querySelectorAll('.cert-dns-row');
+					for (var i = 0; i < dnsBasicRows.length; i++)
+						dnsBasicRows[i].style.display = isDns ? '' : 'none';
+
+					// Update credential fields (also handles custom-row and creds-row visibility)
+					updateDnsCredsFields();
 				}
 
 				certTypeSelect.addEventListener('change', updateAcmeRows);
 				acmeMethodSelect.addEventListener('change', updateAcmeRows);
+				dnsApiSelect.addEventListener('change', updateDnsCredsFields);
 
 				ui.showModal(_('Add Certificate'), [
 					E('div', { 'class': 'cbi-value' }, [
@@ -219,16 +317,24 @@ return view.extend({
 						acmeMethodSelect
 					]),
 					E('div', { 'class': 'cbi-value cert-dns-row', 'style': 'display:none' }, [
-						E('label', { 'class': 'cbi-value-title' }, _('DNS API')),
-						dnsApiInput
+						E('label', { 'class': 'cbi-value-title' }, _('DNS Provider')),
+						dnsApiSelect
 					]),
-					E('div', { 'class': 'cbi-value cert-dns-row', 'style': 'display:none' }, [
+					E('div', { 'class': 'cbi-value', 'id': 'cert-dns-api-custom-row', 'style': 'display:none' }, [
+						E('label', { 'class': 'cbi-value-title' }, _('Custom DNS API Name')),
+						dnsApiCustomInput,
+						E('div', { 'class': 'cbi-value-description' }, _('acme.sh DNS API script name, e.g. dns_myapi. See acme.sh dnsapi wiki for full list.'))
+					]),
+					E('div', { 'id': 'cert-dns-creds-row', 'style': 'display:none' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('DNS Credentials')),
-						dnsCredentialsInput
+						dnsCredsContainer,
+						dnsCredentialsInput,
+						E('div', { 'class': 'cbi-value-description', 'id': 'cert-dns-creds-desc', 'style': 'display:none' }, _('One credential per line in KEY=VALUE format'))
 					]),
 					E('div', { 'class': 'cbi-value cert-dns-row', 'style': 'display:none' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('DNS Wait Seconds')),
-						dnsWaitInput
+						dnsWaitInput,
+						E('div', { 'class': 'cbi-value-description' }, _('Seconds to wait for DNS propagation before validation. Leave empty for default.'))
 					]),
 					E('div', { 'class': 'right' }, [
 						E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
@@ -239,9 +345,29 @@ return view.extend({
 								var certType = certTypeSelect.value;
 								var certDomain = certDomainInput.value.trim();
 								var acmeMethod = acmeMethodSelect.value;
-								var dnsApi = dnsApiInput.value.trim();
-								var dnsCredentials = dnsCredentialsInput.value.trim();
-								var dnsWait = dnsWaitInput.value.trim();
+								var dnsApi, dnsCredentials, dnsWait;
+
+								// Resolve DNS API name
+								if (acmeMethod === 'dns') {
+									if (dnsApiSelect.value === '_custom') {
+										dnsApi = dnsApiCustomInput.value.trim();
+									} else {
+										dnsApi = dnsApiSelect.value;
+									}
+									// Build credentials from dynamic fields or textarea
+									var credInputs = dnsCredsContainer.querySelectorAll('input[data-cred-key]');
+									if (credInputs.length > 0) {
+										var lines = [];
+										for (var ci = 0; ci < credInputs.length; ci++) {
+											var cVal = credInputs[ci].value.trim();
+											if (cVal) lines.push(credInputs[ci].getAttribute('data-cred-key') + '=' + cVal);
+										}
+										dnsCredentials = lines.join('\n');
+									} else {
+										dnsCredentials = dnsCredentialsInput.value.trim();
+									}
+								}
+								dnsWait = dnsWaitInput.value.trim();
 
 								if (!certName) {
 									ui.addNotification(null, E('p', {}, _('Certificate name is required')), 'error');

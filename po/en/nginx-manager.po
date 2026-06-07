@@ -738,8 +738,80 @@ msgstr "DNS Credentials"
 msgid "DNS credentials are required for DNS-01 validation"
 msgstr "DNS credentials are required for DNS-01 validation"
 
+msgid "DNS Provider"
+msgstr "DNS Provider"
+
 msgid "DNS Wait Seconds"
 msgstr "DNS Wait Seconds"
+
+msgid "Seconds to wait for DNS propagation before validation. Leave empty for default."
+msgstr "Seconds to wait for DNS propagation before validation. Leave empty for default."
+
+msgid "Custom DNS API Name"
+msgstr "Custom DNS API Name"
+
+msgid "acme.sh DNS API script name, e.g. dns_myapi. See acme.sh dnsapi wiki for full list."
+msgstr "acme.sh DNS API script name, e.g. dns_myapi. See acme.sh dnsapi wiki for full list."
+
+msgid "Custom..."
+msgstr "Custom..."
+
+msgid "Optional"
+msgstr "Optional"
+
+msgid "One credential per line in KEY=VALUE format"
+msgstr "One credential per line in KEY=VALUE format"
+
+msgid "API Token from Cloudflare dashboard > My Profile > API Tokens"
+msgstr "API Token from Cloudflare dashboard > My Profile > API Tokens"
+
+msgid "Cloudflare Account ID (optional, needed for some tokens)"
+msgstr "Cloudflare Account ID (optional, needed for some tokens)"
+
+msgid "Cloudflare Zone ID (optional, needed for some tokens)"
+msgstr "Cloudflare Zone ID (optional, needed for some tokens)"
+
+msgid "DNSPod API ID from console.dnspod.cn"
+msgstr "DNSPod API ID from console.dnspod.cn"
+
+msgid "DNSPod API Token from console.dnspod.cn"
+msgstr "DNSPod API Token from console.dnspod.cn"
+
+msgid "AccessKey ID from Alibaba Cloud RAM console"
+msgstr "AccessKey ID from Alibaba Cloud RAM console"
+
+msgid "AccessKey Secret from Alibaba Cloud RAM console"
+msgstr "AccessKey Secret from Alibaba Cloud RAM console"
+
+msgid "AWS IAM Access Key ID with Route53 permissions"
+msgstr "AWS IAM Access Key ID with Route53 permissions"
+
+msgid "AWS IAM Secret Access Key"
+msgstr "AWS IAM Secret Access Key"
+
+msgid "IAM username from Huawei Cloud console > My Credentials"
+msgstr "IAM username from Huawei Cloud console > My Credentials"
+
+msgid "Password for the IAM user"
+msgstr "Password for the IAM user"
+
+msgid "Account name from Huawei Cloud console > My Credentials"
+msgstr "Account name from Huawei Cloud console > My Credentials"
+
+msgid "API Key from developer.godaddy.com (Production key)"
+msgstr "API Key from developer.godaddy.com (Production key)"
+
+msgid "API Secret from developer.godaddy.com"
+msgstr "API Secret from developer.godaddy.com"
+
+msgid "Namecheap account username"
+msgstr "Namecheap account username"
+
+msgid "API Key from Namecheap dashboard > Profile > Tools"
+msgstr "API Key from Namecheap dashboard > Profile > Tools"
+
+msgid "Whitelisted IP address for API access"
+msgstr "Whitelisted IP address for API access"
 
 msgid "DNS-01"
 msgstr "DNS-01"
