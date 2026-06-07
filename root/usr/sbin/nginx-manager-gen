@@ -103,7 +103,33 @@ has_ssl_module() {
 
 get_listening_ports() {
 	is_nginx_running || return 0
-	ss -tlnp 2>/dev/null | grep nginx | awk '{print $4}' | sed 's/.*://' | sort -u | tr '\n' ',' | sed 's/,$//'
+	# Try ss first (iproute2), then netstat (BusyBox), then fall back to UCI config
+	local ports
+	ports="$(ss -tlnp 2>/dev/null | grep nginx | awk '{print $4}' | sed 's/.*://' | sort -u | tr '\n' ',' | sed 's/,$//')"
+	if [ -z "${ports}" ]; then
+		ports="$(netstat -tlnp 2>/dev/null | grep nginx | awk '{print $4}' | sed 's/.*://' | sort -u | tr '\n' ',' | sed 's/,$//')"
+	fi
+	if [ -z "${ports}" ]; then
+		# Fallback: read ports from UCI config (works even without ss/netstat -p)
+		. /lib/functions.sh
+		config_load nginx_manager
+		config_foreach _collect_port site
+	fi
+	echo "${ports}"
+}
+
+_collect_port() {
+	local listen_port enabled
+	config_get listen_port "$1" listen_port
+	config_get enabled "$1" enabled "1"
+	# Skip disabled sites (nginx is not listening on them)
+	[ "${enabled}" = "0" ] && return
+	listen_port="${listen_port:-80}"
+	# Deduplicate: only add if not already in the list
+	case ",${ports}," in
+		*",${listen_port},"*) ;;
+		*) ports="${ports:+${ports},}${listen_port}" ;;
+	esac
 }
 
 count_managed_sites() {
