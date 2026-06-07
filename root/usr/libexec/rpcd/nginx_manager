@@ -1943,6 +1943,9 @@ case "$1" in
 		json_add_string "custom_server_block" ""
 		json_add_string "redirect_target" ""
 		json_add_string "enabled" ""
+		json_add_string "proxy_connect_timeout" ""
+		json_add_string "proxy_read_timeout" ""
+		json_add_string "proxy_send_timeout" ""
 		json_close_object
 
 		json_add_object "delete_site"
