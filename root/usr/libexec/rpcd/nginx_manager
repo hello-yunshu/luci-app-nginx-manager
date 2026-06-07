@@ -677,8 +677,13 @@ handle_upload_cert() {
 	[ -z "${cert_name}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
 	validate_name "${cert_name}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 	cert_id="$(sanitize_uci_id "${cert_name}")"
-	uci -q get "nginx_manager.${cert_id}" >/dev/null 2>&1 && {
+	local _existing_type
+	_existing_type="$(uci -q get "nginx_manager.${cert_id}")" || _existing_type=""
+	[ "${_existing_type}" = "cert" ] && {
 		json_init; json_add_string "error" "certificate name conflicts with an existing certificate (resolved to ${cert_id})"; json_dump; return
+	}
+	[ -n "${_existing_type}" ] && {
+		json_init; json_add_string "error" "name conflicts with an existing ${_existing_type} (resolved to ${cert_id})"; json_dump; return
 	}
 	[ -z "${cert_content}" ] && { json_init; json_add_string "error" "missing cert_content"; json_dump; return; }
 	[ -z "${key_content}" ] && { json_init; json_add_string "error" "missing key_content"; json_dump; return; }
@@ -716,8 +721,13 @@ handle_issue_self_signed() {
 	[ -z "${cert_name}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
 	validate_name "${cert_name}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 	cert_id="$(sanitize_uci_id "${cert_name}")"
-	uci -q get "nginx_manager.${cert_id}" >/dev/null 2>&1 && {
+	local _existing_type
+	_existing_type="$(uci -q get "nginx_manager.${cert_id}")" || _existing_type=""
+	[ "${_existing_type}" = "cert" ] && {
 		json_init; json_add_string "error" "certificate name conflicts with an existing certificate (resolved to ${cert_id})"; json_dump; return
+	}
+	[ -n "${_existing_type}" ] && {
+		json_init; json_add_string "error" "name conflicts with an existing ${_existing_type} (resolved to ${cert_id})"; json_dump; return
 	}
 	[ -z "${domain}" ] && { json_init; json_add_string "error" "missing domain"; json_dump; return; }
 
@@ -1528,8 +1538,13 @@ handle_acme_issue() {
 	}
 
 	# Check for duplicate cert_id
-	uci -q get "nginx_manager.${cert_id}" >/dev/null 2>&1 && {
+	local _existing_type
+	_existing_type="$(uci -q get "nginx_manager.${cert_id}")" || _existing_type=""
+	[ "${_existing_type}" = "cert" ] && {
 		json_init; json_add_string "error" "certificate name conflicts with an existing certificate (resolved to ${cert_id})"; json_dump; return
+	}
+	[ -n "${_existing_type}" ] && {
+		json_init; json_add_string "error" "name conflicts with an existing ${_existing_type} (resolved to ${cert_id})"; json_dump; return
 	}
 
 	# Check if acme package is installed
