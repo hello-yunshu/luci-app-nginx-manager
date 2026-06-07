@@ -167,7 +167,7 @@ return view.extend({
 			listenPortInput.value = '80';
 		}
 		basicSection.appendChild(makeField('opt-listen_port', _('Listen Port'), listenPortInput,
-			_('Auto-switches to 443 when SSL is enabled.')));
+			_('SSL can be enabled on any port, no need to switch to 443.')));
 
 		page.appendChild(basicSection);
 
@@ -210,13 +210,7 @@ return view.extend({
 
 		/* Helper: update listen port default when SSL is toggled */
 		function updateListenDefaults() {
-			var hasSsl = !!sslCertSelect.value;
-			var port = listenPortInput.value.trim();
-			if (hasSsl && (port === '80' || port === '')) {
-				listenPortInput.value = '443';
-			} else if (!hasSsl && (port === '443')) {
-				listenPortInput.value = '80';
-			}
+			// Port stays as-is when toggling SSL; nginx adds ssl flag to any port
 		}
 
 		/* ========== Reverse Proxy ========== */
