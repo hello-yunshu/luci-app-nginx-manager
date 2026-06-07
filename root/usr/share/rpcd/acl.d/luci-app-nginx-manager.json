@@ -44,7 +44,6 @@
 					"acme_issue",
 					"acme_renew",
 					"acme_status",
-					"set_core_config_safe",
 					"apply_core_config",
 					"set_dangerous_core_edit",
 					"set_file_dangerous",

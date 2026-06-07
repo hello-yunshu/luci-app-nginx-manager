@@ -14,12 +14,6 @@ var callSyncCoreFromNginx = rpc.declare({
 	expect: {}
 });
 
-var callApplyCoreConfig = rpc.declare({
-	object: 'nginx_manager',
-	method: 'apply_core_config',
-	expect: {}
-});
-
 var callSetDangerousCoreEdit = rpc.declare({
 	object: 'nginx_manager',
 	method: 'set_dangerous_core_edit',
@@ -263,19 +257,14 @@ return view.extend({
 	},
 
 	handleSaveApply: function(ev, mode) {
-		var self = this;
 		return this.map.save(null, true).then(function() {
 			var dangerous = (uci.get('nginx_manager', 'global', 'dangerous_core_edit') || '0') === '1';
 			if (dangerous) {
 				ui.addNotification(null, E('p', {}, _('Changes saved but not applied because dangerous edit mode is enabled. Disable it to apply changes.')), 'warning');
 				return;
 			}
-			return callApplyCoreConfig().then(function(result) {
-				if (result && result.error) {
-					ui.addNotification(null, E('p', {}, _('Apply failed') + ': ' + (result.detail || result.error)), 'error');
-				} else {
-					ui.addNotification(null, E('p', {}, _('Core config saved and applied')), 'info');
-				}
+			return utils.safeApply().then(function() {
+				ui.addNotification(null, E('p', {}, _('Core config saved and applied')), 'info');
 			});
 		}).catch(function(err) {
 			ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || err)), 'error');

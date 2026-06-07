@@ -1117,48 +1117,6 @@ handle_get_core_config() {
 	json_dump
 }
 
-handle_set_core_config_safe() {
-	local dangerous
-	dangerous="$(uci -q get nginx_manager.global.dangerous_core_edit)" || dangerous="0"
-	[ "${dangerous}" = "1" ] && {
-		json_init
-		json_add_string "error" "dangerous_core_edit is enabled, use advanced editor instead"
-		json_dump
-		return
-	}
-
-	local max_body keepalive gzip
-	local server_tokens sendfile access_log error_log ssl_protocols ssl_ciphers
-
-	json_get_var max_body "client_max_body_size"
-	json_get_var keepalive "keepalive_timeout"
-	json_get_var gzip "gzip"
-	json_get_var server_tokens "server_tokens"
-	json_get_var sendfile "sendfile"
-	json_get_var access_log "access_log"
-	json_get_var error_log "error_log"
-	json_get_var ssl_protocols "ssl_protocols"
-	json_get_var ssl_ciphers "ssl_ciphers"
-
-	[ -n "${max_body}" ] && uci set "nginx_manager.global.client_max_body_size=${max_body}"
-	[ -n "${keepalive}" ] && uci set "nginx_manager.global.keepalive_timeout=${keepalive}"
-	[ -n "${gzip}" ] && uci set "nginx_manager.global.gzip=${gzip}"
-	[ -n "${server_tokens}" ] && uci set "nginx_manager.global.server_tokens=${server_tokens}"
-	[ -n "${sendfile}" ] && uci set "nginx_manager.global.sendfile=${sendfile}"
-	[ -n "${access_log}" ] && uci set "nginx_manager.global.access_log=${access_log}"
-	[ -n "${error_log}" ] && uci set "nginx_manager.global.error_log=${error_log}"
-	[ -n "${ssl_protocols}" ] && uci set "nginx_manager.global.ssl_protocols=${ssl_protocols}"
-	[ -n "${ssl_ciphers}" ] && uci set "nginx_manager.global.ssl_ciphers=${ssl_ciphers}"
-
-	uci commit nginx_manager
-
-	run_apply_or_error || return
-
-	json_init
-	json_add_string "result" "ok"
-	json_dump
-}
-
 handle_sync_core_from_nginx() {
 	local initialized
 	initialized="$(uci -q get nginx_manager.global.core_config_initialized)" || initialized="0"
@@ -1467,6 +1425,35 @@ handle_create_backup() {
 	json_dump
 }
 
+restore_nginx_tree_from_backup() {
+	local backup_path="$1"
+
+	[ -d "${backup_path}/nginx" ] || return 0
+	mkdir -p /etc/nginx || return 1
+	rm -rf /etc/nginx/*
+	cp -a "${backup_path}/nginx/." /etc/nginx/
+	return 0
+}
+
+restore_config_files_from_backup() {
+	local backup_path="$1"
+	local remove_missing="$2"
+
+	if [ -f "${backup_path}/config-nginx" ]; then
+		cp -a "${backup_path}/config-nginx" /etc/config/nginx
+	elif [ "${remove_missing}" = "1" ]; then
+		rm -f /etc/config/nginx
+	fi
+
+	if [ -f "${backup_path}/config-nginx-manager" ]; then
+		cp -a "${backup_path}/config-nginx-manager" "${NGINX_MANAGER_CONFIG}"
+	elif [ "${remove_missing}" = "1" ]; then
+		rm -f "${NGINX_MANAGER_CONFIG}"
+	fi
+
+	return 0
+}
+
 handle_restore_backup() {
 	local backup_id
 	json_get_var backup_id "id"
@@ -1492,19 +1479,41 @@ handle_restore_backup() {
 	[ -f /etc/config/nginx ] && cp -a /etc/config/nginx "${pre_restore_path}/config-nginx"
 	[ -f "${NGINX_MANAGER_CONFIG}" ] && cp -a "${NGINX_MANAGER_CONFIG}" "${pre_restore_path}/config-nginx-manager"
 
-	if [ -d "${backup_path}/nginx" ]; then
-		rm -rf "${MANAGED_DIR:?}"/*
-		cp -a "${backup_path}/nginx/conf.d/luci-manager/"* "${MANAGED_DIR}/" 2>/dev/null
-	fi
+	restore_nginx_tree_from_backup "${backup_path}" || {
+		json_init
+		json_add_string "error" "failed to restore nginx files"
+		json_dump
+		return
+	}
+	restore_config_files_from_backup "${backup_path}" "1"
+	load_global_config
+	detect_nginx_conf
 
-	[ -f "${backup_path}/config-nginx-manager" ] && cp -a "${backup_path}/config-nginx-manager" "${NGINX_MANAGER_CONFIG}"
+	local generate_output
+	generate_output="$("${NGINX_MANAGER_GEN}" generate 2>&1)"
+	if [ $? -ne 0 ]; then
+		restore_nginx_tree_from_backup "${pre_restore_path}"
+		restore_config_files_from_backup "${pre_restore_path}" "1"
+		load_global_config
+		detect_nginx_conf
+		nginx -t -c "${NGINX_CONF_PATH}" >/dev/null 2>&1
+		/etc/init.d/nginx reload >/dev/null 2>&1
+
+		json_init
+		json_add_string "error" "generate failed after restore"
+		json_add_string "detail" "${generate_output}"
+		json_add_string "rolled_back" "1"
+		json_dump
+		return
+	fi
 
 	local test_output
 	test_output="$(nginx -t -c "${NGINX_CONF_PATH}" 2>&1)"
 	if [ $? -ne 0 ]; then
-		rm -rf "${MANAGED_DIR:?}"/*
-		cp -a "${pre_restore_path}/nginx/conf.d/luci-manager/"* "${MANAGED_DIR}/" 2>/dev/null
-		cp -a "${pre_restore_path}/config-nginx-manager" "${NGINX_MANAGER_CONFIG}"
+		restore_nginx_tree_from_backup "${pre_restore_path}"
+		restore_config_files_from_backup "${pre_restore_path}" "1"
+		load_global_config
+		detect_nginx_conf
 		nginx -t -c "${NGINX_CONF_PATH}" >/dev/null 2>&1
 		/etc/init.d/nginx reload >/dev/null 2>&1
 
@@ -1602,7 +1611,7 @@ _acme_issue_worker() {
 
 	# Run acme to issue the certificate
 	local acme_output
-	acme_output="$(/etc/init.d/acme restart 2>&1)"
+	acme_output="$(/etc/init.d/acme renew 2>&1)"
 	local acme_exit=$?
 
 	[ "${validation_method}" = "webroot" ] && cleanup_acme_challenge_config "${cert_id}"
@@ -1767,7 +1776,7 @@ _acme_renew_worker() {
 
 	# Run acme renewal
 	local acme_output
-	acme_output="$(/etc/init.d/acme restart 2>&1)"
+	acme_output="$(/etc/init.d/acme renew 2>&1)"
 	local acme_exit=$?
 
 	[ "${validation_method}" = "webroot" ] && cleanup_acme_challenge_config "${cert_id}"
@@ -2032,18 +2041,6 @@ case "$1" in
 		json_add_object "apply_core_config"
 		json_close_object
 
-		json_add_object "set_core_config_safe"
-		json_add_string "client_max_body_size" ""
-		json_add_string "keepalive_timeout" ""
-		json_add_string "gzip" ""
-		json_add_string "server_tokens" ""
-		json_add_string "sendfile" ""
-		json_add_string "access_log" ""
-		json_add_string "error_log" ""
-		json_add_string "ssl_protocols" ""
-		json_add_string "ssl_ciphers" ""
-		json_close_object
-
 		json_add_object "set_dangerous_core_edit"
 		json_add_string "enabled" ""
 		json_close_object
@@ -2122,7 +2119,6 @@ case "$1" in
 			get_core_config)    handle_get_core_config ;;
 			sync_core_from_nginx) handle_sync_core_from_nginx ;;
 			apply_core_config)  handle_apply_core_config ;;
-			set_core_config_safe) handle_set_core_config_safe ;;
 			set_dangerous_core_edit) handle_set_dangerous_core_edit ;;
 			get_nginx_T)        handle_get_nginx_T ;;
 			get_file_readonly)  handle_get_file_readonly ;;

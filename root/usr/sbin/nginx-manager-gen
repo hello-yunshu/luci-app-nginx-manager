@@ -701,7 +701,7 @@ _strip_template_directives() {
 	local directives=""
 	[ -n "${max_body}" ] && directives="${directives} client_max_body_size"
 	[ -n "${keepalive}" ] && directives="${directives} keepalive_timeout"
-	[ -n "${gzip}" ] && directives="${directives} gzip gzip_vary gzip_proxied gzip_types gzip_min_length gzip_buffers gzip_http_version gzip_comp_level gzip_disable"
+	[ -n "${gzip}" ] && directives="${directives} gzip gzip_vary gzip_proxied"
 	[ -n "${server_tokens}" ] && directives="${directives} server_tokens"
 	[ -n "${sendfile}" ] && directives="${directives} sendfile"
 	[ -n "${access_log}" ] && directives="${directives} access_log"
@@ -785,7 +785,7 @@ generate_global_conf() {
 		[ -n "${keepalive}" ] && echo "keepalive_timeout ${keepalive};"
 
 		if [ "${gzip}" = "1" ]; then
-			printf 'gzip on;\ngzip_types text/plain text/css application/json application/javascript text/xml application/xml;\n'
+			printf 'gzip on;\ngzip_vary on;\ngzip_proxied any;\n'
 		elif [ "${gzip}" = "0" ]; then
 			echo "gzip off;"
 		fi

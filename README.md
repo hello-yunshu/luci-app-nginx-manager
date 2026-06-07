@@ -71,7 +71,7 @@
 
 - `client_max_body_size` — 请求体大小限制
 - `keepalive_timeout` — 长连接超时
-- `gzip` — 压缩开关与类型
+- `gzip` — 压缩开关，启用时对齐 OpenWrt `uci.conf.template` 的 `gzip_vary on` 与 `gzip_proxied any`
 - `server_tokens` — 版本信息显示
 - `sendfile` — 零拷贝传输
 - `ssl_protocols` / `ssl_ciphers` — SSL 协议与加密套件

@@ -71,7 +71,7 @@ Adjust common parameters through a visual editor — no manual file editing need
 
 - `client_max_body_size` — Request body size limit
 - `keepalive_timeout` — Keep-alive timeout
-- `gzip` — Compression toggle and types
+- `gzip` — Compression toggle; when enabled, aligns with OpenWrt `uci.conf.template` by emitting `gzip_vary on` and `gzip_proxied any`
 - `server_tokens` — Version info visibility
 - `sendfile` — Zero-copy file transfer
 - `ssl_protocols` / `ssl_ciphers` — SSL protocol and cipher suite selection
