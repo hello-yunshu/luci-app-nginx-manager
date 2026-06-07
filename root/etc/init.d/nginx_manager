@@ -83,6 +83,9 @@ service_triggers() {
     procd_add_validation validate_nginx_manager_site
     procd_add_validation validate_nginx_manager_cert
     procd_add_reload_trigger "nginx_manager"
+    # Also regenerate when nginx UCI config changes, to ensure uci.conf.template
+    # is stripped of directives that conflict with 00-global.conf
+    procd_add_reload_trigger "nginx"
 }
 
 restart() {
