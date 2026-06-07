@@ -42,6 +42,9 @@ msgstr "ACME 配置未找到"
 msgid "acme challenge config failed"
 msgstr "ACME 验证配置生成失败"
 
+msgid "acme dns api package not installed"
+msgstr "未安装 ACME DNS API 支持包"
+
 msgid "acme issue failed"
 msgstr "ACME 签发失败"
 
@@ -716,3 +719,75 @@ msgstr "天剩余"
 
 msgid "nginx -T Output"
 msgstr "nginx -T 输出"
+
+msgid "ACME Validation"
+msgstr "ACME 验证方式"
+
+msgid "Auto (ACME DNS-01)"
+msgstr "自动 (ACME DNS-01)"
+
+msgid "Auto (ACME HTTP-01)"
+msgstr "自动 (ACME HTTP-01)"
+
+msgid "Auto (ACME Standalone)"
+msgstr "自动 (ACME Standalone)"
+
+msgid "DNS API"
+msgstr "DNS API"
+
+msgid "DNS API is required for DNS-01 validation"
+msgstr "DNS-01 验证需要填写 DNS API"
+
+msgid "DNS Credentials"
+msgstr "DNS 凭据"
+
+msgid "DNS credentials are required for DNS-01 validation"
+msgstr "DNS-01 验证需要填写 DNS 凭据"
+
+msgid "DNS Wait Seconds"
+msgstr "DNS 等待秒数"
+
+msgid "DNS-01"
+msgstr "DNS-01"
+
+msgid "HTTP-01 Webroot"
+msgstr "HTTP-01 Webroot"
+
+msgid "HTTP-01 Standalone"
+msgstr "HTTP-01 Standalone"
+
+msgid "invalid acme validation method"
+msgstr "无效的 ACME 验证方式"
+
+msgid "invalid dns api"
+msgstr "无效的 DNS API"
+
+msgid "invalid dns credentials"
+msgstr "无效的 DNS 凭据"
+
+msgid "invalid dns wait seconds"
+msgstr "无效的 DNS 等待秒数"
+
+msgid "missing dns api"
+msgstr "缺少 DNS API"
+
+msgid "missing dns credentials"
+msgstr "缺少 DNS 凭据"
+
+msgid "wildcard domains not supported for webroot acme"
+msgstr "Webroot ACME 验证不支持通配符域名"
+
+msgid "wildcard domains not supported for http acme"
+msgstr "ACME HTTP-01 验证不支持通配符域名"
+
+msgid "Configuration saved"
+msgstr "配置已保存"
+
+msgid "Configuration reset"
+msgstr "配置已重置"
+
+msgid "Apply failed"
+msgstr "应用失败"
+
+msgid "Changes saved but not applied because dangerous edit mode is enabled. Disable it to apply changes."
+msgstr "更改已保存但未应用，因为危险编辑模式已启用。请禁用后再应用更改。"

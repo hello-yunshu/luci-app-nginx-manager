@@ -29,7 +29,7 @@ var callIssueSelfSigned = rpc.declare({
 var callAcmeIssue = rpc.declare({
 	object: 'nginx_manager',
 	method: 'acme_issue',
-	params: ['id', 'domain'],
+	params: ['id', 'domain', 'validation_method', 'dns_api', 'credentials', 'dns_wait'],
 	expect: {}
 });
 
@@ -69,8 +69,7 @@ function pollAcmeStatus(taskId, onSuccess, onFailed) {
 			}
 
 			if (status === 'failed') {
-				var detail = (result && result.detail) || '';
-				onFailed(detail);
+				onFailed((result && result.detail) || '');
 				return;
 			}
 
@@ -84,7 +83,7 @@ function pollAcmeStatus(taskId, onSuccess, onFailed) {
 			}
 
 			onFailed(_('Unknown ACME task status') + ': ' + status);
-		}).catch(function(err) {
+		}).catch(function() {
 			if (Date.now() - startTime > ACME_POLL_TIMEOUT) {
 				onFailed(_('ACME operation timed out'));
 				return;
@@ -125,6 +124,16 @@ function certTypeLabel(type) {
 	}
 }
 
+function acmeModeLabel(cert) {
+	if (!cert || cert.type !== 'acme')
+		return certTypeLabel(cert && cert.type);
+	if (cert.validation_method === 'dns')
+		return _('Auto (ACME DNS-01)');
+	if (cert.validation_method === 'standalone')
+		return _('Auto (ACME Standalone)');
+	return _('Auto (ACME HTTP-01)');
+}
+
 return view.extend({
 	load: function() {
 		return callListCerts();
@@ -151,11 +160,46 @@ return view.extend({
 					E('option', { 'value': 'acme' }, _('Auto (ACME)'))
 				]);
 				var certDomainInput = E('input', { 'type': 'text', 'id': 'new-cert-domain', 'class': 'cbi-input-text' });
-
-				certTypeSelect.addEventListener('change', function() {
-					var domainRow = document.getElementById('cert-domain-row');
-					if (domainRow) domainRow.style.display = certTypeSelect.value === 'manual' ? 'none' : '';
+				var acmeMethodSelect = E('select', { 'id': 'new-acme-method', 'class': 'cbi-input-select' }, [
+					E('option', { 'value': 'webroot' }, _('HTTP-01 Webroot')),
+					E('option', { 'value': 'dns' }, _('DNS-01')),
+					E('option', { 'value': 'standalone' }, _('HTTP-01 Standalone'))
+				]);
+				var dnsApiInput = E('input', {
+					'type': 'text',
+					'id': 'new-acme-dns-api',
+					'class': 'cbi-input-text',
+					'placeholder': 'dns_cf'
 				});
+				var dnsCredentialsInput = E('textarea', {
+					'id': 'new-acme-dns-credentials',
+					'class': 'cbi-input-textarea nm-modal-textarea',
+					'rows': 5,
+					'placeholder': 'CF_Token=...'
+				});
+				var dnsWaitInput = E('input', {
+					'type': 'number',
+					'id': 'new-acme-dns-wait',
+					'class': 'cbi-input-text',
+					'min': '0',
+					'placeholder': '120'
+				});
+
+				function updateAcmeRows() {
+					var domainRow = document.getElementById('cert-domain-row');
+					var acmeMethodRow = document.getElementById('cert-acme-method-row');
+					var dnsRows = document.querySelectorAll('.cert-dns-row');
+					var isAcme = certTypeSelect.value === 'acme';
+					var isDns = isAcme && acmeMethodSelect.value === 'dns';
+
+					if (domainRow) domainRow.style.display = certTypeSelect.value === 'manual' ? 'none' : '';
+					if (acmeMethodRow) acmeMethodRow.style.display = isAcme ? '' : 'none';
+					for (var i = 0; i < dnsRows.length; i++)
+						dnsRows[i].style.display = isDns ? '' : 'none';
+				}
+
+				certTypeSelect.addEventListener('change', updateAcmeRows);
+				acmeMethodSelect.addEventListener('change', updateAcmeRows);
 
 				ui.showModal(_('Add Certificate'), [
 					E('div', { 'class': 'cbi-value' }, [
@@ -170,6 +214,22 @@ return view.extend({
 						E('label', { 'class': 'cbi-value-title' }, _('Domain')),
 						certDomainInput
 					]),
+					E('div', { 'class': 'cbi-value', 'id': 'cert-acme-method-row', 'style': 'display:none' }, [
+						E('label', { 'class': 'cbi-value-title' }, _('ACME Validation')),
+						acmeMethodSelect
+					]),
+					E('div', { 'class': 'cbi-value cert-dns-row', 'style': 'display:none' }, [
+						E('label', { 'class': 'cbi-value-title' }, _('DNS API')),
+						dnsApiInput
+					]),
+					E('div', { 'class': 'cbi-value cert-dns-row', 'style': 'display:none' }, [
+						E('label', { 'class': 'cbi-value-title' }, _('DNS Credentials')),
+						dnsCredentialsInput
+					]),
+					E('div', { 'class': 'cbi-value cert-dns-row', 'style': 'display:none' }, [
+						E('label', { 'class': 'cbi-value-title' }, _('DNS Wait Seconds')),
+						dnsWaitInput
+					]),
 					E('div', { 'class': 'right' }, [
 						E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 						E('button', {
@@ -178,13 +238,13 @@ return view.extend({
 								var certName = certNameInput.value.trim();
 								var certType = certTypeSelect.value;
 								var certDomain = certDomainInput.value.trim();
+								var acmeMethod = acmeMethodSelect.value;
+								var dnsApi = dnsApiInput.value.trim();
+								var dnsCredentials = dnsCredentialsInput.value.trim();
+								var dnsWait = dnsWaitInput.value.trim();
 
 								if (!certName) {
 									ui.addNotification(null, E('p', {}, _('Certificate name is required')), 'error');
-									return;
-								}
-								if (!/^[a-zA-Z0-9_][a-zA-Z0-9._-]*$/.test(certName)) {
-									ui.addNotification(null, E('p', {}, _('Certificate name must start with a letter, number or underscore, and can contain letters, numbers, dots, hyphens and underscores')), 'error');
 									return;
 								}
 
@@ -213,12 +273,22 @@ return view.extend({
 										ui.addNotification(null, E('p', {}, _('Domain is required for ACME certificates')), 'error');
 										return;
 									}
-									if (certDomain.includes('*')) {
-										ui.addNotification(null, E('p', {}, _('Wildcard domains are not supported for ACME certificates')), 'error');
-										return;
+										if ((acmeMethod === 'webroot' || acmeMethod === 'standalone') && certDomain.includes('*')) {
+											ui.addNotification(null, E('p', {}, _('Wildcard domains are not supported for ACME certificates')), 'error');
+											return;
+										}
+									if (acmeMethod === 'dns') {
+										if (!dnsApi) {
+											ui.addNotification(null, E('p', {}, _('DNS API is required for DNS-01 validation')), 'error');
+											return;
+										}
+										if (!dnsCredentials) {
+											ui.addNotification(null, E('p', {}, _('DNS credentials are required for DNS-01 validation')), 'error');
+											return;
+										}
 									}
 									ui.showModal(_('Requesting...'), [E('p', {}, _('Please wait, ACME certificate issuance may take a while...'))]);
-									callAcmeIssue(certName, certDomain).then(function(result) {
+									callAcmeIssue(certName, certDomain, acmeMethod, dnsApi, dnsCredentials, dnsWait).then(function(result) {
 										if (result && result.error) {
 											ui.hideModal();
 											var errMsg = _(result.error);
@@ -226,8 +296,7 @@ return view.extend({
 											ui.addNotification(null, E('p', {}, _('Failed to issue ACME certificate') + ': ' + errMsg), 'error');
 											return;
 										}
-										var taskId = (result && result.task_id) || '';
-										pollAcmeStatus(taskId,
+										pollAcmeStatus((result && result.task_id) || certName,
 											function() {
 												ui.hideModal();
 												ui.addNotification(null, E('p', {}, _('ACME certificate issued successfully')), 'info');
@@ -287,6 +356,7 @@ return view.extend({
 						}, '\u271A ' + _('Create'))
 					])
 				]);
+				updateAcmeRows();
 			}
 		}, '\u271A ' + _('Add Certificate')));
 
@@ -316,7 +386,7 @@ return view.extend({
 			var row = E('tr');
 
 			row.appendChild(E('td', {}, cert.name || '-'));
-			row.appendChild(E('td', {}, certTypeLabel(cert.type)));
+			row.appendChild(E('td', {}, acmeModeLabel(cert)));
 
 			var domainCell = E('td');
 			domainCell.textContent = cert.domain || '-';
@@ -341,8 +411,7 @@ return view.extend({
 								ui.addNotification(null, E('p', {}, _('Failed to renew ACME certificate') + ': ' + errMsg), 'error');
 								return;
 							}
-							var taskId = (result && result.task_id) || '';
-							pollAcmeStatus(taskId,
+							pollAcmeStatus((result && result.task_id) || cert.id,
 								function() {
 									ui.hideModal();
 									ui.addNotification(null, E('p', {}, _('ACME certificate renewed successfully')), 'info');

@@ -3,14 +3,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-nginx-manager
-PKG_VERSION:=1.1.1
+PKG_VERSION:=1.1.2
 PKG_RELEASE:=2
 
 PKG_LICENSE:=AGPL-3.0-only
 PKG_MAINTAINER:=yunshu
 
 LUCI_TITLE:=Nginx Manager for LuCI
-LUCI_DEPENDS:=+luci-base +nginx-ssl +rpcd +rpcd-mod-file +openssl-util +acme
+LUCI_DEPENDS:=+luci-base +nginx-ssl +rpcd +rpcd-mod-file +openssl-util +acme +acme-acmesh-dnsapi
 LUCI_PKGARCH:=all
 
 include $(INCLUDE_DIR)/package.mk
@@ -115,8 +115,6 @@ NGINX_MGR_CONF
 		uci set nginx_manager.global.advanced_mode='0'
 		uci set nginx_manager.global.dangerous_core_edit='0'
 		uci set nginx_manager.global.max_backups='5'
-		uci set nginx_manager.global.log_max_size_kb='1024'
-		uci set nginx_manager.global.log_trim_interval='300'
 		uci set nginx_manager.global.client_max_body_size=''
 		uci set nginx_manager.global.keepalive_timeout=''
 		uci set nginx_manager.global.gzip='0'
@@ -130,12 +128,8 @@ NGINX_MGR_CONF
 	}
 
 	changed=0; \
-	uci -q get nginx_manager.global.log_max_size_kb >/dev/null 2>&1 || { \
-		uci set nginx_manager.global.log_max_size_kb='1024'; \
-		changed=1; \
-	}; \
-	uci -q get nginx_manager.global.log_trim_interval >/dev/null 2>&1 || { \
-		uci set nginx_manager.global.log_trim_interval='300'; \
+	uci -q get nginx_manager.global.max_backups >/dev/null 2>&1 || { \
+		uci set nginx_manager.global.max_backups='20'; \
 		changed=1; \
 	}; \
 	[ "$${changed}" = "1" ] && uci commit nginx_manager; \
@@ -148,6 +142,10 @@ NGINX_MGR_CONF
 	rm -f /etc/uci-defaults/90-luci-app-nginx-manager
 	rm -f /tmp/luci-indexcache.*
 	rm -rf /tmp/luci-modulecache/
+	if [ -x /etc/init.d/nginx_manager ]; then
+		/etc/init.d/nginx_manager enable 2>/dev/null
+		/etc/init.d/nginx_manager start 2>/dev/null
+	fi
 	/etc/init.d/rpcd reload 2>/dev/null
 }
 exit 0

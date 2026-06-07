@@ -4,6 +4,8 @@
 'require baseclass';
 'require uci';
 
+var FOOTER_VERSION = '@PKG_VERSION@' === '@' + 'PKG_VERSION@' ? '1.1.2' : '@PKG_VERSION@';
+
 function loadSharedCSS() {
 	if (!document.getElementById('nm-shared-css')) {
 		var link = E('link', {
@@ -64,10 +66,17 @@ function footerLink(href, label, icon) {
 	}, children);
 }
 
+function footerVersion(version) {
+	var value = version && version !== '-' ? version : FOOTER_VERSION;
+	if (!value || value === '-')
+		return '';
+	return /^v/i.test(value) ? value : 'v' + value;
+}
+
 function renderFooter(options) {
 	options = options || {};
 	var project = options.project || 'Nginx Manager';
-	var version = options.version && options.version !== '-' ? 'v' + options.version : '';
+	var version = footerVersion(options.version);
 	var repoUrl = options.repoUrl || 'https://github.com/hello-yunshu/luci-app-nginx-manager';
 
 	return E('footer', { 'class': 'ys-tool-footer' }, [

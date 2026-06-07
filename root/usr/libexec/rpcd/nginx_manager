@@ -59,6 +59,18 @@ validate_domain() {
 	echo "$1" | grep -qE '^[a-zA-Z0-9._*-]+$'
 }
 
+validate_acme_dns_api() {
+	echo "$1" | grep -qE '^dns_[A-Za-z0-9_]+$'
+}
+
+validate_acme_credential() {
+	echo "$1" | grep -qE '^[A-Za-z_][A-Za-z0-9_]*=.+$'
+}
+
+validate_positive_number() {
+	echo "$1" | grep -qE '^[0-9]+$'
+}
+
 run_apply_or_error() {
 	local apply_result
 	apply_result="$("${NGINX_MANAGER_GEN}" apply 2>&1)"
@@ -325,12 +337,12 @@ handle_set_site() {
 		*) { json_init; json_add_string "error" "invalid proxy_type"; json_dump; return; } ;;
 	esac
 
-	# gRPC passthrough validation: grpc_path must start with / if provided
+	# gRPC passthrough validation: grpc_path must be a single safe nginx location prefix.
 	if [ -n "${grpc_path}" ]; then
-		case "${grpc_path}" in
-			/*) ;;
-			*) { json_init; json_add_string "error" "grpc_path must start with /"; json_dump; return; } ;;
-		esac
+		[ "${grpc_path}" != "/" ] || { json_init; json_add_string "error" "grpc_path must be more specific than /"; json_dump; return; }
+		printf '%s\n' "${grpc_path}" | grep -qE '^/[A-Za-z0-9._~!$&()*+,;=:@%/-]+$' || {
+			json_init; json_add_string "error" "invalid grpc_path"; json_dump; return;
+		}
 	fi
 
 	# gRPC passthrough validation: grpc_pass must use grpc:// or grpcs:// if provided
@@ -533,7 +545,7 @@ handle_list_certs() {
 
 _list_cert() {
 	local section="$1"
-	local name type cert_path key_path domain auto_renew
+	local name type cert_path key_path domain auto_renew validation_method dns_api
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
 	type="$(uci -q get "nginx_manager.${section}.type")" || type="manual"
@@ -541,6 +553,8 @@ _list_cert() {
 	key_path="$(uci -q get "nginx_manager.${section}.key_path")" || key_path=""
 	domain="$(uci -q get "nginx_manager.${section}.domain")" || domain=""
 	auto_renew="$(uci -q get "nginx_manager.${section}.auto_renew")" || auto_renew="0"
+	validation_method="$(uci -q get "nginx_manager.${section}.validation_method")" || validation_method=""
+	dns_api="$(uci -q get "nginx_manager.${section}.dns_api")" || dns_api=""
 
 	json_add_object ""
 	json_add_string "id" "${section}"
@@ -550,6 +564,8 @@ _list_cert() {
 	json_add_string "key_path" "${key_path}"
 	json_add_string "domain" "${domain}"
 	json_add_string "auto_renew" "${auto_renew}"
+	[ -n "${validation_method}" ] && json_add_string "validation_method" "${validation_method}"
+	[ -n "${dns_api}" ] && json_add_string "dns_api" "${dns_api}"
 
 	local status="valid"
 	if [ -n "${cert_path}" ] && [ ! -f "${cert_path}" ]; then
@@ -594,7 +610,7 @@ handle_get_cert() {
 	json_add_string "id" "${cert_id}"
 
 	local opt
-	for opt in name type cert_path key_path domain auto_renew; do
+	for opt in name type cert_path key_path domain auto_renew validation_method dns_api; do
 		local val
 		val="$(uci -q get "nginx_manager.${cert_id}.${opt}")" || continue
 		json_add_string "${opt}" "${val}"
@@ -675,13 +691,13 @@ handle_delete_cert() {
 		rm -rf "${cert_subdir}"
 	fi
 
-	uci delete "nginx_manager.${cert_id}"
-
 	# Clear ssl_cert references from any sites using this cert
-	local site_section
-	for site_section in $(uci -q show nginx_manager | grep "\.ssl_cert='${cert_id}'" | cut -d. -f2 | cut -d= -f1); do
-		uci -q delete "nginx_manager.${site_section}.ssl_cert"
-	done
+	_DELETE_CERT_ID="${cert_id}"
+	config_load nginx_manager
+	config_foreach _clear_cert_reference site
+	_DELETE_CERT_ID=""
+
+	uci delete "nginx_manager.${cert_id}"
 
 	uci commit nginx_manager
 
@@ -689,11 +705,20 @@ handle_delete_cert() {
 	rm -f "/tmp/acme-task-${cert_id}.json"
 
 	# Regenerate nginx configs and reload
-	"${NGINX_MANAGER_GEN}" apply >/dev/null 2>&1
+	run_apply_or_error || return
 
 	json_init
 	json_add_string "result" "ok"
 	json_dump
+}
+
+_DELETE_CERT_ID=""
+_clear_cert_reference() {
+	local section="$1"
+	local ssl_cert
+
+	ssl_cert="$(uci -q get "nginx_manager.${section}.ssl_cert")" || ssl_cert=""
+	[ "${ssl_cert}" = "${_DELETE_CERT_ID}" ] && uci -q delete "nginx_manager.${section}.ssl_cert"
 }
 
 handle_upload_cert() {
@@ -829,8 +854,6 @@ handle_get_logs() {
 	json_get_var lines "lines"
 	json_get_var filter "filter"
 	json_get_var site "site"
-
-	"${NGINX_MANAGER_GEN}" trim-logs >/dev/null 2>&1 || true
 
 	[ -z "${lines}" ] && lines="200"
 	echo "${lines}" | grep -qE '^[0-9]+$' || lines="200"
@@ -1017,7 +1040,7 @@ handle_get_core_config() {
 
 	local gzip_val sendfile_val server_tokens_val
 	local max_body_val keepalive_val access_log_val error_log_val
-	local ssl_protocols_val ssl_ciphers_val log_max_size_val log_trim_interval_val _val
+	local ssl_protocols_val ssl_ciphers_val _val
 
 	# Prefer the effective nginx configuration so the UI reflects what is
 	# currently enabled after nginx has expanded its includes.
@@ -1061,8 +1084,6 @@ handle_get_core_config() {
 	[ -z "${error_log_val}" ] && error_log_val="$(uci -q get nginx_manager.global.error_log || true)"
 	[ -z "${ssl_protocols_val}" ] && ssl_protocols_val="$(uci -q get nginx_manager.global.ssl_protocols || true)"
 	[ -z "${ssl_ciphers_val}" ] && ssl_ciphers_val="$(uci -q get nginx_manager.global.ssl_ciphers || true)"
-	log_max_size_val="$(uci -q get nginx_manager.global.log_max_size_kb)" || log_max_size_val="1024"
-	log_trim_interval_val="$(uci -q get nginx_manager.global.log_trim_interval)" || log_trim_interval_val="300"
 
 	json_init
 	json_add_string "client_max_body_size" "${max_body_val}"
@@ -1072,8 +1093,6 @@ handle_get_core_config() {
 	json_add_string "sendfile" "${sendfile_val}"
 	json_add_string "access_log" "${access_log_val}"
 	json_add_string "error_log" "${error_log_val}"
-	json_add_string "log_max_size_kb" "${log_max_size_val}"
-	json_add_string "log_trim_interval" "${log_trim_interval_val}"
 	json_add_string "ssl_protocols" "${ssl_protocols_val}"
 	json_add_string "ssl_ciphers" "${ssl_ciphers_val}"
 	json_add_string "advanced_mode" "$(uci -q get nginx_manager.global.advanced_mode || echo '0')"
@@ -1092,7 +1111,7 @@ handle_set_core_config_safe() {
 	}
 
 	local max_body keepalive gzip
-	local server_tokens sendfile access_log error_log log_max_size log_trim_interval ssl_protocols ssl_ciphers
+	local server_tokens sendfile access_log error_log ssl_protocols ssl_ciphers
 
 	json_get_var max_body "client_max_body_size"
 	json_get_var keepalive "keepalive_timeout"
@@ -1101,21 +1120,8 @@ handle_set_core_config_safe() {
 	json_get_var sendfile "sendfile"
 	json_get_var access_log "access_log"
 	json_get_var error_log "error_log"
-	json_get_var log_max_size "log_max_size_kb"
-	json_get_var log_trim_interval "log_trim_interval"
 	json_get_var ssl_protocols "ssl_protocols"
 	json_get_var ssl_ciphers "ssl_ciphers"
-
-	case "${log_max_size}" in
-		''|*[!0-9]*)
-			[ -z "${log_max_size}" ] || { json_init; json_add_string "error" "invalid log_max_size_kb"; json_dump; return; }
-			;;
-	esac
-	case "${log_trim_interval}" in
-		''|*[!0-9]*)
-			[ -z "${log_trim_interval}" ] || { json_init; json_add_string "error" "invalid log_trim_interval"; json_dump; return; }
-			;;
-	esac
 
 	[ -n "${max_body}" ] && uci set "nginx_manager.global.client_max_body_size=${max_body}"
 	[ -n "${keepalive}" ] && uci set "nginx_manager.global.keepalive_timeout=${keepalive}"
@@ -1124,12 +1130,82 @@ handle_set_core_config_safe() {
 	[ -n "${sendfile}" ] && uci set "nginx_manager.global.sendfile=${sendfile}"
 	[ -n "${access_log}" ] && uci set "nginx_manager.global.access_log=${access_log}"
 	[ -n "${error_log}" ] && uci set "nginx_manager.global.error_log=${error_log}"
-	[ -n "${log_max_size}" ] && uci set "nginx_manager.global.log_max_size_kb=${log_max_size}"
-	[ -n "${log_trim_interval}" ] && uci set "nginx_manager.global.log_trim_interval=${log_trim_interval}"
 	[ -n "${ssl_protocols}" ] && uci set "nginx_manager.global.ssl_protocols=${ssl_protocols}"
 	[ -n "${ssl_ciphers}" ] && uci set "nginx_manager.global.ssl_ciphers=${ssl_ciphers}"
 
 	uci commit nginx_manager
+
+	run_apply_or_error || return
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
+handle_sync_core_from_nginx() {
+	local initialized
+	initialized="$(uci -q get nginx_manager.global.core_config_initialized)" || initialized="0"
+
+	if [ "${initialized}" = "1" ]; then
+		json_init
+		json_add_string "result" "ok"
+		json_add_string "synced" "0"
+		json_dump
+		return
+	fi
+
+	load_global_config
+	detect_nginx_conf
+	_NGINX_T_CACHE="$(nginx -T -c "${NGINX_CONF_PATH}" 2>/dev/null)" || _NGINX_T_CACHE=""
+
+	local nginx_val
+
+	# Sync nginx directive values to UCI
+	for field in client_max_body_size keepalive_timeout access_log error_log ssl_protocols ssl_ciphers; do
+		nginx_val="$(_read_nginx_directive "${field}")"
+		if [ -n "${nginx_val}" ]; then
+			uci set "nginx_manager.global.${field}=${nginx_val}"
+		fi
+	done
+
+	# Handle boolean-like directives
+	nginx_val="$(_read_nginx_directive "gzip")"
+	case "${nginx_val}" in
+		on)  uci set "nginx_manager.global.gzip=1" ;;
+		off) uci set "nginx_manager.global.gzip=0" ;;
+	esac
+
+	nginx_val="$(_read_nginx_directive "sendfile")"
+	case "${nginx_val}" in
+		on)  uci set "nginx_manager.global.sendfile=1" ;;
+		off) uci set "nginx_manager.global.sendfile=0" ;;
+	esac
+
+	# Handle server_tokens
+	nginx_val="$(_read_nginx_directive "server_tokens")"
+	case "${nginx_val}" in
+		on|off) uci set "nginx_manager.global.server_tokens=${nginx_val}" ;;
+	esac
+
+	# Mark as initialized
+	uci set "nginx_manager.global.core_config_initialized=1"
+	uci commit nginx_manager
+
+	json_init
+	json_add_string "result" "ok"
+	json_add_string "synced" "1"
+	json_dump
+}
+
+handle_apply_core_config() {
+	local dangerous
+	dangerous="$(uci -q get nginx_manager.global.dangerous_core_edit)" || dangerous="0"
+	if [ "${dangerous}" = "1" ]; then
+		json_init
+		json_add_string "error" "dangerous_core_edit is enabled, use advanced editor instead"
+		json_dump
+		return
+	fi
 
 	run_apply_or_error || return
 
@@ -1505,14 +1581,14 @@ _acme_task_is_running() {
 
 # Background worker for ACME issue
 _acme_issue_worker() {
-	local cert_id="$1" cert_name="$2" domain="$3" CERT_DIR="$4"
+	local cert_id="$1" cert_name="$2" domain="$3" cert_dir="$4" validation_method="$5" dns_api="$6"
 
 	# Run acme to issue the certificate
 	local acme_output
 	acme_output="$(/etc/init.d/acme restart 2>&1)"
 	local acme_exit=$?
 
-	cleanup_acme_challenge_config "${cert_id}"
+	[ "${validation_method}" = "webroot" ] && cleanup_acme_challenge_config "${cert_id}"
 
 	# Check if certificate was issued successfully
 	local acme_cert="/etc/ssl/acme/${domain}.fullchain.crt"
@@ -1528,7 +1604,7 @@ _acme_issue_worker() {
 	fi
 
 	# Register cert in nginx_manager UCI
-	local cert_subdir="${CERT_DIR}/${cert_id}"
+	local cert_subdir="${cert_dir}/${cert_id}"
 	mkdir -p "${cert_subdir}"
 
 	# Symlink to acme certificate files
@@ -1542,6 +1618,12 @@ _acme_issue_worker() {
 	uci set "nginx_manager.${cert_id}.key_path=${cert_subdir}/privkey.pem"
 	uci set "nginx_manager.${cert_id}.domain=${domain}"
 	uci set "nginx_manager.${cert_id}.auto_renew=1"
+	uci set "nginx_manager.${cert_id}.validation_method=${validation_method}"
+	if [ "${validation_method}" = "dns" ]; then
+		uci set "nginx_manager.${cert_id}.dns_api=${dns_api}"
+	else
+		uci -q delete "nginx_manager.${cert_id}.dns_api" 2>/dev/null
+	fi
 	uci commit nginx_manager
 
 	# Reload nginx to pick up the new certificate
@@ -1551,17 +1633,44 @@ _acme_issue_worker() {
 }
 
 handle_acme_issue() {
-	local cert_name domain cert_id
+	local cert_name domain validation_method dns_api credentials dns_wait cert_id
 
 	json_get_var cert_name "id"
 	json_get_var domain "domain"
+	json_get_var validation_method "validation_method"
+	json_get_var dns_api "dns_api"
+	json_get_var credentials "credentials"
+	json_get_var dns_wait "dns_wait"
 
 	[ -z "${cert_name}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
 	validate_name "${cert_name}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 	cert_id="$(sanitize_uci_id "${cert_name}")"
 	[ -z "${domain}" ] && { json_init; json_add_string "error" "missing domain"; json_dump; return; }
 	validate_domain "${domain}" || { json_init; json_add_string "error" "invalid domain"; json_dump; return; }
-	echo "${domain}" | grep -q '\*' && { json_init; json_add_string "error" "wildcard domains not supported for acme"; json_dump; return; }
+	[ -z "${validation_method}" ] && validation_method="webroot"
+	case "${validation_method}" in
+		webroot|dns|standalone) ;;
+		*) { json_init; json_add_string "error" "invalid acme validation method"; json_dump; return; } ;;
+	esac
+	if { [ "${validation_method}" = "webroot" ] || [ "${validation_method}" = "standalone" ]; } && echo "${domain}" | grep -q '\*'; then
+		json_init; json_add_string "error" "wildcard domains not supported for http acme"; json_dump; return
+	fi
+	if [ "${validation_method}" = "dns" ]; then
+		[ -n "${dns_api}" ] || { json_init; json_add_string "error" "missing dns api"; json_dump; return; }
+		validate_acme_dns_api "${dns_api}" || { json_init; json_add_string "error" "invalid dns api"; json_dump; return; }
+		[ -n "${credentials}" ] || { json_init; json_add_string "error" "missing dns credentials"; json_dump; return; }
+		if [ ! -d /usr/lib/acme/dnsapi ] && [ ! -d /usr/lib/acme/client/dnsapi ]; then
+			json_init; json_add_string "error" "acme dns api package not installed"; json_dump; return;
+		fi
+		printf '%s\n' "${credentials}" | while IFS= read -r credential_line; do
+			credential_line="$(printf '%s' "${credential_line}" | tr -d '\r')"
+			[ -z "${credential_line}" ] && continue
+			validate_acme_credential "${credential_line}" || exit 1
+		done || { json_init; json_add_string "error" "invalid dns credentials"; json_dump; return; }
+	fi
+	if [ -n "${dns_wait}" ]; then
+		validate_positive_number "${dns_wait}" || { json_init; json_add_string "error" "invalid dns wait seconds"; json_dump; return; }
+	fi
 
 	# Prevent concurrent ACME operations for the same cert
 	_acme_task_is_running "${cert_id}" && {
@@ -1599,28 +1708,42 @@ handle_acme_issue() {
 	# Create cert section in acme config
 	uci set "acme.${cert_id}=cert"
 	uci set "acme.${cert_id}.enabled=1"
-	uci set "acme.${cert_id}.validation_method=webroot"
+	uci set "acme.${cert_id}.validation_method=${validation_method}"
 	uci set "acme.${cert_id}.key_type=ec256"
+	uci -q delete "acme.${cert_id}.dns" 2>/dev/null
+	uci -q delete "acme.${cert_id}.credentials" 2>/dev/null
+	uci -q delete "acme.${cert_id}.dns_wait" 2>/dev/null
+	if [ "${validation_method}" = "dns" ]; then
+		uci set "acme.${cert_id}.dns=${dns_api}"
+		printf '%s\n' "${credentials}" | while IFS= read -r credential_line; do
+			credential_line="$(printf '%s' "${credential_line}" | tr -d '\r')"
+			[ -z "${credential_line}" ] && continue
+			uci add_list "acme.${cert_id}.credentials=${credential_line}"
+		done
+		[ -n "${dns_wait}" ] && uci set "acme.${cert_id}.dns_wait=${dns_wait}"
+	fi
 	uci delete "acme.${cert_id}.domains" 2>/dev/null
 	uci add_list "acme.${cert_id}.domains=${domain}"
 	uci commit acme
 
-	local challenge_output
-	challenge_output="$(prepare_acme_challenge_config "${cert_id}" "${domain}" 2>&1)"
-	if [ $? -ne 0 ]; then
-		uci delete "acme.${cert_id}" 2>/dev/null
-		uci commit acme
+	if [ "${validation_method}" = "webroot" ]; then
+		local challenge_output
+		challenge_output="$(prepare_acme_challenge_config "${cert_id}" "${domain}" 2>&1)"
+		if [ $? -ne 0 ]; then
+			uci delete "acme.${cert_id}" 2>/dev/null
+			uci commit acme
 
-		json_init
-		json_add_string "error" "acme challenge config failed"
-		json_add_string "detail" "${challenge_output}"
-		json_dump
-		return
+			json_init
+			json_add_string "error" "acme challenge config failed"
+			json_add_string "detail" "${challenge_output}"
+			json_dump
+			return
+		fi
 	fi
 
 	# Write initial status and spawn background worker
 	_acme_task_write_status "${cert_id}" "running"
-	(_acme_issue_worker "${cert_id}" "${cert_name}" "${domain}" "${CERT_DIR}" &)
+	(_acme_issue_worker "${cert_id}" "${cert_name}" "${domain}" "${CERT_DIR}" "${validation_method}" "${dns_api}" &)
 
 	json_init
 	json_add_string "task_id" "${cert_id}"
@@ -1630,14 +1753,14 @@ handle_acme_issue() {
 
 # Background worker for ACME renew
 _acme_renew_worker() {
-	local cert_id="$1" domain="$2"
+	local cert_id="$1" domain="$2" validation_method="$3"
 
 	# Run acme renewal
 	local acme_output
 	acme_output="$(/etc/init.d/acme restart 2>&1)"
 	local acme_exit=$?
 
-	cleanup_acme_challenge_config "${cert_id}"
+	[ "${validation_method}" = "webroot" ] && cleanup_acme_challenge_config "${cert_id}"
 
 	# Verify renewal actually produced updated cert files (consistent with issue worker)
 	local acme_cert="/etc/ssl/acme/${domain}.fullchain.crt"
@@ -1678,11 +1801,13 @@ handle_acme_renew() {
 	fi
 
 	# Verify cert exists in nginx_manager
-	local cert_type domain
+	local cert_type domain validation_method
 	cert_type="$(uci -q get "nginx_manager.${cert_id}.type")" || {
 		json_init; json_add_string "error" "cert not found"; json_dump; return
 	}
 	domain="$(uci -q get "nginx_manager.${cert_id}.domain")" || domain=""
+	validation_method="$(uci -q get "nginx_manager.${cert_id}.validation_method")" || validation_method="$(uci -q get "acme.${cert_id}.validation_method" 2>/dev/null)"
+	[ -z "${validation_method}" ] && validation_method="webroot"
 
 	if [ "${cert_type}" != "acme" ]; then
 		json_init
@@ -1691,7 +1816,13 @@ handle_acme_renew() {
 		return
 	fi
 	[ -z "${domain}" ] && { json_init; json_add_string "error" "missing domain"; json_dump; return; }
-	echo "${domain}" | grep -q '\*' && { json_init; json_add_string "error" "wildcard domains not supported for acme"; json_dump; return; }
+	case "${validation_method}" in
+		webroot|dns|standalone) ;;
+		*) { json_init; json_add_string "error" "invalid acme validation method"; json_dump; return; } ;;
+	esac
+	if { [ "${validation_method}" = "webroot" ] || [ "${validation_method}" = "standalone" ]; } && echo "${domain}" | grep -q '\*'; then
+		json_init; json_add_string "error" "wildcard domains not supported for http acme"; json_dump; return
+	fi
 
 	# Verify cert exists in acme config
 	uci -q get "acme.${cert_id}" >/dev/null 2>&1 || {
@@ -1702,19 +1833,21 @@ handle_acme_renew() {
 	uci set "acme.${cert_id}.enabled=1"
 	uci commit acme
 
-	local challenge_output
-	challenge_output="$(prepare_acme_challenge_config "${cert_id}" "${domain}" 2>&1)"
-	if [ $? -ne 0 ]; then
-		json_init
-		json_add_string "error" "acme challenge config failed"
-		json_add_string "detail" "${challenge_output}"
-		json_dump
-		return
+	if [ "${validation_method}" = "webroot" ]; then
+		local challenge_output
+		challenge_output="$(prepare_acme_challenge_config "${cert_id}" "${domain}" 2>&1)"
+		if [ $? -ne 0 ]; then
+			json_init
+			json_add_string "error" "acme challenge config failed"
+			json_add_string "detail" "${challenge_output}"
+			json_dump
+			return
+		fi
 	fi
 
 	# Write initial status and spawn background worker
 	_acme_task_write_status "${cert_id}" "running"
-	(_acme_renew_worker "${cert_id}" "${domain}" &)
+	(_acme_renew_worker "${cert_id}" "${domain}" "${validation_method}" &)
 
 	json_init
 	json_add_string "task_id" "${cert_id}"
@@ -1851,6 +1984,10 @@ case "$1" in
 		json_add_object "acme_issue"
 		json_add_string "id" ""
 		json_add_string "domain" ""
+		json_add_string "validation_method" ""
+		json_add_string "dns_api" ""
+		json_add_string "credentials" ""
+		json_add_string "dns_wait" ""
 		json_close_object
 
 		json_add_object "acme_renew"
@@ -1879,6 +2016,12 @@ case "$1" in
 		json_add_object "get_core_config"
 		json_close_object
 
+		json_add_object "sync_core_from_nginx"
+		json_close_object
+
+		json_add_object "apply_core_config"
+		json_close_object
+
 		json_add_object "set_core_config_safe"
 		json_add_string "client_max_body_size" ""
 		json_add_string "keepalive_timeout" ""
@@ -1887,8 +2030,6 @@ case "$1" in
 		json_add_string "sendfile" ""
 		json_add_string "access_log" ""
 		json_add_string "error_log" ""
-		json_add_string "log_max_size_kb" ""
-		json_add_string "log_trim_interval" ""
 		json_add_string "ssl_protocols" ""
 		json_add_string "ssl_ciphers" ""
 		json_close_object
@@ -1969,6 +2110,8 @@ case "$1" in
 			get_logs)           handle_get_logs ;;
 			clear_logs)         handle_clear_logs ;;
 			get_core_config)    handle_get_core_config ;;
+			sync_core_from_nginx) handle_sync_core_from_nginx ;;
+			apply_core_config)  handle_apply_core_config ;;
 			set_core_config_safe) handle_set_core_config_safe ;;
 			set_dangerous_core_edit) handle_set_dangerous_core_edit ;;
 			get_nginx_T)        handle_get_nginx_T ;;
