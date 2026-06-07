@@ -683,6 +683,76 @@ _add_upstream_server() {
 	printf '    server %s;\n' "$1"
 }
 
+# Comment out directives in /etc/nginx/uci.conf.template that are also generated
+# into 00-global.conf, to prevent "duplicate directive" errors when nginx
+# includes both files in the same http{} block.
+# Using comments (with marker) instead of deletion so that:
+#   1. It's clear which lines are managed by nginx-manager
+#   2. The original values are preserved for reference / recovery
+#   3. If nginx-ssl package updates restore the template, the next generate
+#      will re-comment the conflicting lines automatically
+_strip_template_directives() {
+	local template="/etc/nginx/uci.conf.template"
+	[ -f "${template}" ] || return 0
+
+	local tmp="${template}.tmp"
+
+	# Build the list of directives present in 00-global.conf
+	local directives=""
+	[ -n "${max_body}" ] && directives="${directives} client_max_body_size"
+	[ -n "${keepalive}" ] && directives="${directives} keepalive_timeout"
+	[ -n "${gzip}" ] && directives="${directives} gzip gzip_vary gzip_proxied gzip_types gzip_min_length gzip_buffers gzip_http_version gzip_comp_level gzip_disable"
+	[ -n "${server_tokens}" ] && directives="${directives} server_tokens"
+	[ -n "${sendfile}" ] && directives="${directives} sendfile"
+	[ -n "${access_log}" ] && directives="${directives} access_log"
+	[ -n "${error_log}" ] && directives="${directives} error_log"
+	[ -n "${ssl_protocols}" ] && directives="${directives} ssl_protocols"
+	[ -n "${ssl_ciphers}" ] && directives="${directives} ssl_ciphers"
+
+	[ -z "${directives}" ] && return 0
+
+	# Two-pass sed:
+	#   Pass 1: Remove any existing "#managed-by-nginx-manager " prefix from
+	#           previous runs, restoring original lines.
+	#   Pass 2: Comment out all directive lines that conflict with 00-global.conf.
+	# This ensures idempotency and handles template updates correctly.
+	local sed_pass1="s/#managed-by-nginx-manager //g;"
+
+	local sed_pass2=""
+	local d
+	for d in ${directives}; do
+		sed_pass2="${sed_pass2} /^[[:space:]]*${d}[[:space:]]/s|^[[:space:]]*|#managed-by-nginx-manager |;"
+	done
+
+	sed "${sed_pass1}${sed_pass2}" "${template}" > "${tmp}" || { rm -f "${tmp}"; return 1; }
+
+	# Only overwrite if something actually changed
+	if ! cmp -s "${template}" "${tmp}"; then
+		mv "${tmp}" "${template}"
+	else
+		rm -f "${tmp}"
+	fi
+}
+
+# Restore previously commented-out directives in uci.conf.template
+# when 00-global.conf is no longer being generated (all UCI values empty).
+_restore_template_directives() {
+	local template="/etc/nginx/uci.conf.template"
+	[ -f "${template}" ] || return 0
+
+	# Quick check: if no marker exists, nothing to restore
+	grep -q "managed-by-nginx-manager" "${template}" 2>/dev/null || return 0
+
+	local tmp="${template}.tmp"
+	sed 's/#managed-by-nginx-manager //g' "${template}" > "${tmp}" || { rm -f "${tmp}"; return 1; }
+
+	if ! cmp -s "${template}" "${tmp}"; then
+		mv "${tmp}" "${template}"
+	else
+		rm -f "${tmp}"
+	fi
+}
+
 generate_global_conf() {
 	local output_file="${BUILD_DIR}/00-global.conf"
 	local max_body keepalive gzip
@@ -702,7 +772,11 @@ generate_global_conf() {
 	[ -z "${max_body}" ] && [ -z "${keepalive}" ] && [ -z "${gzip}" ] && \
 	[ -z "${server_tokens}" ] && [ -z "${sendfile}" ] && \
 	[ -z "${access_log}" ] && [ -z "${error_log}" ] && \
-	[ -z "${ssl_protocols}" ] && [ -z "${ssl_ciphers}" ] && return 0
+	[ -z "${ssl_protocols}" ] && [ -z "${ssl_ciphers}" ] && {
+		# No directives to generate, restore any previously commented lines
+		_restore_template_directives
+		return 0
+	}
 
 	{
 		generate_header
@@ -712,10 +786,17 @@ generate_global_conf() {
 
 		if [ "${gzip}" = "1" ]; then
 			printf 'gzip on;\ngzip_types text/plain text/css application/json application/javascript text/xml application/xml;\n'
+		elif [ "${gzip}" = "0" ]; then
+			echo "gzip off;"
 		fi
 
 		[ -n "${server_tokens}" ] && echo "server_tokens ${server_tokens};"
-		[ "${sendfile}" = "1" ] && echo "sendfile on;"
+
+		if [ "${sendfile}" = "1" ]; then
+			echo "sendfile on;"
+		elif [ "${sendfile}" = "0" ]; then
+			echo "sendfile off;"
+		fi
 
 		[ -n "${access_log}" ] && echo "access_log ${access_log};"
 		[ -n "${error_log}" ] && echo "error_log ${error_log};"
@@ -730,6 +811,10 @@ generate_global_conf() {
 			fi
 		fi
 	} > "${output_file}"
+
+	# Comment out directives from uci.conf.template that are now managed by 00-global.conf
+	# to prevent duplicate directive errors (e.g. client_max_body_size in both files).
+	_strip_template_directives
 }
 
 ensure_include_stub() {
