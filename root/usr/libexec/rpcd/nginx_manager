@@ -632,9 +632,17 @@ handle_delete_cert() {
 	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
 	validate_uci_id "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
 
-	uci -q get "nginx_manager.${cert_id}" >/dev/null 2>&1 || {
+	# Verify it's actually a cert section
+	local section_type
+	section_type="$(uci -q get "nginx_manager.${cert_id}")" || {
 		json_init
 		json_add_string "error" "cert not found"
+		json_dump
+		return
+	}
+	[ "${section_type}" != "cert" ] && {
+		json_init
+		json_add_string "error" "not a certificate"
 		json_dump
 		return
 	}
@@ -655,10 +663,20 @@ handle_delete_cert() {
 	fi
 
 	uci delete "nginx_manager.${cert_id}"
+
+	# Clear ssl_cert references from any sites using this cert
+	local site_section
+	for site_section in $(uci -q show nginx_manager | grep "\.ssl_cert='${cert_id}'" | cut -d. -f2 | cut -d= -f1); do
+		uci -q delete "nginx_manager.${site_section}.ssl_cert"
+	done
+
 	uci commit nginx_manager
 
 	# Clean up any ACME task status file
 	rm -f "/tmp/acme-task-${cert_id}.json"
+
+	# Regenerate nginx configs and reload
+	"${NGINX_MANAGER_GEN}" apply >/dev/null 2>&1
 
 	json_init
 	json_add_string "result" "ok"
