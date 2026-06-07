@@ -5,7 +5,7 @@
 'require uci';
 
 var FOOTER_VERSION = '@PKG_VERSION@';
-var FOOTER_VERSION_FALLBACK = '1.1.2';
+var FOOTER_VERSION_FALLBACK = '1.1.3';
 
 function loadSharedCSS() {
 	if (!document.getElementById('nm-shared-css')) {
