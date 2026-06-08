@@ -257,6 +257,12 @@ generate_redirect_block() {
 	local server_name="$1"
 	local listen_addr="$2"
 	local ssl_cert="${3:-}"
+	local listen_port="${4:-443}"
+
+	# Build redirect target: include port only when non-standard
+	local redirect_target="https://\$host"
+	[ "${listen_port}" != "443" ] && redirect_target="https://\$host:${listen_port}"
+	redirect_target="${redirect_target}\$request_uri"
 
 	if [ -n "${listen_addr}" ]; then
 		cat <<EOF
@@ -282,14 +288,14 @@ EOF
     }
 
     location / {
-        return 301 https://\$host\$request_uri;
+        return 301 ${redirect_target};
     }
 }
 EOF
 	else
 		cat <<EOF
 
-    return 301 https://\$host\$request_uri;
+    return 301 ${redirect_target};
 }
 EOF
 	fi
@@ -362,7 +368,7 @@ generate_reverse_proxy_site() {
 	local name server_name proxy_pass websocket redirect_https
 	local proxy_host proxy_xff proxy_xfp proxy_xri
 	local ssl_cert access_log error_log enabled
-	local proxy_type custom_proxy_headers listen_addr
+	local proxy_type custom_proxy_headers listen_addr listen_port
 	local proxy_connect_timeout proxy_read_timeout proxy_send_timeout
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
@@ -381,6 +387,7 @@ generate_reverse_proxy_site() {
 	proxy_type="$(uci -q get "nginx_manager.${section}.proxy_type")" || proxy_type="http"
 	custom_proxy_headers="$(uci -q get "nginx_manager.${section}.custom_proxy_headers")" || custom_proxy_headers=""
 	listen_addr="$(uci -q get "nginx_manager.${section}.listen_addr")" || listen_addr=""
+	listen_port="$(uci -q get "nginx_manager.${section}.listen_port")" || listen_port="80"
 	proxy_connect_timeout="$(uci -q get "nginx_manager.${section}.proxy_connect_timeout")" || proxy_connect_timeout=""
 	proxy_read_timeout="$(uci -q get "nginx_manager.${section}.proxy_read_timeout")" || proxy_read_timeout=""
 	proxy_send_timeout="$(uci -q get "nginx_manager.${section}.proxy_send_timeout")" || proxy_send_timeout=""
@@ -390,7 +397,7 @@ generate_reverse_proxy_site() {
 		generate_header
 
 		if [ "${redirect_https}" = "1" ] && [ -n "${ssl_cert}" ]; then
-			generate_redirect_block "${server_name}" "${listen_addr}" "${ssl_cert}"
+			generate_redirect_block "${server_name}" "${listen_addr}" "${ssl_cert}" "${listen_port}"
 			echo ""
 		fi
 
@@ -400,6 +407,7 @@ generate_reverse_proxy_site() {
 
 		if [ -n "${ssl_cert}" ]; then
 			generate_ssl_directives "${ssl_cert}"
+			echo "    error_page 497 =301 https://\$host:\$server_port\$request_uri;"
 		fi
 
 		echo "    server_name ${server_name};"
@@ -498,7 +506,7 @@ generate_listen_directives() {
 generate_static_site() {
 	local section="$1"
 	local name server_name root index redirect_https ssl_cert
-	local access_log error_log enabled listen_addr
+	local access_log error_log enabled listen_addr listen_port
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
 	server_name="$(uci -q get "nginx_manager.${section}.server_name")" || return 1
@@ -510,13 +518,14 @@ generate_static_site() {
 	error_log="$(uci -q get "nginx_manager.${section}.error_log")" || error_log="1"
 	enabled="$(uci -q get "nginx_manager.${section}.enabled")" || enabled="1"
 	listen_addr="$(uci -q get "nginx_manager.${section}.listen_addr")" || listen_addr=""
+	listen_port="$(uci -q get "nginx_manager.${section}.listen_port")" || listen_port="80"
 
 	local output_file="${BUILD_DIR}/${name}.conf"
 	{
 		generate_header
 
 		if [ "${redirect_https}" = "1" ] && [ -n "${ssl_cert}" ]; then
-			generate_redirect_block "${server_name}" "${listen_addr}" "${ssl_cert}"
+			generate_redirect_block "${server_name}" "${listen_addr}" "${ssl_cert}" "${listen_port}"
 			echo ""
 		fi
 
@@ -526,6 +535,7 @@ generate_static_site() {
 
 		if [ -n "${ssl_cert}" ]; then
 			generate_ssl_directives "${ssl_cert}"
+			echo "    error_page 497 =301 https://\$host:\$server_port\$request_uri;"
 		fi
 
 		echo "    server_name ${server_name};"
@@ -577,7 +587,7 @@ generate_custom_site() {
 generate_redirect_site() {
 	local section="$1"
 	local name server_name redirect_target redirect_https ssl_cert enabled
-	local access_log error_log listen_addr
+	local access_log error_log listen_addr listen_port
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
 	server_name="$(uci -q get "nginx_manager.${section}.server_name")" || return 1
@@ -588,13 +598,14 @@ generate_redirect_site() {
 	error_log="$(uci -q get "nginx_manager.${section}.error_log")" || error_log="1"
 	enabled="$(uci -q get "nginx_manager.${section}.enabled")" || enabled="1"
 	listen_addr="$(uci -q get "nginx_manager.${section}.listen_addr")" || listen_addr=""
+	listen_port="$(uci -q get "nginx_manager.${section}.listen_port")" || listen_port="80"
 
 	local output_file="${BUILD_DIR}/${name}.conf"
 	{
 		generate_header
 
 		if [ "${redirect_https}" = "1" ] && [ -n "${ssl_cert}" ]; then
-			generate_redirect_block "${server_name}" "${listen_addr}" "${ssl_cert}"
+			generate_redirect_block "${server_name}" "${listen_addr}" "${ssl_cert}" "${listen_port}"
 			echo ""
 		fi
 
@@ -604,6 +615,7 @@ generate_redirect_site() {
 
 		if [ -n "${ssl_cert}" ]; then
 			generate_ssl_directives "${ssl_cert}"
+			echo "    error_page 497 =301 https://\$host:\$server_port\$request_uri;"
 		fi
 
 		echo "    server_name ${server_name};"

@@ -417,10 +417,10 @@ function showEditCertModal(cert) {
 	var credsRow = E('div', { 'class': 'cbi-value', 'id': 'edit-dns-creds-row', 'style': 'display:none' }, [
 		E('label', { 'class': 'cbi-value-title' }, _('DNS Credentials')),
 		E('div', { 'class': 'cbi-value-field' }, [
+			E('div', { 'class': 'cbi-value-description', 'style': 'margin-bottom:0.5em;font-weight:bold;' }, _('Leave empty to keep existing credentials.')),
 			dnsCredsContainer,
 			dnsCredentialsInput,
-			E('div', { 'class': 'cbi-value-description', 'id': 'edit-dns-creds-desc', 'style': 'display:none' }, _('One credential per line in KEY=VALUE format')),
-			E('div', { 'class': 'cbi-value-description' }, _('Leave empty to keep existing credentials.'))
+			E('div', { 'class': 'cbi-value-description', 'id': 'edit-dns-creds-desc', 'style': 'display:none' }, _('One credential per line in KEY=VALUE format'))
 		])
 	]);
 
@@ -449,11 +449,24 @@ function showEditCertModal(cert) {
 			dnsApiCustomInput.style.display = 'none';
 			customRow.style.display = 'none';
 			document.getElementById('edit-dns-creds-desc').style.display = 'none';
+			/* Parse existing credential keys from cert data */
+			var existingKeys = {};
+			if (cert && cert.credential_keys) {
+				cert.credential_keys.split(',').forEach(function(k) { existingKeys[k.trim()] = true; });
+			}
 			for (var i = 0; i < info.keys.length; i++) {
 				var keyInfo = info.keys[i];
+				var hasExisting = !!existingKeys[keyInfo.key];
+				var inputAttrs = {
+					'type': 'password',
+					'class': 'cbi-input-text',
+					'data-cred-key': keyInfo.key,
+					'placeholder': hasExisting ? '••••••••' : keyInfo.key + '=...',
+					'autocomplete': 'new-password'
+				};
 				var row = E('div', { 'class': 'nm-cred-field' }, [
-					E('label', { 'class': 'nm-cred-label' }, keyInfo.key + (keyInfo.optional ? ' (' + _('Optional') + ')' : '')),
-					E('input', { 'type': 'text', 'class': 'cbi-input-text', 'data-cred-key': keyInfo.key, 'placeholder': keyInfo.key + '=...' }),
+					E('label', { 'class': 'nm-cred-label' }, keyInfo.key + (keyInfo.optional ? ' (' + _('Optional') + ')' : '') + (hasExisting ? ' (' + _('Configured') + ')' : '')),
+					E('input', inputAttrs),
 					keyInfo.desc ? E('div', { 'class': 'cbi-value-description' }, keyInfo.desc) : null
 				]);
 				dnsCredsContainer.appendChild(row);
@@ -733,7 +746,7 @@ return view.extend({
 							var keyName = keyInfo.key;
 							var row = E('div', { 'class': 'nm-cred-field' }, [
 								E('label', { 'class': 'nm-cred-label' }, keyName + (keyInfo.optional ? ' (' + _('Optional') + ')' : '')),
-								E('input', { 'type': 'text', 'class': 'cbi-input-text', 'data-cred-key': keyName, 'placeholder': keyName + '=...' }),
+								E('input', { 'type': 'password', 'class': 'cbi-input-text', 'data-cred-key': keyName, 'placeholder': keyName + '=...', 'autocomplete': 'new-password' }),
 								keyInfo.desc ? E('div', { 'class': 'cbi-value-description' }, keyInfo.desc) : null
 							]);
 							dnsCredsContainer.appendChild(row);

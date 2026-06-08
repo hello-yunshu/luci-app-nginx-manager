@@ -834,6 +834,9 @@ msgstr ""
 msgid "DNS Credentials"
 msgstr ""
 
+msgid "Leave empty to keep existing credentials."
+msgstr ""
+
 msgid "DNS credentials are required for DNS-01 validation"
 msgstr ""
 
@@ -859,6 +862,9 @@ msgid "Custom..."
 msgstr ""
 
 msgid "Optional"
+msgstr ""
+
+msgid "Configured"
 msgstr ""
 
 msgid "One credential per line in KEY=VALUE format"

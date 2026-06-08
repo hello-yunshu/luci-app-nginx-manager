@@ -483,6 +483,9 @@ return view.extend({
 					ui.addNotification(null, E('p', {}, _('Configuration test failed') + ': ' + (result.detail || result.error)), 'error');
 				} else {
 					ui.addNotification(null, E('p', {}, _('Site saved successfully')), 'info');
+					setTimeout(function() {
+						location.href = L.url('admin/services/nginx-manager/sites');
+					}, 800);
 				}
 			}).catch(function(err) {
 				ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || JSON.stringify(err))), 'error');
