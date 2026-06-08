@@ -617,7 +617,7 @@ handle_list_certs() {
 
 _list_cert() {
 	local section="$1"
-	local name type cert_path key_path domain auto_renew validation_method dns_api
+	local name type cert_path key_path domain auto_renew validation_method dns_api acme_status acme_detail
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
 	type="$(uci -q get "nginx_manager.${section}.type")" || type="manual"
@@ -627,6 +627,8 @@ _list_cert() {
 	auto_renew="$(uci -q get "nginx_manager.${section}.auto_renew")" || auto_renew="0"
 	validation_method="$(uci -q get "nginx_manager.${section}.validation_method")" || validation_method=""
 	dns_api="$(uci -q get "nginx_manager.${section}.dns_api")" || dns_api=""
+	acme_status="$(uci -q get "nginx_manager.${section}.acme_status")" || acme_status=""
+	acme_detail="$(uci -q get "nginx_manager.${section}.acme_detail")" || acme_detail=""
 
 	json_add_object ""
 	json_add_string "id" "${section}"
@@ -638,9 +640,15 @@ _list_cert() {
 	json_add_string "auto_renew" "${auto_renew}"
 	[ -n "${validation_method}" ] && json_add_string "validation_method" "${validation_method}"
 	[ -n "${dns_api}" ] && json_add_string "dns_api" "${dns_api}"
+	[ -n "${acme_status}" ] && json_add_string "acme_status" "${acme_status}"
+	[ -n "${acme_detail}" ] && json_add_string "acme_detail" "${acme_detail}"
 
 	local status="valid"
-	if [ -n "${cert_path}" ] && [ ! -f "${cert_path}" ]; then
+	if [ "${type}" = "acme" ] && [ "${acme_status}" = "running" ]; then
+		status="acme_running"
+	elif [ "${type}" = "acme" ] && [ "${acme_status}" = "failed" ]; then
+		status="acme_failed"
+	elif [ -n "${cert_path}" ] && [ ! -f "${cert_path}" ]; then
 		status="missing"
 	elif [ -n "${cert_path}" ] && [ -f "${cert_path}" ]; then
 		local days
@@ -721,6 +729,39 @@ handle_set_cert() {
 	[ -n "${auto_renew}" ] && uci set "nginx_manager.${cert_id}.auto_renew=${auto_renew}"
 
 	uci commit nginx_manager
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
+handle_set_cert_auto_renew() {
+	local cert_id enabled cert_type
+
+	json_get_var cert_id "id"
+	json_get_var enabled "enabled"
+
+	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_uci_id "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+	case "${enabled}" in
+		0|1) ;;
+		*) { json_init; json_add_string "error" "invalid auto renew"; json_dump; return; } ;;
+	esac
+
+	cert_type="$(uci -q get "nginx_manager.${cert_id}.type")" || {
+		json_init; json_add_string "error" "cert not found"; json_dump; return
+	}
+	[ "${cert_type}" = "acme" ] || {
+		json_init; json_add_string "error" "not an acme certificate"; json_dump; return
+	}
+
+	uci set "nginx_manager.${cert_id}.auto_renew=${enabled}"
+	uci commit nginx_manager
+
+	uci -q get "acme.${cert_id}" >/dev/null 2>&1 && {
+		uci set "acme.${cert_id}.enabled=${enabled}"
+		uci commit acme
+	}
 
 	json_init
 	json_add_string "result" "ok"
@@ -1641,14 +1682,34 @@ handle_delete_backup() {
 
 # Write ACME task status to a temp file (atomic via rename)
 _acme_task_write_status() {
-	local cert_id="$1" status="$2" detail="${3:-}"
+	local cert_id="$1" status="$2" detail="${3:-}" command="${4:-}"
 	local task_file="/tmp/acme-task-${cert_id}.json"
 	local tmp_file="${task_file}.tmp"
 	json_init
 	json_add_string "status" "${status}"
 	[ -n "${detail}" ] && json_add_string "detail" "${detail}"
+	[ -n "${command}" ] && json_add_string "command" "${command}"
 	json_dump > "${tmp_file}"
 	mv "${tmp_file}" "${task_file}"
+}
+
+_acme_cert_set_status() {
+	local cert_id="$1" status="$2" detail="${3:-}" command="${4:-}"
+	local persistent_detail
+
+	uci -q get "nginx_manager.${cert_id}" >/dev/null 2>&1 || return 0
+	uci set "nginx_manager.${cert_id}.acme_status=${status}"
+	uci set "nginx_manager.${cert_id}.acme_updated=$(date '+%Y-%m-%d %H:%M:%S')"
+
+	if [ -n "${detail}" ]; then
+		persistent_detail="$(printf '%s' "${detail}" | tr '\r\n' '  ' | cut -c 1-512)"
+		uci set "nginx_manager.${cert_id}.acme_detail=${persistent_detail}"
+	elif [ "${status}" = "running" ] || [ "${status}" = "success" ]; then
+		uci -q delete "nginx_manager.${cert_id}.acme_detail" 2>/dev/null
+	fi
+
+	[ -n "${command}" ] && uci set "nginx_manager.${cert_id}.acme_command=${command}"
+	uci commit nginx_manager
 }
 
 # Check if an ACME task is already running for the given cert_id
@@ -1685,6 +1746,45 @@ ensure_acme_account_config() {
 	uci commit acme
 }
 
+_acme_record_config() {
+	local cert_id="$1" cert_name="$2" domain="$3" cert_dir="$4" validation_method="$5" dns_api="$6" status="$7" auto_renew="${8:-1}"
+	local cert_subdir="${cert_dir}/${cert_id}"
+
+	uci set "nginx_manager.${cert_id}=cert"
+	uci set "nginx_manager.${cert_id}.name=${cert_name}"
+	uci set "nginx_manager.${cert_id}.type=acme"
+	uci set "nginx_manager.${cert_id}.cert_path=${cert_subdir}/fullchain.pem"
+	uci set "nginx_manager.${cert_id}.key_path=${cert_subdir}/privkey.pem"
+	uci set "nginx_manager.${cert_id}.domain=${domain}"
+	uci set "nginx_manager.${cert_id}.auto_renew=${auto_renew}"
+	uci set "nginx_manager.${cert_id}.validation_method=${validation_method}"
+	if [ "${validation_method}" = "dns" ]; then
+		uci set "nginx_manager.${cert_id}.dns_api=${dns_api}"
+	else
+		uci -q delete "nginx_manager.${cert_id}.dns_api" 2>/dev/null
+	fi
+	uci set "nginx_manager.${cert_id}.acme_status=${status}"
+	uci set "nginx_manager.${cert_id}.acme_command=/etc/init.d/acme renew"
+	uci -q delete "nginx_manager.${cert_id}.acme_detail" 2>/dev/null
+	uci commit nginx_manager
+}
+
+_acme_recent_log() {
+	logread -e acme 2>/dev/null | tail -n 80
+}
+
+_acme_restore_enabled() {
+	local cert_id="$1" auto_renew="$2"
+
+	uci -q get "acme.${cert_id}" >/dev/null 2>&1 || return 0
+	case "${auto_renew}" in
+		0|1) ;;
+		*) auto_renew="1" ;;
+	esac
+	uci set "acme.${cert_id}.enabled=${auto_renew}"
+	uci commit acme
+}
+
 _acme_wait_for_service() {
 	local cert_id="$1"
 	local elapsed=0
@@ -1705,7 +1805,7 @@ _acme_wait_for_service() {
 
 # Background worker for ACME issue
 _acme_issue_worker() {
-	local cert_id="$1" cert_name="$2" domain="$3" cert_dir="$4" validation_method="$5" dns_api="$6"
+	local cert_id="$1" cert_name="$2" domain="$3" cert_dir="$4" validation_method="$5" dns_api="$6" auto_renew="$7"
 
 	# Run acme to issue the certificate
 	local acme_output
@@ -1714,17 +1814,19 @@ _acme_issue_worker() {
 
 	if [ ${acme_exit} -ne 0 ]; then
 		[ "${validation_method}" = "webroot" ] && cleanup_acme_challenge_config "${cert_id}"
-		uci delete "acme.${cert_id}" 2>/dev/null
-		uci commit acme
-		_acme_task_write_status "${cert_id}" "failed" "${acme_output}"
+		_acme_restore_enabled "${cert_id}" "${auto_renew}"
+		_acme_cert_set_status "${cert_id}" "failed" "${acme_output}" "/etc/init.d/acme renew"
+		_acme_task_write_status "${cert_id}" "failed" "${acme_output}" "/etc/init.d/acme renew"
 		return
 	fi
 
+	_acme_task_write_status "${cert_id}" "running" "${acme_output}" "/etc/init.d/acme renew"
+
 	if ! _acme_wait_for_service "${cert_id}"; then
 		[ "${validation_method}" = "webroot" ] && cleanup_acme_challenge_config "${cert_id}"
-		uci delete "acme.${cert_id}" 2>/dev/null
-		uci commit acme
-		_acme_task_write_status "${cert_id}" "failed" "ACME operation timed out; see system log for details"
+		_acme_restore_enabled "${cert_id}" "${auto_renew}"
+		_acme_cert_set_status "${cert_id}" "failed" "ACME operation timed out; see system log for details" "/etc/init.d/acme renew"
+		_acme_task_write_status "${cert_id}" "failed" "ACME operation timed out; see system log for details" "/etc/init.d/acme renew"
 		return
 	fi
 
@@ -1735,15 +1837,12 @@ _acme_issue_worker() {
 	local acme_key="/etc/ssl/acme/${domain}.key"
 
 	if [ ! -f "${acme_cert}" ] || [ ! -f "${acme_key}" ]; then
-		# Clean up failed acme config
-		uci delete "acme.${cert_id}" 2>/dev/null
-		uci commit acme
-
-		_acme_task_write_status "${cert_id}" "failed" "ACME finished without producing certificate files; see system log for details"
+		_acme_restore_enabled "${cert_id}" "${auto_renew}"
+		_acme_cert_set_status "${cert_id}" "failed" "ACME finished without producing certificate files; see system log for details" "/etc/init.d/acme renew"
+		_acme_task_write_status "${cert_id}" "failed" "ACME finished without producing certificate files; see system log for details" "/etc/init.d/acme renew"
 		return
 	fi
 
-	# Register cert in nginx_manager UCI
 	local cert_subdir="${cert_dir}/${cert_id}"
 	mkdir -p "${cert_subdir}"
 
@@ -1751,29 +1850,19 @@ _acme_issue_worker() {
 	ln -sf "${acme_cert}" "${cert_subdir}/fullchain.pem"
 	ln -sf "${acme_key}" "${cert_subdir}/privkey.pem"
 
-	uci set "nginx_manager.${cert_id}=cert"
-	uci set "nginx_manager.${cert_id}.name=${cert_name}"
-	uci set "nginx_manager.${cert_id}.type=acme"
-	uci set "nginx_manager.${cert_id}.cert_path=${cert_subdir}/fullchain.pem"
-	uci set "nginx_manager.${cert_id}.key_path=${cert_subdir}/privkey.pem"
-	uci set "nginx_manager.${cert_id}.domain=${domain}"
-	uci set "nginx_manager.${cert_id}.auto_renew=1"
-	uci set "nginx_manager.${cert_id}.validation_method=${validation_method}"
-	if [ "${validation_method}" = "dns" ]; then
-		uci set "nginx_manager.${cert_id}.dns_api=${dns_api}"
-	else
-		uci -q delete "nginx_manager.${cert_id}.dns_api" 2>/dev/null
-	fi
+	_acme_record_config "${cert_id}" "${cert_name}" "${domain}" "${cert_dir}" "${validation_method}" "${dns_api}" "success" "${auto_renew}"
+	uci -q delete "nginx_manager.${cert_id}.acme_detail" 2>/dev/null
 	uci commit nginx_manager
 
 	# Reload nginx to pick up the new certificate
 	/etc/init.d/nginx reload >/dev/null 2>&1
 
-	_acme_task_write_status "${cert_id}" "success"
+	_acme_restore_enabled "${cert_id}" "${auto_renew}"
+	_acme_task_write_status "${cert_id}" "success" "" "/etc/init.d/acme renew"
 }
 
 handle_acme_issue() {
-	local cert_name domain account_email validation_method dns_api credentials dns_wait cert_id
+	local cert_name domain account_email validation_method dns_api credentials dns_wait auto_renew cert_id
 
 	json_get_var cert_name "id"
 	json_get_var domain "domain"
@@ -1782,6 +1871,7 @@ handle_acme_issue() {
 	json_get_var dns_api "dns_api"
 	json_get_var credentials "credentials"
 	json_get_var dns_wait "dns_wait"
+	json_get_var auto_renew "auto_renew"
 
 	[ -z "${cert_name}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
 	validate_name "${cert_name}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
@@ -1813,6 +1903,11 @@ handle_acme_issue() {
 	if [ -n "${dns_wait}" ]; then
 		validate_positive_number "${dns_wait}" || { json_init; json_add_string "error" "invalid dns wait seconds"; json_dump; return; }
 	fi
+	[ -z "${auto_renew}" ] && auto_renew="1"
+	case "${auto_renew}" in
+		0|1) ;;
+		*) { json_init; json_add_string "error" "invalid auto renew"; json_dump; return; } ;;
+	esac
 
 	# Check for duplicate cert_id
 	resolve_new_cert_id "${cert_name}" || { json_init; json_add_string "error" "${_RESOLVE_CERT_ID_ERROR}"; json_dump; return; }
@@ -1857,24 +1952,29 @@ handle_acme_issue() {
 	uci add_list "acme.${cert_id}.domains=${domain}"
 	uci commit acme
 
+	_acme_record_config "${cert_id}" "${cert_name}" "${domain}" "${CERT_DIR}" "${validation_method}" "${dns_api}" "running" "${auto_renew}"
+	_acme_task_write_status "${cert_id}" "running" "ACME request queued" "/etc/init.d/acme renew"
+
 	if [ "${validation_method}" = "webroot" ]; then
 		local challenge_output
 		challenge_output="$(prepare_acme_challenge_config "${cert_id}" "${domain}" 2>&1)"
 		if [ $? -ne 0 ]; then
-			uci delete "acme.${cert_id}" 2>/dev/null
-			uci commit acme
+			_acme_restore_enabled "${cert_id}" "${auto_renew}"
+			_acme_cert_set_status "${cert_id}" "failed" "${challenge_output}" "/etc/init.d/acme renew"
+			_acme_task_write_status "${cert_id}" "failed" "${challenge_output}" "/etc/init.d/acme renew"
 
 			json_init
-			json_add_string "error" "acme challenge config failed"
-			json_add_string "detail" "${challenge_output}"
+			json_add_string "task_id" "${cert_id}"
+			json_add_string "status" "failed"
 			json_dump
 			return
 		fi
 	fi
 
 	# Write initial status and spawn background worker
-	_acme_task_write_status "${cert_id}" "running"
-	(_acme_issue_worker "${cert_id}" "${cert_name}" "${domain}" "${CERT_DIR}" "${validation_method}" "${dns_api}" &)
+	_acme_cert_set_status "${cert_id}" "running" "" "/etc/init.d/acme renew"
+	_acme_task_write_status "${cert_id}" "running" "ACME is running in the background" "/etc/init.d/acme renew"
+	(_acme_issue_worker "${cert_id}" "${cert_name}" "${domain}" "${CERT_DIR}" "${validation_method}" "${dns_api}" "${auto_renew}" &)
 
 	json_init
 	json_add_string "task_id" "${cert_id}"
@@ -1884,7 +1984,7 @@ handle_acme_issue() {
 
 # Background worker for ACME renew
 _acme_renew_worker() {
-	local cert_id="$1" domain="$2" validation_method="$3"
+	local cert_id="$1" domain="$2" validation_method="$3" auto_renew="$4"
 
 	# Run acme renewal
 	local acme_output
@@ -1893,13 +1993,19 @@ _acme_renew_worker() {
 
 	if [ ${acme_exit} -ne 0 ]; then
 		[ "${validation_method}" = "webroot" ] && cleanup_acme_challenge_config "${cert_id}"
-		_acme_task_write_status "${cert_id}" "failed" "${acme_output}"
+		_acme_restore_enabled "${cert_id}" "${auto_renew}"
+		_acme_cert_set_status "${cert_id}" "failed" "${acme_output}" "/etc/init.d/acme renew"
+		_acme_task_write_status "${cert_id}" "failed" "${acme_output}" "/etc/init.d/acme renew"
 		return
 	fi
 
+	_acme_task_write_status "${cert_id}" "running" "${acme_output}" "/etc/init.d/acme renew"
+
 	if ! _acme_wait_for_service "${cert_id}"; then
 		[ "${validation_method}" = "webroot" ] && cleanup_acme_challenge_config "${cert_id}"
-		_acme_task_write_status "${cert_id}" "failed" "ACME operation timed out; see system log for details"
+		_acme_restore_enabled "${cert_id}" "${auto_renew}"
+		_acme_cert_set_status "${cert_id}" "failed" "ACME operation timed out; see system log for details" "/etc/init.d/acme renew"
+		_acme_task_write_status "${cert_id}" "failed" "ACME operation timed out; see system log for details" "/etc/init.d/acme renew"
 		return
 	fi
 
@@ -1910,23 +2016,32 @@ _acme_renew_worker() {
 	local acme_key="/etc/ssl/acme/${domain}.key"
 
 	if [ ! -f "${acme_cert}" ] || [ ! -f "${acme_key}" ]; then
-		_acme_task_write_status "${cert_id}" "failed" "ACME finished without producing certificate files; see system log for details"
+		_acme_restore_enabled "${cert_id}" "${auto_renew}"
+		_acme_cert_set_status "${cert_id}" "failed" "ACME finished without producing certificate files; see system log for details" "/etc/init.d/acme renew"
+		_acme_task_write_status "${cert_id}" "failed" "ACME finished without producing certificate files; see system log for details" "/etc/init.d/acme renew"
 		return
 	fi
 
 	# Reload nginx to pick up renewed certificate
 	/etc/init.d/nginx reload >/dev/null 2>&1
 
-	_acme_task_write_status "${cert_id}" "success"
+	_acme_restore_enabled "${cert_id}" "${auto_renew}"
+	_acme_cert_set_status "${cert_id}" "success" "" "/etc/init.d/acme renew"
+	_acme_task_write_status "${cert_id}" "success" "" "/etc/init.d/acme renew"
 }
 
 handle_acme_renew() {
-	local cert_id
+	local cert_id disable_auto_renew
 
 	json_get_var cert_id "id"
+	json_get_var disable_auto_renew "disable_auto_renew"
 
 	[ -z "${cert_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
 	validate_uci_id "${cert_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+	case "${disable_auto_renew}" in
+		''|0|1) ;;
+		*) { json_init; json_add_string "error" "invalid auto renew"; json_dump; return; } ;;
+	esac
 
 	# Prevent concurrent ACME operations for the same cert
 	_acme_task_is_running "${cert_id}" && {
@@ -1944,13 +2059,15 @@ handle_acme_renew() {
 	fi
 
 	# Verify cert exists in nginx_manager
-	local cert_type domain validation_method
+	local cert_type domain validation_method auto_renew
 	cert_type="$(uci -q get "nginx_manager.${cert_id}.type")" || {
 		json_init; json_add_string "error" "cert not found"; json_dump; return
 	}
 	domain="$(uci -q get "nginx_manager.${cert_id}.domain")" || domain=""
 	validation_method="$(uci -q get "nginx_manager.${cert_id}.validation_method")" || validation_method="$(uci -q get "acme.${cert_id}.validation_method" 2>/dev/null)"
 	[ -z "${validation_method}" ] && validation_method="webroot"
+	auto_renew="$(uci -q get "nginx_manager.${cert_id}.auto_renew")" || auto_renew="1"
+	[ "${disable_auto_renew}" = "1" ] && auto_renew="0"
 
 	if [ "${cert_type}" != "acme" ]; then
 		json_init
@@ -1975,22 +2092,29 @@ handle_acme_renew() {
 	# Ensure it's enabled
 	uci set "acme.${cert_id}.enabled=1"
 	uci commit acme
+	uci set "nginx_manager.${cert_id}.auto_renew=${auto_renew}"
+	uci commit nginx_manager
 
 	if [ "${validation_method}" = "webroot" ]; then
 		local challenge_output
 		challenge_output="$(prepare_acme_challenge_config "${cert_id}" "${domain}" 2>&1)"
 		if [ $? -ne 0 ]; then
+			_acme_restore_enabled "${cert_id}" "${auto_renew}"
+			_acme_cert_set_status "${cert_id}" "failed" "${challenge_output}" "/etc/init.d/acme renew"
+			_acme_task_write_status "${cert_id}" "failed" "${challenge_output}" "/etc/init.d/acme renew"
+
 			json_init
-			json_add_string "error" "acme challenge config failed"
-			json_add_string "detail" "${challenge_output}"
+			json_add_string "task_id" "${cert_id}"
+			json_add_string "status" "failed"
 			json_dump
 			return
 		fi
 	fi
 
 	# Write initial status and spawn background worker
-	_acme_task_write_status "${cert_id}" "running"
-	(_acme_renew_worker "${cert_id}" "${domain}" "${validation_method}" &)
+	_acme_cert_set_status "${cert_id}" "running" "" "/etc/init.d/acme renew"
+	_acme_task_write_status "${cert_id}" "running" "ACME is running in the background" "/etc/init.d/acme renew"
+	(_acme_renew_worker "${cert_id}" "${domain}" "${validation_method}" "${auto_renew}" &)
 
 	json_init
 	json_add_string "task_id" "${cert_id}"
@@ -2006,15 +2130,30 @@ handle_acme_status() {
 	validate_uci_id "${task_id}" || { json_init; json_add_string "error" "invalid task_id"; json_dump; return; }
 
 	local task_file="/tmp/acme-task-${task_id}.json"
-	if [ ! -f "${task_file}" ]; then
-		json_init
-		json_add_string "status" "unknown"
-		json_dump
-		return
+	local status detail command recent_log task_json
+
+	if [ -f "${task_file}" ]; then
+		task_json="$(cat "${task_file}")"
+		json_load "${task_json}" >/dev/null 2>&1
+		json_get_var status "status"
+		json_get_var detail "detail"
+		json_get_var command "command"
+	else
+		status="$(uci -q get "nginx_manager.${task_id}.acme_status")" || status="unknown"
+		detail="$(uci -q get "nginx_manager.${task_id}.acme_detail")" || detail=""
+		command="$(uci -q get "nginx_manager.${task_id}.acme_command")" || command=""
 	fi
 
-	# Output the status file content directly
-	cat "${task_file}"
+	[ -z "${status}" ] && status="unknown"
+	[ -z "${command}" ] && command="/etc/init.d/acme renew"
+	recent_log="$(_acme_recent_log)"
+
+	json_init
+	json_add_string "status" "${status}"
+	json_add_string "command" "${command}"
+	[ -n "${detail}" ] && json_add_string "detail" "${detail}"
+	[ -n "${recent_log}" ] && json_add_string "log" "${recent_log}"
+	json_dump
 }
 
 case "$1" in
@@ -2109,6 +2248,11 @@ case "$1" in
 		json_add_string "auto_renew" ""
 		json_close_object
 
+		json_add_object "set_cert_auto_renew"
+		json_add_string "id" ""
+		json_add_string "enabled" ""
+		json_close_object
+
 		json_add_object "delete_cert"
 		json_add_string "id" ""
 		json_close_object
@@ -2135,10 +2279,12 @@ case "$1" in
 		json_add_string "dns_api" ""
 		json_add_string "credentials" ""
 		json_add_string "dns_wait" ""
+		json_add_string "auto_renew" ""
 		json_close_object
 
 		json_add_object "acme_renew"
 		json_add_string "id" ""
+		json_add_string "disable_auto_renew" ""
 		json_close_object
 
 		json_add_object "acme_status"
@@ -2235,6 +2381,7 @@ case "$1" in
 			list_certs)         handle_list_certs ;;
 			get_cert)           handle_get_cert ;;
 			set_cert)           handle_set_cert ;;
+			set_cert_auto_renew) handle_set_cert_auto_renew ;;
 			delete_cert)        handle_delete_cert ;;
 			upload_cert)        handle_upload_cert ;;
 			issue_self_signed)  handle_issue_self_signed ;;

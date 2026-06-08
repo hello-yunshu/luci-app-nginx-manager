@@ -756,6 +756,9 @@ msgstr "nginx -T Output"
 msgid "ACME Validation"
 msgstr "ACME Validation"
 
+msgid "ACME Task"
+msgstr "ACME Task"
+
 msgid "ACME Account Email"
 msgstr "ACME Account Email"
 
@@ -767,6 +770,54 @@ msgstr "ACME account email is required"
 
 msgid "Invalid ACME account email"
 msgstr "Invalid ACME account email"
+
+msgid "Command"
+msgstr "Command"
+
+msgid "Output"
+msgstr "Output"
+
+msgid "Recent ACME Log"
+msgstr "Recent ACME Log"
+
+msgid "No output yet."
+msgstr "No output yet."
+
+msgid "No ACME log entries yet."
+msgstr "No ACME log entries yet."
+
+msgid "Failed"
+msgstr "Failed"
+
+msgid "Regenerate"
+msgstr "Regenerate"
+
+msgid "Edit Certificate"
+msgstr "Edit Certificate"
+
+msgid "Automatic Renewal"
+msgstr "Automatic Renewal"
+
+msgid "Enable automatic renewal"
+msgstr "Enable automatic renewal"
+
+msgid "Manual Renewal"
+msgstr "Manual Renewal"
+
+msgid "This certificate is configured for automatic renewal. If you renew it manually now, automatic renewal will be disabled for this certificate. You can enable it again with Edit later."
+msgstr "This certificate is configured for automatic renewal. If you renew it manually now, automatic renewal will be disabled for this certificate. You can enable it again with Edit later."
+
+msgid "Continue"
+msgstr "Continue"
+
+msgid "Automatic renewal enabled"
+msgstr "Automatic renewal enabled"
+
+msgid "Automatic renewal disabled"
+msgstr "Automatic renewal disabled"
+
+msgid "Failed to update automatic renewal"
+msgstr "Failed to update automatic renewal"
 
 msgid "Auto (ACME DNS-01)"
 msgstr "Auto (ACME DNS-01)"
@@ -884,6 +935,9 @@ msgstr "Invalid ACME account email"
 
 msgid "missing acme account email"
 msgstr "Missing ACME account email"
+
+msgid "invalid auto renew"
+msgstr "Invalid automatic renewal setting"
 
 msgid "invalid dns api"
 msgstr "Invalid DNS API"

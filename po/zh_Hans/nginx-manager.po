@@ -762,6 +762,9 @@ msgstr "nginx -T 输出"
 msgid "ACME Validation"
 msgstr "ACME 验证方式"
 
+msgid "ACME Task"
+msgstr "ACME 任务"
+
 msgid "ACME Account Email"
 msgstr "ACME 账户邮箱"
 
@@ -773,6 +776,54 @@ msgstr "需要填写 ACME 账户邮箱"
 
 msgid "Invalid ACME account email"
 msgstr "ACME 账户邮箱无效"
+
+msgid "Command"
+msgstr "命令"
+
+msgid "Output"
+msgstr "输出"
+
+msgid "Recent ACME Log"
+msgstr "最近 ACME 日志"
+
+msgid "No output yet."
+msgstr "暂无输出。"
+
+msgid "No ACME log entries yet."
+msgstr "暂无 ACME 日志。"
+
+msgid "Failed"
+msgstr "失败"
+
+msgid "Regenerate"
+msgstr "重新生成"
+
+msgid "Edit Certificate"
+msgstr "编辑证书"
+
+msgid "Automatic Renewal"
+msgstr "自动续期"
+
+msgid "Enable automatic renewal"
+msgstr "启用自动续期"
+
+msgid "Manual Renewal"
+msgstr "手动续期"
+
+msgid "This certificate is configured for automatic renewal. If you renew it manually now, automatic renewal will be disabled for this certificate. You can enable it again with Edit later."
+msgstr "此证书已开启自动续期。如果现在手动续期，将关闭此证书的自动续期。之后可以通过编辑重新开启。"
+
+msgid "Continue"
+msgstr "继续"
+
+msgid "Automatic renewal enabled"
+msgstr "已开启自动续期"
+
+msgid "Automatic renewal disabled"
+msgstr "已关闭自动续期"
+
+msgid "Failed to update automatic renewal"
+msgstr "更新自动续期失败"
 
 msgid "Auto (ACME DNS-01)"
 msgstr "自动 (ACME DNS-01)"
@@ -890,6 +941,9 @@ msgstr "ACME 账户邮箱无效"
 
 msgid "missing acme account email"
 msgstr "缺少 ACME 账户邮箱"
+
+msgid "invalid auto renew"
+msgstr "自动续期设置无效"
 
 msgid "invalid dns api"
 msgstr "无效的 DNS API"
