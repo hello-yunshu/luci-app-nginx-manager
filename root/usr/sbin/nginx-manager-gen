@@ -318,10 +318,8 @@ EOF
 
 	local ssl_protocols ssl_ciphers
 	ssl_protocols="$(uci -q get "nginx_manager.${section}.ssl_protocols")" || \
-		ssl_protocols="$(uci -q get nginx_manager.global.ssl_protocols)" || \
 		ssl_protocols="TLSv1.2 TLSv1.3"
 	ssl_ciphers="$(uci -q get "nginx_manager.${section}.ssl_ciphers")" || \
-		ssl_ciphers="$(uci -q get nginx_manager.global.ssl_ciphers)" || \
 		ssl_ciphers="ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384"
 
 	echo "    ssl_protocols ${ssl_protocols};"
@@ -331,7 +329,6 @@ EOF
 	local ssl_session_timeout
 	ssl_session_timeout="$(uci -q get nginx_manager.global.ssl_session_timeout)" || \
 		ssl_session_timeout="1d"
-	echo "    ssl_session_cache shared:SSL:10m;"
 	echo "    ssl_session_timeout ${ssl_session_timeout};"
 	echo "    ssl_session_tickets off;"
 
@@ -773,9 +770,8 @@ _strip_template_directives() {
 	[ -n "${tcp_nodelay}" ] && directives="${directives} tcp_nodelay"
 	[ -n "${access_log}" ] && directives="${directives} access_log"
 	[ -n "${error_log}" ] && directives="${directives} error_log"
-	[ -n "${ssl_protocols}" ] && directives="${directives} ssl_protocols"
-	[ -n "${ssl_ciphers}" ] && directives="${directives} ssl_ciphers"
 	[ -n "${ssl_session_timeout}" ] && directives="${directives} ssl_session_timeout"
+	[ -n "${ssl_session_cache}" ] && directives="${directives} ssl_session_cache"
 	[ -n "${ssl_stapling}" ] && directives="${directives} ssl_stapling ssl_stapling_verify"
 	[ -n "${ssl_buffer_size}" ] && directives="${directives} ssl_buffer_size"
 
@@ -828,7 +824,7 @@ generate_global_conf() {
 	local max_body keepalive gzip
 	local server_tokens sendfile access_log error_log
 	local tcp_nopush tcp_nodelay
-	local ssl_protocols ssl_ciphers ssl_session_timeout ssl_stapling ssl_buffer_size custom_ssl_directives
+	local ssl_session_timeout ssl_session_cache ssl_stapling ssl_buffer_size custom_ssl_directives
 
 	max_body="$(uci -q get nginx_manager.global.client_max_body_size)" || max_body=""
 	keepalive="$(uci -q get nginx_manager.global.keepalive_timeout)" || keepalive=""
@@ -839,9 +835,8 @@ generate_global_conf() {
 	tcp_nodelay="$(uci -q get nginx_manager.global.tcp_nodelay)" || tcp_nodelay=""
 	access_log="$(uci -q get nginx_manager.global.access_log)" || access_log=""
 	error_log="$(uci -q get nginx_manager.global.error_log)" || error_log=""
-	ssl_protocols="$(uci -q get nginx_manager.global.ssl_protocols)" || ssl_protocols=""
-	ssl_ciphers="$(uci -q get nginx_manager.global.ssl_ciphers)" || ssl_ciphers=""
 	ssl_session_timeout="$(uci -q get nginx_manager.global.ssl_session_timeout)" || ssl_session_timeout=""
+	ssl_session_cache="$(uci -q get nginx_manager.global.ssl_session_cache)" || ssl_session_cache=""
 	ssl_stapling="$(uci -q get nginx_manager.global.ssl_stapling)" || ssl_stapling=""
 	ssl_buffer_size="$(uci -q get nginx_manager.global.ssl_buffer_size)" || ssl_buffer_size=""
 	custom_ssl_directives="$(uci -q get nginx_manager.global.custom_ssl_directives)" || custom_ssl_directives=""
@@ -850,8 +845,7 @@ generate_global_conf() {
 	[ -z "${server_tokens}" ] && [ -z "${sendfile}" ] && \
 	[ -z "${tcp_nopush}" ] && [ -z "${tcp_nodelay}" ] && \
 	[ -z "${access_log}" ] && [ -z "${error_log}" ] && \
-	[ -z "${ssl_protocols}" ] && [ -z "${ssl_ciphers}" ] && \
-	[ -z "${ssl_session_timeout}" ] && [ -z "${ssl_stapling}" ] && [ -z "${ssl_buffer_size}" ] && \
+	[ -z "${ssl_session_timeout}" ] && [ -z "${ssl_session_cache}" ] && [ -z "${ssl_stapling}" ] && [ -z "${ssl_buffer_size}" ] && \
 	[ -z "${custom_ssl_directives}" ] && {
 		# No directives to generate, restore any previously commented lines
 		_restore_template_directives
@@ -893,17 +887,13 @@ generate_global_conf() {
 		[ -n "${access_log}" ] && echo "access_log ${access_log};"
 		[ -n "${error_log}" ] && echo "error_log ${error_log};"
 
-		if [ -n "${ssl_protocols}" ] || [ -n "${ssl_ciphers}" ] || \
-		   [ -n "${ssl_session_timeout}" ] || [ -n "${ssl_stapling}" ] || [ -n "${ssl_buffer_size}" ] || [ -n "${custom_ssl_directives}" ]; then
+		if [ -n "${ssl_session_timeout}" ] || [ -n "${ssl_session_cache}" ] || [ -n "${ssl_stapling}" ] || [ -n "${ssl_buffer_size}" ] || [ -n "${custom_ssl_directives}" ]; then
 			echo ""
-			if [ -n "${ssl_protocols}" ]; then
-				echo "ssl_protocols ${ssl_protocols};"
-			fi
-			if [ -n "${ssl_ciphers}" ]; then
-				echo "ssl_ciphers ${ssl_ciphers};"
-			fi
 			if [ -n "${ssl_session_timeout}" ]; then
 				echo "ssl_session_timeout ${ssl_session_timeout};"
+			fi
+			if [ -n "${ssl_session_cache}" ]; then
+				echo "ssl_session_cache ${ssl_session_cache};"
 			fi
 			if [ "${ssl_stapling}" = "1" ]; then
 				echo "ssl_stapling on;"

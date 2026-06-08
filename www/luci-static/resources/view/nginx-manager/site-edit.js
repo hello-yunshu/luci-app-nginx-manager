@@ -219,8 +219,10 @@ return view.extend({
 			updateListenDefaults();
 		});
 
-		sslSection.appendChild(makeFlag('opt-redirect_https', _('HTTP to HTTPS Redirect'),
-			!isNew && site ? site.redirect_https === '1' : true));
+		var redirectHttpsRow = makeFlag('opt-redirect_https', _('HTTP to HTTPS Redirect'),
+			!isNew && site ? site.redirect_https === '1' : true);
+		var redirectHttpsCb = redirectHttpsRow.querySelector('input[type="checkbox"]');
+		sslSection.appendChild(redirectHttpsRow);
 
 		var redirectHttpPortWrapper = E('div', { 'class': 'cbi-option' }, [
 			E('label', { 'class': 'cbi-value-title' }, _('HTTP Redirect Port')),
@@ -237,10 +239,9 @@ return view.extend({
 		sslSection.appendChild(redirectHttpPortWrapper);
 
 		function updateRedirectHttpPortVisibility() {
-			var checked = document.getElementById('opt-redirect_https').checked;
-			redirectHttpPortWrapper.style.display = checked ? '' : 'none';
+			redirectHttpPortWrapper.style.display = redirectHttpsCb.checked ? '' : 'none';
 		}
-		document.getElementById('opt-redirect_https').addEventListener('change', updateRedirectHttpPortVisibility);
+		redirectHttpsCb.addEventListener('change', updateRedirectHttpPortVisibility);
 		updateRedirectHttpPortVisibility();
 
 		/* SSL Advanced Options */
@@ -252,7 +253,7 @@ return view.extend({
 			'value': !isNew && site ? (site.ssl_protocols || '') : ''
 		});
 		sslAdvancedWrapper.appendChild(makeField('opt-ssl_protocols', _('SSL Protocols'), sslProtocolsInput,
-			_('Leave empty to use global setting.')));
+			_('Leave empty to use default: TLSv1.2 TLSv1.3')));
 
 		var sslCiphersInput = E('input', {
 			'type': 'text', 'class': 'cbi-input-text',
@@ -260,15 +261,15 @@ return view.extend({
 			'value': !isNew && site ? (site.ssl_ciphers || '') : ''
 		});
 		sslAdvancedWrapper.appendChild(makeField('opt-ssl_ciphers', _('SSL Ciphers'), sslCiphersInput,
-			_('Leave empty to use global setting.')));
+			_('Leave empty to use default ciphers.')));
 
 		sslSection.appendChild(sslAdvancedWrapper);
 
 		function updateSslAdvancedVisibility() {
-			var hasCert = document.getElementById('opt-ssl_cert').value !== '';
+			var hasCert = sslCertSelect.value !== '';
 			sslAdvancedWrapper.style.display = hasCert ? '' : 'none';
 		}
-		document.getElementById('opt-ssl_cert').addEventListener('change', updateSslAdvancedVisibility);
+		sslCertSelect.addEventListener('change', updateSslAdvancedVisibility);
 		updateSslAdvancedVisibility();
 
 		page.appendChild(sslSection);
