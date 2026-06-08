@@ -143,6 +143,26 @@ return view.extend({
 		o.placeholder = 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
 		o.rmempty = true;
 
+		o = s2.option(form.Value, 'ssl_session_timeout', _('SSL Session Timeout'),
+			_('Duration for SSL session cache, e.g. 1d, 4h, 30m.'));
+		o.placeholder = '1d';
+		o.rmempty = true;
+
+		o = s2.option(form.Flag, 'ssl_stapling', _('OCSP Stapling'));
+		o.rmempty = true;
+		o.default = '1';
+
+		o = s2.option(form.Value, 'ssl_buffer_size', _('SSL Buffer Size'),
+			_('Send buffer size for SSL data, e.g. 4k, 8k, 16k. Leave empty for default.'));
+		o.placeholder = '16k';
+		o.rmempty = true;
+
+		o = s2.option(form.TextArea, 'custom_ssl_directives', _('Custom SSL Directives'),
+			_('One directive per line. These will be added inside the server block.'));
+		o.rmempty = true;
+		o.rows = 4;
+		o.placeholder = 'ssl_dhparam /etc/nginx/dhparam.pem;\nssl_ecdh_curve X25519:P-256:P-384;';
+
 		o = s2.option(form.Value, 'cert_dir', _('Certificate Directory'));
 		o.rmempty = true;
 		o.placeholder = '/etc/nginx/certs/luci-manager';

@@ -210,6 +210,9 @@ msgstr ""
 msgid "Custom Proxy Headers"
 msgstr ""
 
+msgid "Custom SSL Directives"
+msgstr ""
+
 msgid "Proxy Timeouts"
 msgstr ""
 
@@ -232,6 +235,9 @@ msgid "Timeout for reading a response from the backend. Default: 60s."
 msgstr ""
 
 msgid "Send Timeout"
+msgstr ""
+
+msgid "Send buffer size for SSL data, e.g. 4k, 8k, 16k. Leave empty for default."
 msgstr ""
 
 msgid "Timeout for sending a request to the backend. Default: 60s."
@@ -292,6 +298,9 @@ msgid "Enabled"
 msgstr ""
 
 msgid "Environment Detection"
+msgstr ""
+
+msgid "Duration for SSL session cache, e.g. 1d, 4h, 30m."
 msgstr ""
 
 msgid "Error Log"
@@ -381,6 +390,9 @@ msgstr ""
 msgid "HTTP to HTTPS Redirect"
 msgstr ""
 
+msgid "HTTP Redirect Port"
+msgstr ""
+
 msgid "Index File"
 msgstr ""
 
@@ -403,6 +415,9 @@ msgid "Last Reload"
 msgstr ""
 
 msgid "Leave empty for all interfaces, or specify an IP (e.g. 127.0.0.1)."
+msgstr ""
+
+msgid "Leave empty to use same-port redirect (error_page 497)"
 msgstr ""
 
 msgid "Listen"
@@ -498,6 +513,9 @@ msgstr ""
 msgid "Non-Managed Configs"
 msgstr ""
 
+msgid "OCSP Stapling"
+msgstr ""
+
 msgid "OK"
 msgstr ""
 
@@ -508,6 +526,9 @@ msgid "On"
 msgstr ""
 
 msgid "One directive per line."
+msgstr ""
+
+msgid "One directive per line. These will be added inside the server block."
 msgstr ""
 
 msgid "OpenWrt"
@@ -601,6 +622,12 @@ msgid "SSL Module"
 msgstr ""
 
 msgid "SSL Protocols"
+msgstr ""
+
+msgid "SSL Session Timeout"
+msgstr ""
+
+msgid "SSL Buffer Size"
 msgstr ""
 
 msgid "SSL Settings"

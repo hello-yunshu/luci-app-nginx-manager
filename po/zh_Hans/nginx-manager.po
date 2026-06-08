@@ -210,6 +210,9 @@ msgstr "正在创建站点..."
 msgid "Custom Proxy Headers"
 msgstr "自定义代理头"
 
+msgid "Custom SSL Directives"
+msgstr "自定义 SSL 指令"
+
 msgid "Proxy Timeouts"
 msgstr "代理超时"
 
@@ -233,6 +236,9 @@ msgstr "从后端读取响应的超时时间。默认：60s。"
 
 msgid "Send Timeout"
 msgstr "发送超时"
+
+msgid "Send buffer size for SSL data, e.g. 4k, 8k, 16k. Leave empty for default."
+msgstr "SSL 数据发送缓冲区大小，如 4k、8k、16k。留空使用默认值。"
 
 msgid "Timeout for sending a request to the backend. Default: 60s."
 msgstr "向后端发送请求的超时时间。默认：60s。"
@@ -293,6 +299,9 @@ msgstr "已启用"
 
 msgid "Environment Detection"
 msgstr "环境检测"
+
+msgid "Duration for SSL session cache, e.g. 1d, 4h, 30m."
+msgstr "SSL 会话缓存时长，如 1d、4h、30m。"
 
 msgid "Error Log"
 msgstr "错误日志"
@@ -366,6 +375,9 @@ msgstr "HTTP"
 msgid "HTTP to HTTPS Redirect"
 msgstr "HTTP 跳转 HTTPS"
 
+msgid "HTTP Redirect Port"
+msgstr "HTTP 跳转端口"
+
 msgid "Index File"
 msgstr "首页文件"
 
@@ -389,6 +401,9 @@ msgstr "最近重新加载"
 
 msgid "Leave empty for all interfaces, or specify an IP (e.g. 127.0.0.1)."
 msgstr "留空表示监听所有接口，或指定 IP（如 127.0.0.1）。"
+
+msgid "Leave empty to use same-port redirect (error_page 497)"
+msgstr "留空则使用同端口跳转（error_page 497）"
 
 msgid "Listen"
 msgstr "监听"
@@ -483,6 +498,9 @@ msgstr "暂无站点，点击「添加站点」创建。"
 msgid "Non-Managed Configs"
 msgstr "非管理配置数"
 
+msgid "OCSP Stapling"
+msgstr "OCSP 装订"
+
 msgid "OK"
 msgstr "正常"
 
@@ -494,6 +512,9 @@ msgstr "开启"
 
 msgid "One directive per line."
 msgstr "每行一条指令。"
+
+msgid "One directive per line. These will be added inside the server block."
+msgstr "每行一条指令，将添加到 server 块内。"
 
 msgid "OpenWrt"
 msgstr "OpenWrt"
@@ -590,6 +611,12 @@ msgstr "SSL 模块"
 
 msgid "SSL Protocols"
 msgstr "SSL 协议"
+
+msgid "SSL Session Timeout"
+msgstr "SSL 会话超时"
+
+msgid "SSL Buffer Size"
+msgstr "SSL 缓冲区大小"
 
 msgid "SSL Settings"
 msgstr "SSL 设置"
