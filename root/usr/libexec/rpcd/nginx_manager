@@ -306,8 +306,9 @@ handle_get_site() {
 	json_add_string "id" "${site_id}"
 
 	local opt
-	for opt in name mode server_name listen_addr listen_port proxy_pass root index websocket proxy_type grpc_path grpc_pass custom_proxy_headers redirect_https \
-		proxy_host proxy_xff proxy_xfp proxy_xri ssl_cert access_log error_log \
+	for opt in name mode server_name listen_addr listen_port proxy_pass root index websocket proxy_type grpc_path grpc_pass custom_proxy_headers redirect_https redirect_http_port \
+		proxy_host proxy_xff proxy_xfp proxy_xri ssl_cert ssl_protocols ssl_ciphers \
+		access_log error_log \
 		custom_server_block redirect_target enabled \
 		proxy_connect_timeout proxy_read_timeout proxy_send_timeout; do
 		local val
@@ -358,8 +359,8 @@ _collect_listen() {
 
 handle_set_site() {
 	local site_id name mode server_name proxy_pass root index
-	local websocket proxy_type custom_proxy_headers redirect_https proxy_host proxy_xff proxy_xfp proxy_xri
-	local ssl_cert access_log error_log custom_server_block redirect_target enabled
+	local websocket proxy_type custom_proxy_headers redirect_https redirect_http_port proxy_host proxy_xff proxy_xfp proxy_xri
+	local ssl_cert ssl_protocols ssl_ciphers access_log error_log custom_server_block redirect_target enabled
 	local listen_addr listen_port grpc_path grpc_pass
 	local proxy_connect_timeout proxy_read_timeout proxy_send_timeout
 
@@ -378,11 +379,14 @@ handle_set_site() {
 	json_get_var grpc_pass "grpc_pass"
 	json_get_var custom_proxy_headers "custom_proxy_headers"
 	json_get_var redirect_https "redirect_https"
+	json_get_var redirect_http_port "redirect_http_port"
 	json_get_var proxy_host "proxy_host"
 	json_get_var proxy_xff "proxy_xff"
 	json_get_var proxy_xfp "proxy_xfp"
 	json_get_var proxy_xri "proxy_xri"
 	json_get_var ssl_cert "ssl_cert"
+	json_get_var ssl_protocols "ssl_protocols"
+	json_get_var ssl_ciphers "ssl_ciphers"
 	json_get_var access_log "access_log"
 	json_get_var error_log "error_log"
 	json_get_var custom_server_block "custom_server_block"
@@ -486,17 +490,20 @@ handle_set_site() {
 	fi
 	[ -n "${grpc_path}" ] && uci set "nginx_manager.${site_id}.grpc_path=${grpc_path}" || uci -q delete "nginx_manager.${site_id}.grpc_path"
 	[ -n "${grpc_pass}" ] && uci set "nginx_manager.${site_id}.grpc_pass=${grpc_pass}" || uci -q delete "nginx_manager.${site_id}.grpc_pass"
-	[ -n "${custom_proxy_headers}" ] && uci set "nginx_manager.${site_id}.custom_proxy_headers=${custom_proxy_headers}"
+	[ -n "${custom_proxy_headers}" ] && uci set "nginx_manager.${site_id}.custom_proxy_headers=${custom_proxy_headers}" || uci -q delete "nginx_manager.${site_id}.custom_proxy_headers"
 	[ -n "${redirect_https}" ] && uci set "nginx_manager.${site_id}.redirect_https=${redirect_https}"
+	[ -n "${redirect_http_port}" ] && uci set "nginx_manager.${site_id}.redirect_http_port=${redirect_http_port}" || uci -q delete "nginx_manager.${site_id}.redirect_http_port"
 	[ -n "${proxy_host}" ] && uci set "nginx_manager.${site_id}.proxy_host=${proxy_host}"
 	[ -n "${proxy_xff}" ] && uci set "nginx_manager.${site_id}.proxy_xff=${proxy_xff}"
 	[ -n "${proxy_xfp}" ] && uci set "nginx_manager.${site_id}.proxy_xfp=${proxy_xfp}"
 	[ -n "${proxy_xri}" ] && uci set "nginx_manager.${site_id}.proxy_xri=${proxy_xri}"
-	[ -n "${ssl_cert}" ] && uci set "nginx_manager.${site_id}.ssl_cert=${ssl_cert}"
+	[ -n "${ssl_cert}" ] && uci set "nginx_manager.${site_id}.ssl_cert=${ssl_cert}" || uci -q delete "nginx_manager.${site_id}.ssl_cert"
+	[ -n "${ssl_protocols}" ] && uci set "nginx_manager.${site_id}.ssl_protocols=${ssl_protocols}" || uci -q delete "nginx_manager.${site_id}.ssl_protocols"
+	[ -n "${ssl_ciphers}" ] && uci set "nginx_manager.${site_id}.ssl_ciphers=${ssl_ciphers}" || uci -q delete "nginx_manager.${site_id}.ssl_ciphers"
 	[ -n "${access_log}" ] && uci set "nginx_manager.${site_id}.access_log=${access_log}"
 	[ -n "${error_log}" ] && uci set "nginx_manager.${site_id}.error_log=${error_log}"
-	[ -n "${custom_server_block}" ] && uci set "nginx_manager.${site_id}.custom_server_block=${custom_server_block}"
-	[ -n "${redirect_target}" ] && uci set "nginx_manager.${site_id}.redirect_target=${redirect_target}"
+	[ -n "${custom_server_block}" ] && uci set "nginx_manager.${site_id}.custom_server_block=${custom_server_block}" || uci -q delete "nginx_manager.${site_id}.custom_server_block"
+	[ -n "${redirect_target}" ] && uci set "nginx_manager.${site_id}.redirect_target=${redirect_target}" || uci -q delete "nginx_manager.${site_id}.redirect_target"
 	[ -n "${enabled}" ] && uci set "nginx_manager.${site_id}.enabled=${enabled}"
 	[ -n "${proxy_connect_timeout}" ] && uci set "nginx_manager.${site_id}.proxy_connect_timeout=${proxy_connect_timeout}" || uci -q delete "nginx_manager.${site_id}.proxy_connect_timeout"
 	[ -n "${proxy_read_timeout}" ] && uci set "nginx_manager.${site_id}.proxy_read_timeout=${proxy_read_timeout}" || uci -q delete "nginx_manager.${site_id}.proxy_read_timeout"
@@ -1169,7 +1176,7 @@ handle_get_core_config() {
 
 	local gzip_val sendfile_val server_tokens_val
 	local max_body_val keepalive_val access_log_val error_log_val
-	local ssl_protocols_val ssl_ciphers_val _val
+	local ssl_protocols_val ssl_ciphers_val ssl_session_timeout_val ssl_stapling_val ssl_buffer_size_val _val
 
 	# Prefer the effective nginx configuration so the UI reflects what is
 	# currently enabled after nginx has expanded its includes.
@@ -1202,6 +1209,16 @@ handle_get_core_config() {
 	ssl_protocols_val="${_val}"
 	_val="$(_read_nginx_directive ssl_ciphers)"
 	ssl_ciphers_val="${_val}"
+	_val="$(_read_nginx_directive ssl_session_timeout)"
+	ssl_session_timeout_val="${_val}"
+	_val="$(_read_nginx_directive ssl_stapling)"
+	case "${_val}" in
+		on) ssl_stapling_val="1" ;;
+		off) ssl_stapling_val="0" ;;
+		*) ssl_stapling_val="" ;;
+	esac
+	_val="$(_read_nginx_directive ssl_buffer_size)"
+	ssl_buffer_size_val="${_val}"
 
 	# Fall back to UCI when nginx -T is unavailable or the directive is absent.
 	[ -z "${max_body_val}" ] && max_body_val="$(uci -q get nginx_manager.global.client_max_body_size || true)"
@@ -1213,6 +1230,9 @@ handle_get_core_config() {
 	[ -z "${error_log_val}" ] && error_log_val="$(uci -q get nginx_manager.global.error_log || true)"
 	[ -z "${ssl_protocols_val}" ] && ssl_protocols_val="$(uci -q get nginx_manager.global.ssl_protocols || true)"
 	[ -z "${ssl_ciphers_val}" ] && ssl_ciphers_val="$(uci -q get nginx_manager.global.ssl_ciphers || true)"
+	[ -z "${ssl_session_timeout_val}" ] && ssl_session_timeout_val="$(uci -q get nginx_manager.global.ssl_session_timeout || true)"
+	[ -z "${ssl_stapling_val}" ] && ssl_stapling_val="$(uci -q get nginx_manager.global.ssl_stapling || true)"
+	[ -z "${ssl_buffer_size_val}" ] && ssl_buffer_size_val="$(uci -q get nginx_manager.global.ssl_buffer_size || true)"
 
 	json_init
 	json_add_string "client_max_body_size" "${max_body_val}"
@@ -1224,6 +1244,10 @@ handle_get_core_config() {
 	json_add_string "error_log" "${error_log_val}"
 	json_add_string "ssl_protocols" "${ssl_protocols_val}"
 	json_add_string "ssl_ciphers" "${ssl_ciphers_val}"
+	json_add_string "ssl_session_timeout" "${ssl_session_timeout_val}"
+	json_add_string "ssl_stapling" "${ssl_stapling_val}"
+	json_add_string "ssl_buffer_size" "${ssl_buffer_size_val}"
+	json_add_string "custom_ssl_directives" "$(uci -q get nginx_manager.global.custom_ssl_directives || true)"
 	json_add_string "advanced_mode" "$(uci -q get nginx_manager.global.advanced_mode || echo '0')"
 	json_add_string "dangerous_core_edit" "$(uci -q get nginx_manager.global.dangerous_core_edit || echo '0')"
 	json_dump
@@ -1248,7 +1272,7 @@ handle_sync_core_from_nginx() {
 	local nginx_val
 
 	# Sync nginx directive values to UCI
-	for field in client_max_body_size keepalive_timeout access_log error_log ssl_protocols ssl_ciphers; do
+	for field in client_max_body_size keepalive_timeout access_log error_log ssl_protocols ssl_ciphers ssl_session_timeout ssl_buffer_size; do
 		nginx_val="$(_read_nginx_directive "${field}")"
 		if [ -n "${nginx_val}" ]; then
 			uci set "nginx_manager.global.${field}=${nginx_val}"
@@ -1278,6 +1302,12 @@ handle_sync_core_from_nginx() {
 	case "${nginx_val}" in
 		on)  uci set "nginx_manager.global.tcp_nodelay=1" ;;
 		off) uci set "nginx_manager.global.tcp_nodelay=0" ;;
+	esac
+
+	nginx_val="$(_read_nginx_directive "ssl_stapling")"
+	case "${nginx_val}" in
+		on)  uci set "nginx_manager.global.ssl_stapling=1" ;;
+		off) uci set "nginx_manager.global.ssl_stapling=0" ;;
 	esac
 
 	# Handle server_tokens
@@ -2409,11 +2439,14 @@ case "$1" in
 		json_add_string "grpc_pass" ""
 		json_add_string "custom_proxy_headers" ""
 		json_add_string "redirect_https" ""
+		json_add_string "redirect_http_port" ""
 		json_add_string "proxy_host" ""
 		json_add_string "proxy_xff" ""
 		json_add_string "proxy_xfp" ""
 		json_add_string "proxy_xri" ""
 		json_add_string "ssl_cert" ""
+		json_add_string "ssl_protocols" ""
+		json_add_string "ssl_ciphers" ""
 		json_add_string "access_log" ""
 		json_add_string "error_log" ""
 		json_add_string "custom_server_block" ""

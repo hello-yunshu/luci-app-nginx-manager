@@ -258,8 +258,10 @@ generate_redirect_block() {
 	local listen_addr="$2"
 	local ssl_cert="${3:-}"
 	local listen_port="${4:-443}"
+	local redirect_http_port="${5:-}"
 
-	# Build redirect target: include port only when non-standard
+	[ -z "${redirect_http_port}" ] && return 0
+
 	local redirect_target="https://\$host"
 	[ "${listen_port}" != "443" ] && redirect_target="https://\$host:${listen_port}"
 	redirect_target="${redirect_target}\$request_uri"
@@ -267,14 +269,14 @@ generate_redirect_block() {
 	if [ -n "${listen_addr}" ]; then
 		cat <<EOF
 server {
-    listen ${listen_addr}:80;
+    listen ${listen_addr}:${redirect_http_port};
     server_name ${server_name};
 EOF
 	else
 		cat <<EOF
 server {
-    listen 80;
-    listen [::]:80;
+    listen ${redirect_http_port};
+    listen [::]:${redirect_http_port};
     server_name ${server_name};
 EOF
 	fi
@@ -303,6 +305,7 @@ EOF
 
 generate_ssl_directives() {
 	local cert_name="$1"
+	local section="${2:-}"
 	local cert_path key_path
 
 	cert_path="$(uci -q get "nginx_manager.${cert_name}.cert_path")" || cert_path="${CERT_DIR}/${cert_name}/fullchain.pem"
@@ -312,6 +315,44 @@ generate_ssl_directives() {
     ssl_certificate ${cert_path};
     ssl_certificate_key ${key_path};
 EOF
+
+	local ssl_protocols ssl_ciphers
+	ssl_protocols="$(uci -q get "nginx_manager.${section}.ssl_protocols")" || \
+		ssl_protocols="$(uci -q get nginx_manager.global.ssl_protocols)" || \
+		ssl_protocols="TLSv1.2 TLSv1.3"
+	ssl_ciphers="$(uci -q get "nginx_manager.${section}.ssl_ciphers")" || \
+		ssl_ciphers="$(uci -q get nginx_manager.global.ssl_ciphers)" || \
+		ssl_ciphers="ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384"
+
+	echo "    ssl_protocols ${ssl_protocols};"
+	echo "    ssl_ciphers ${ssl_ciphers};"
+	echo "    ssl_prefer_server_ciphers off;"
+
+	local ssl_session_timeout
+	ssl_session_timeout="$(uci -q get nginx_manager.global.ssl_session_timeout)" || \
+		ssl_session_timeout="1d"
+	echo "    ssl_session_cache shared:SSL:10m;"
+	echo "    ssl_session_timeout ${ssl_session_timeout};"
+	echo "    ssl_session_tickets off;"
+
+	local ssl_buffer_size
+	ssl_buffer_size="$(uci -q get nginx_manager.global.ssl_buffer_size)" || \
+		ssl_buffer_size=""
+	[ -n "${ssl_buffer_size}" ] && echo "    ssl_buffer_size ${ssl_buffer_size};"
+
+	local ssl_stapling
+	ssl_stapling="$(uci -q get nginx_manager.global.ssl_stapling)" || \
+		ssl_stapling="1"
+	if [ "${ssl_stapling}" = "1" ]; then
+		echo "    ssl_stapling on;"
+		echo "    ssl_stapling_verify on;"
+		echo "    resolver 1.1.1.1 8.8.8.8 valid=300s;"
+		echo "    resolver_timeout 5s;"
+	fi
+
+	local custom_ssl_directives
+	custom_ssl_directives="$(uci -q get nginx_manager.global.custom_ssl_directives)" || custom_ssl_directives=""
+	[ -n "${custom_ssl_directives}" ] && echo "    ${custom_ssl_directives}"
 }
 
 generate_proxy_headers() {
@@ -370,6 +411,7 @@ generate_reverse_proxy_site() {
 	local ssl_cert access_log error_log enabled
 	local proxy_type custom_proxy_headers listen_addr listen_port
 	local proxy_connect_timeout proxy_read_timeout proxy_send_timeout
+	local redirect_http_port
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
 	server_name="$(uci -q get "nginx_manager.${section}.server_name")" || return 1
@@ -391,13 +433,14 @@ generate_reverse_proxy_site() {
 	proxy_connect_timeout="$(uci -q get "nginx_manager.${section}.proxy_connect_timeout")" || proxy_connect_timeout=""
 	proxy_read_timeout="$(uci -q get "nginx_manager.${section}.proxy_read_timeout")" || proxy_read_timeout=""
 	proxy_send_timeout="$(uci -q get "nginx_manager.${section}.proxy_send_timeout")" || proxy_send_timeout=""
+	redirect_http_port="$(uci -q get "nginx_manager.${section}.redirect_http_port")" || redirect_http_port=""
 
 	local output_file="${BUILD_DIR}/${name}.conf"
 	{
 		generate_header
 
 		if [ "${redirect_https}" = "1" ] && [ -n "${ssl_cert}" ]; then
-			generate_redirect_block "${server_name}" "${listen_addr}" "${ssl_cert}" "${listen_port}"
+			generate_redirect_block "${server_name}" "${listen_addr}" "${ssl_cert}" "${listen_port}" "${redirect_http_port}"
 			echo ""
 		fi
 
@@ -406,7 +449,7 @@ generate_reverse_proxy_site() {
 		generate_listen_directives "${section}" "${ssl_cert}"
 
 		if [ -n "${ssl_cert}" ]; then
-			generate_ssl_directives "${ssl_cert}"
+			generate_ssl_directives "${ssl_cert}" "${section}"
 			echo "    error_page 497 =301 https://\$host:\$server_port\$request_uri;"
 		fi
 
@@ -507,6 +550,7 @@ generate_static_site() {
 	local section="$1"
 	local name server_name root index redirect_https ssl_cert
 	local access_log error_log enabled listen_addr listen_port
+	local redirect_http_port
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
 	server_name="$(uci -q get "nginx_manager.${section}.server_name")" || return 1
@@ -519,13 +563,14 @@ generate_static_site() {
 	enabled="$(uci -q get "nginx_manager.${section}.enabled")" || enabled="1"
 	listen_addr="$(uci -q get "nginx_manager.${section}.listen_addr")" || listen_addr=""
 	listen_port="$(uci -q get "nginx_manager.${section}.listen_port")" || listen_port="80"
+	redirect_http_port="$(uci -q get "nginx_manager.${section}.redirect_http_port")" || redirect_http_port=""
 
 	local output_file="${BUILD_DIR}/${name}.conf"
 	{
 		generate_header
 
 		if [ "${redirect_https}" = "1" ] && [ -n "${ssl_cert}" ]; then
-			generate_redirect_block "${server_name}" "${listen_addr}" "${ssl_cert}" "${listen_port}"
+			generate_redirect_block "${server_name}" "${listen_addr}" "${ssl_cert}" "${listen_port}" "${redirect_http_port}"
 			echo ""
 		fi
 
@@ -534,7 +579,7 @@ generate_static_site() {
 		generate_listen_directives "${section}" "${ssl_cert}"
 
 		if [ -n "${ssl_cert}" ]; then
-			generate_ssl_directives "${ssl_cert}"
+			generate_ssl_directives "${ssl_cert}" "${section}"
 			echo "    error_page 497 =301 https://\$host:\$server_port\$request_uri;"
 		fi
 
@@ -588,6 +633,7 @@ generate_redirect_site() {
 	local section="$1"
 	local name server_name redirect_target redirect_https ssl_cert enabled
 	local access_log error_log listen_addr listen_port
+	local redirect_http_port
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
 	server_name="$(uci -q get "nginx_manager.${section}.server_name")" || return 1
@@ -599,13 +645,14 @@ generate_redirect_site() {
 	enabled="$(uci -q get "nginx_manager.${section}.enabled")" || enabled="1"
 	listen_addr="$(uci -q get "nginx_manager.${section}.listen_addr")" || listen_addr=""
 	listen_port="$(uci -q get "nginx_manager.${section}.listen_port")" || listen_port="80"
+	redirect_http_port="$(uci -q get "nginx_manager.${section}.redirect_http_port")" || redirect_http_port=""
 
 	local output_file="${BUILD_DIR}/${name}.conf"
 	{
 		generate_header
 
 		if [ "${redirect_https}" = "1" ] && [ -n "${ssl_cert}" ]; then
-			generate_redirect_block "${server_name}" "${listen_addr}" "${ssl_cert}" "${listen_port}"
+			generate_redirect_block "${server_name}" "${listen_addr}" "${ssl_cert}" "${listen_port}" "${redirect_http_port}"
 			echo ""
 		fi
 
@@ -614,7 +661,7 @@ generate_redirect_site() {
 		generate_listen_directives "${section}" "${ssl_cert}"
 
 		if [ -n "${ssl_cert}" ]; then
-			generate_ssl_directives "${ssl_cert}"
+			generate_ssl_directives "${ssl_cert}" "${section}"
 			echo "    error_page 497 =301 https://\$host:\$server_port\$request_uri;"
 		fi
 
@@ -728,6 +775,9 @@ _strip_template_directives() {
 	[ -n "${error_log}" ] && directives="${directives} error_log"
 	[ -n "${ssl_protocols}" ] && directives="${directives} ssl_protocols"
 	[ -n "${ssl_ciphers}" ] && directives="${directives} ssl_ciphers"
+	[ -n "${ssl_session_timeout}" ] && directives="${directives} ssl_session_timeout"
+	[ -n "${ssl_stapling}" ] && directives="${directives} ssl_stapling ssl_stapling_verify"
+	[ -n "${ssl_buffer_size}" ] && directives="${directives} ssl_buffer_size"
 
 	[ -z "${directives}" ] && return 0
 
@@ -778,7 +828,7 @@ generate_global_conf() {
 	local max_body keepalive gzip
 	local server_tokens sendfile access_log error_log
 	local tcp_nopush tcp_nodelay
-	local ssl_protocols ssl_ciphers
+	local ssl_protocols ssl_ciphers ssl_session_timeout ssl_stapling ssl_buffer_size custom_ssl_directives
 
 	max_body="$(uci -q get nginx_manager.global.client_max_body_size)" || max_body=""
 	keepalive="$(uci -q get nginx_manager.global.keepalive_timeout)" || keepalive=""
@@ -791,12 +841,18 @@ generate_global_conf() {
 	error_log="$(uci -q get nginx_manager.global.error_log)" || error_log=""
 	ssl_protocols="$(uci -q get nginx_manager.global.ssl_protocols)" || ssl_protocols=""
 	ssl_ciphers="$(uci -q get nginx_manager.global.ssl_ciphers)" || ssl_ciphers=""
+	ssl_session_timeout="$(uci -q get nginx_manager.global.ssl_session_timeout)" || ssl_session_timeout=""
+	ssl_stapling="$(uci -q get nginx_manager.global.ssl_stapling)" || ssl_stapling=""
+	ssl_buffer_size="$(uci -q get nginx_manager.global.ssl_buffer_size)" || ssl_buffer_size=""
+	custom_ssl_directives="$(uci -q get nginx_manager.global.custom_ssl_directives)" || custom_ssl_directives=""
 
 	[ -z "${max_body}" ] && [ -z "${keepalive}" ] && [ -z "${gzip}" ] && \
 	[ -z "${server_tokens}" ] && [ -z "${sendfile}" ] && \
 	[ -z "${tcp_nopush}" ] && [ -z "${tcp_nodelay}" ] && \
 	[ -z "${access_log}" ] && [ -z "${error_log}" ] && \
-	[ -z "${ssl_protocols}" ] && [ -z "${ssl_ciphers}" ] && {
+	[ -z "${ssl_protocols}" ] && [ -z "${ssl_ciphers}" ] && \
+	[ -z "${ssl_session_timeout}" ] && [ -z "${ssl_stapling}" ] && [ -z "${ssl_buffer_size}" ] && \
+	[ -z "${custom_ssl_directives}" ] && {
 		# No directives to generate, restore any previously commented lines
 		_restore_template_directives
 		return 0
@@ -837,13 +893,29 @@ generate_global_conf() {
 		[ -n "${access_log}" ] && echo "access_log ${access_log};"
 		[ -n "${error_log}" ] && echo "error_log ${error_log};"
 
-		if [ -n "${ssl_protocols}" ] || [ -n "${ssl_ciphers}" ]; then
+		if [ -n "${ssl_protocols}" ] || [ -n "${ssl_ciphers}" ] || \
+		   [ -n "${ssl_session_timeout}" ] || [ -n "${ssl_stapling}" ] || [ -n "${ssl_buffer_size}" ] || [ -n "${custom_ssl_directives}" ]; then
 			echo ""
 			if [ -n "${ssl_protocols}" ]; then
 				echo "ssl_protocols ${ssl_protocols};"
 			fi
 			if [ -n "${ssl_ciphers}" ]; then
 				echo "ssl_ciphers ${ssl_ciphers};"
+			fi
+			if [ -n "${ssl_session_timeout}" ]; then
+				echo "ssl_session_timeout ${ssl_session_timeout};"
+			fi
+			if [ "${ssl_stapling}" = "1" ]; then
+				echo "ssl_stapling on;"
+				echo "ssl_stapling_verify on;"
+			elif [ "${ssl_stapling}" = "0" ]; then
+				echo "ssl_stapling off;"
+			fi
+			if [ -n "${ssl_buffer_size}" ]; then
+				echo "ssl_buffer_size ${ssl_buffer_size};"
+			fi
+			if [ -n "${custom_ssl_directives}" ]; then
+				echo "${custom_ssl_directives}"
 			fi
 		fi
 	} > "${output_file}"

@@ -204,6 +204,9 @@ msgstr "Creating site..."
 msgid "Custom Proxy Headers"
 msgstr "Custom Proxy Headers"
 
+msgid "Custom SSL Directives"
+msgstr "Custom SSL Directives"
+
 msgid "Proxy Timeouts"
 msgstr "Proxy Timeouts"
 
@@ -227,6 +230,9 @@ msgstr "Timeout for reading a response from the backend. Default: 60s."
 
 msgid "Send Timeout"
 msgstr "Send Timeout"
+
+msgid "Send buffer size for SSL data, e.g. 4k, 8k, 16k. Leave empty for default."
+msgstr "Send buffer size for SSL data, e.g. 4k, 8k, 16k. Leave empty for default."
 
 msgid "Timeout for sending a request to the backend. Default: 60s."
 msgstr "Timeout for sending a request to the backend. Default: 60s."
@@ -287,6 +293,9 @@ msgstr "Enabled"
 
 msgid "Environment Detection"
 msgstr "Environment Detection"
+
+msgid "Duration for SSL session cache, e.g. 1d, 4h, 30m."
+msgstr "Duration for SSL session cache, e.g. 1d, 4h, 30m."
 
 msgid "Error Log"
 msgstr "Error Log"
@@ -360,6 +369,9 @@ msgstr "HTTP"
 msgid "HTTP to HTTPS Redirect"
 msgstr "HTTP to HTTPS Redirect"
 
+msgid "HTTP Redirect Port"
+msgstr "HTTP Redirect Port"
+
 msgid "Index File"
 msgstr "Index File"
 
@@ -383,6 +395,9 @@ msgstr "Last Reload"
 
 msgid "Leave empty for all interfaces, or specify an IP (e.g. 127.0.0.1)."
 msgstr "Leave empty for all interfaces, or specify an IP (e.g. 127.0.0.1)."
+
+msgid "Leave empty to use same-port redirect (error_page 497)"
+msgstr "Leave empty to use same-port redirect (error_page 497)"
 
 msgid "Listen"
 msgstr "Listen"
@@ -477,6 +492,9 @@ msgstr "No sites configured. Click \"Add Site\" to create one."
 msgid "Non-Managed Configs"
 msgstr "Non-Managed Configs"
 
+msgid "OCSP Stapling"
+msgstr "OCSP Stapling"
+
 msgid "OK"
 msgstr "OK"
 
@@ -488,6 +506,9 @@ msgstr "On"
 
 msgid "One directive per line."
 msgstr "One directive per line."
+
+msgid "One directive per line. These will be added inside the server block."
+msgstr "One directive per line. These will be added inside the server block."
 
 msgid "OpenWrt"
 msgstr "OpenWrt"
@@ -584,6 +605,12 @@ msgstr "SSL Module"
 
 msgid "SSL Protocols"
 msgstr "SSL Protocols"
+
+msgid "SSL Session Timeout"
+msgstr "SSL Session Timeout"
+
+msgid "SSL Buffer Size"
+msgstr "SSL Buffer Size"
 
 msgid "SSL Settings"
 msgstr "SSL Settings"

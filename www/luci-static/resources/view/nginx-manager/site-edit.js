@@ -17,8 +17,9 @@ var callSetSite = rpc.declare({
 	object: 'nginx_manager',
 	method: 'set_site',
 	params: ['id', 'name', 'mode', 'server_name', 'listen_addr', 'listen_port', 'proxy_pass', 'root', 'index',
-		'websocket', 'proxy_type', 'grpc_path', 'grpc_pass', 'custom_proxy_headers', 'redirect_https', 'proxy_host', 'proxy_xff', 'proxy_xfp', 'proxy_xri',
-		'ssl_cert', 'access_log', 'error_log', 'custom_server_block', 'redirect_target', 'enabled',
+		'websocket', 'proxy_type', 'grpc_path', 'grpc_pass', 'custom_proxy_headers', 'redirect_https', 'redirect_http_port', 'proxy_host', 'proxy_xff', 'proxy_xfp', 'proxy_xri',
+		'ssl_cert', 'ssl_protocols', 'ssl_ciphers',
+		'access_log', 'error_log', 'custom_server_block', 'redirect_target', 'enabled',
 		'proxy_connect_timeout', 'proxy_read_timeout', 'proxy_send_timeout'],
 	expect: {}
 });
@@ -221,9 +222,58 @@ return view.extend({
 		sslSection.appendChild(makeFlag('opt-redirect_https', _('HTTP to HTTPS Redirect'),
 			!isNew && site ? site.redirect_https === '1' : true));
 
+		var redirectHttpPortWrapper = E('div', { 'class': 'cbi-option' }, [
+			E('label', { 'class': 'cbi-value-title' }, _('HTTP Redirect Port')),
+			E('div', { 'class': 'cbi-value-field' }, [
+				E('input', {
+					'type': 'text',
+					'id': 'opt-redirect_http_port',
+					'class': 'cbi-input-text',
+					'placeholder': _('Leave empty to use same-port redirect (error_page 497)'),
+					'value': !isNew && site ? (site.redirect_http_port || '') : ''
+				})
+			])
+		]);
+		sslSection.appendChild(redirectHttpPortWrapper);
+
+		function updateRedirectHttpPortVisibility() {
+			var checked = document.getElementById('opt-redirect_https').checked;
+			redirectHttpPortWrapper.style.display = checked ? '' : 'none';
+		}
+		document.getElementById('opt-redirect_https').addEventListener('change', updateRedirectHttpPortVisibility);
+		updateRedirectHttpPortVisibility();
+
+		/* SSL Advanced Options */
+		var sslAdvancedWrapper = E('div', { 'class': 'cbi-option', 'style': 'display:none;' });
+
+		var sslProtocolsInput = E('input', {
+			'type': 'text', 'class': 'cbi-input-text',
+			'placeholder': 'TLSv1.2 TLSv1.3',
+			'value': !isNew && site ? (site.ssl_protocols || '') : ''
+		});
+		sslAdvancedWrapper.appendChild(makeField('opt-ssl_protocols', _('SSL Protocols'), sslProtocolsInput,
+			_('Leave empty to use global setting.')));
+
+		var sslCiphersInput = E('input', {
+			'type': 'text', 'class': 'cbi-input-text',
+			'placeholder': 'ECDHE-ECDSA-AES128-GCM-SHA256:...',
+			'value': !isNew && site ? (site.ssl_ciphers || '') : ''
+		});
+		sslAdvancedWrapper.appendChild(makeField('opt-ssl_ciphers', _('SSL Ciphers'), sslCiphersInput,
+			_('Leave empty to use global setting.')));
+
+		sslSection.appendChild(sslAdvancedWrapper);
+
+		function updateSslAdvancedVisibility() {
+			var hasCert = document.getElementById('opt-ssl_cert').value !== '';
+			sslAdvancedWrapper.style.display = hasCert ? '' : 'none';
+		}
+		document.getElementById('opt-ssl_cert').addEventListener('change', updateSslAdvancedVisibility);
+		updateSslAdvancedVisibility();
+
 		page.appendChild(sslSection);
 
-		/* Helper: update listen port default when SSL is toggled */
+		/* Helper */
 		function updateListenDefaults() {
 			// Port stays as-is when toggling SSL; nginx adds ssl flag to any port
 		}
@@ -427,7 +477,10 @@ return view.extend({
 			data.listen_port         = document.getElementById('opt-listen_port').value.trim() || '80';
 
 			data.ssl_cert            = document.getElementById('opt-ssl_cert').value;
+			data.ssl_protocols       = document.getElementById('opt-ssl_protocols').value.trim();
+			data.ssl_ciphers         = document.getElementById('opt-ssl_ciphers').value.trim();
 			data.redirect_https      = document.getElementById('opt-redirect_https').checked ? '1' : '0';
+			data.redirect_http_port  = document.getElementById('opt-redirect_http_port').value.trim();
 			data.proxy_pass          = document.getElementById('opt-proxy_pass').value.trim();
 			data.proxy_type          = document.getElementById('opt-proxy_type').value;
 			data.websocket           = document.getElementById('opt-websocket').checked ? '1' : '0';
@@ -465,11 +518,14 @@ return view.extend({
 				data.grpc_pass,
 				data.custom_proxy_headers,
 				data.redirect_https,
+				data.redirect_http_port,
 				data.proxy_host,
 				data.proxy_xff,
 				data.proxy_xfp,
 				data.proxy_xri,
 				data.ssl_cert,
+				data.ssl_protocols,
+				data.ssl_ciphers,
 				data.access_log,
 				data.error_log,
 				data.custom_server_block,
