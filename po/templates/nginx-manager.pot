@@ -240,6 +240,9 @@ msgstr ""
 msgid "Send buffer size for SSL data, e.g. 4k, 8k, 16k. Leave empty for default."
 msgstr ""
 
+msgid "Shared memory zone for SSL sessions, e.g. shared:SSL:10m. Leave empty for default."
+msgstr ""
+
 msgid "Timeout for sending a request to the backend. Default: 60s."
 msgstr ""
 
@@ -415,6 +418,12 @@ msgid "Last Reload"
 msgstr ""
 
 msgid "Leave empty for all interfaces, or specify an IP (e.g. 127.0.0.1)."
+msgstr ""
+
+msgid "Leave empty to use default ciphers."
+msgstr ""
+
+msgid "Leave empty to use default: TLSv1.2 TLSv1.3"
 msgstr ""
 
 msgid "Leave empty to use same-port redirect (error_page 497)"
@@ -622,6 +631,9 @@ msgid "SSL Module"
 msgstr ""
 
 msgid "SSL Protocols"
+msgstr ""
+
+msgid "SSL Session Cache"
 msgstr ""
 
 msgid "SSL Session Timeout"

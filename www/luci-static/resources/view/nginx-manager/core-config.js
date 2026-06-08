@@ -135,17 +135,14 @@ return view.extend({
 		var s2 = m.section(form.TypedSection, 'global', _('SSL Settings'));
 		s2.anonymous = true;
 
-		o = s2.option(form.Value, 'ssl_protocols', _('SSL Protocols'));
-		o.placeholder = 'TLSv1.2 TLSv1.3';
-		o.rmempty = true;
-
-		o = s2.option(form.Value, 'ssl_ciphers', _('SSL Ciphers'));
-		o.placeholder = 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
-		o.rmempty = true;
-
 		o = s2.option(form.Value, 'ssl_session_timeout', _('SSL Session Timeout'),
 			_('Duration for SSL session cache, e.g. 1d, 4h, 30m.'));
 		o.placeholder = '1d';
+		o.rmempty = true;
+
+		o = s2.option(form.Value, 'ssl_session_cache', _('SSL Session Cache'),
+			_('Shared memory zone for SSL sessions, e.g. shared:SSL:10m. Leave empty for default.'));
+		o.placeholder = 'shared:SSL:10m';
 		o.rmempty = true;
 
 		o = s2.option(form.Flag, 'ssl_stapling', _('OCSP Stapling'));

@@ -1176,7 +1176,7 @@ handle_get_core_config() {
 
 	local gzip_val sendfile_val server_tokens_val
 	local max_body_val keepalive_val access_log_val error_log_val
-	local ssl_protocols_val ssl_ciphers_val ssl_session_timeout_val ssl_stapling_val ssl_buffer_size_val _val
+	local ssl_session_timeout_val ssl_session_cache_val ssl_stapling_val ssl_buffer_size_val _val
 
 	# Prefer the effective nginx configuration so the UI reflects what is
 	# currently enabled after nginx has expanded its includes.
@@ -1205,12 +1205,10 @@ handle_get_core_config() {
 	access_log_val="${_val}"
 	_val="$(_read_nginx_directive error_log)"
 	error_log_val="${_val}"
-	_val="$(_read_nginx_directive ssl_protocols)"
-	ssl_protocols_val="${_val}"
-	_val="$(_read_nginx_directive ssl_ciphers)"
-	ssl_ciphers_val="${_val}"
 	_val="$(_read_nginx_directive ssl_session_timeout)"
 	ssl_session_timeout_val="${_val}"
+	_val="$(_read_nginx_directive ssl_session_cache)"
+	ssl_session_cache_val="${_val}"
 	_val="$(_read_nginx_directive ssl_stapling)"
 	case "${_val}" in
 		on) ssl_stapling_val="1" ;;
@@ -1228,9 +1226,8 @@ handle_get_core_config() {
 	[ -z "${sendfile_val}" ] && sendfile_val="$(uci -q get nginx_manager.global.sendfile || true)"
 	[ -z "${access_log_val}" ] && access_log_val="$(uci -q get nginx_manager.global.access_log || true)"
 	[ -z "${error_log_val}" ] && error_log_val="$(uci -q get nginx_manager.global.error_log || true)"
-	[ -z "${ssl_protocols_val}" ] && ssl_protocols_val="$(uci -q get nginx_manager.global.ssl_protocols || true)"
-	[ -z "${ssl_ciphers_val}" ] && ssl_ciphers_val="$(uci -q get nginx_manager.global.ssl_ciphers || true)"
 	[ -z "${ssl_session_timeout_val}" ] && ssl_session_timeout_val="$(uci -q get nginx_manager.global.ssl_session_timeout || true)"
+	[ -z "${ssl_session_cache_val}" ] && ssl_session_cache_val="$(uci -q get nginx_manager.global.ssl_session_cache || true)"
 	[ -z "${ssl_stapling_val}" ] && ssl_stapling_val="$(uci -q get nginx_manager.global.ssl_stapling || true)"
 	[ -z "${ssl_buffer_size_val}" ] && ssl_buffer_size_val="$(uci -q get nginx_manager.global.ssl_buffer_size || true)"
 
@@ -1242,9 +1239,8 @@ handle_get_core_config() {
 	json_add_string "sendfile" "${sendfile_val}"
 	json_add_string "access_log" "${access_log_val}"
 	json_add_string "error_log" "${error_log_val}"
-	json_add_string "ssl_protocols" "${ssl_protocols_val}"
-	json_add_string "ssl_ciphers" "${ssl_ciphers_val}"
 	json_add_string "ssl_session_timeout" "${ssl_session_timeout_val}"
+	json_add_string "ssl_session_cache" "${ssl_session_cache_val}"
 	json_add_string "ssl_stapling" "${ssl_stapling_val}"
 	json_add_string "ssl_buffer_size" "${ssl_buffer_size_val}"
 	json_add_string "custom_ssl_directives" "$(uci -q get nginx_manager.global.custom_ssl_directives || true)"
@@ -1272,7 +1268,7 @@ handle_sync_core_from_nginx() {
 	local nginx_val
 
 	# Sync nginx directive values to UCI
-	for field in client_max_body_size keepalive_timeout access_log error_log ssl_protocols ssl_ciphers ssl_session_timeout ssl_buffer_size; do
+	for field in client_max_body_size keepalive_timeout access_log error_log ssl_session_timeout ssl_session_cache ssl_buffer_size; do
 		nginx_val="$(_read_nginx_directive "${field}")"
 		if [ -n "${nginx_val}" ]; then
 			uci set "nginx_manager.global.${field}=${nginx_val}"

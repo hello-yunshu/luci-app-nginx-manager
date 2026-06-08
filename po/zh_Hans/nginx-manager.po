@@ -240,6 +240,9 @@ msgstr "发送超时"
 msgid "Send buffer size for SSL data, e.g. 4k, 8k, 16k. Leave empty for default."
 msgstr "SSL 数据发送缓冲区大小，如 4k、8k、16k。留空使用默认值。"
 
+msgid "Shared memory zone for SSL sessions, e.g. shared:SSL:10m. Leave empty for default."
+msgstr "SSL 会话的共享内存区，如 shared:SSL:10m。留空使用默认值。"
+
 msgid "Timeout for sending a request to the backend. Default: 60s."
 msgstr "向后端发送请求的超时时间。默认：60s。"
 
@@ -401,6 +404,12 @@ msgstr "最近重新加载"
 
 msgid "Leave empty for all interfaces, or specify an IP (e.g. 127.0.0.1)."
 msgstr "留空表示监听所有接口，或指定 IP（如 127.0.0.1）。"
+
+msgid "Leave empty to use default ciphers."
+msgstr "留空使用默认密码套件。"
+
+msgid "Leave empty to use default: TLSv1.2 TLSv1.3"
+msgstr "留空使用默认值：TLSv1.2 TLSv1.3"
 
 msgid "Leave empty to use same-port redirect (error_page 497)"
 msgstr "留空则使用同端口跳转（error_page 497）"
@@ -611,6 +620,9 @@ msgstr "SSL 模块"
 
 msgid "SSL Protocols"
 msgstr "SSL 协议"
+
+msgid "SSL Session Cache"
+msgstr "SSL 会话缓存"
 
 msgid "SSL Session Timeout"
 msgstr "SSL 会话超时"
