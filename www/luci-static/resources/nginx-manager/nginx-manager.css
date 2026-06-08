@@ -29,6 +29,12 @@
 	color: var(--subtext-color, #888);
 }
 
+button.nm-badge {
+	cursor: pointer;
+	border: none;
+	font: inherit;
+}
+
 /* === Button Group === */
 .nm-btn-group {
 	display: flex !important;
@@ -130,6 +136,10 @@
 .nm-log-area.is-error {
 	color: var(--danger-color);
 }
+
+/* === Value Full Width (for modals) === */
+.nm-value-full .cbi-value-title { float: none; width: auto; }
+.nm-value-full .cbi-value-field { width: 100%; }
 
 /* === Danger Zone === */
 .nm-danger-file {
