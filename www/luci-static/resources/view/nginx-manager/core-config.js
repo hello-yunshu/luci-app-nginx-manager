@@ -157,7 +157,7 @@ return view.extend({
 		o.placeholder = '16k';
 		o.rmempty = true;
 
-		o = s2.option(form.TextArea, 'custom_ssl_directives', _('Custom SSL Directives'),
+		o = s2.option(form.TextValue, 'custom_ssl_directives', _('Custom SSL Directives'),
 			_('One directive per line. These will be added inside the server block.'));
 		o.rmempty = true;
 		o.rows = 4;
