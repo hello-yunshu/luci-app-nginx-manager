@@ -38,6 +38,7 @@
 					"start_nginx",
 					"clear_logs",
 					"set_cert",
+					"set_cert_auto_renew",
 					"delete_cert",
 					"upload_cert",
 					"issue_self_signed",
