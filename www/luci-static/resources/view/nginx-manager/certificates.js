@@ -261,12 +261,10 @@ return view.extend({
 						for (var i = 0; i < info.keys.length; i++) {
 							var keyInfo = info.keys[i];
 							var keyName = keyInfo.key;
-							var row = E('div', { 'class': 'cbi-value' }, [
-								E('label', { 'class': 'cbi-value-title', 'style': 'font-weight:normal' }, keyName + (keyInfo.optional ? ' (' + _('Optional') + ')' : '')),
-								E('div', { 'style': 'display:flex;flex-direction:column;gap:2px;flex:1' }, [
-									E('input', { 'type': 'text', 'class': 'cbi-input-text', 'data-cred-key': keyName, 'placeholder': keyName + '=...' }),
-									keyInfo.desc ? E('div', { 'class': 'cbi-value-description' }, keyInfo.desc) : null
-								])
+							var row = E('div', { 'class': 'nm-cred-field' }, [
+								E('label', { 'class': 'nm-cred-label' }, keyName + (keyInfo.optional ? ' (' + _('Optional') + ')' : '')),
+								E('input', { 'type': 'text', 'class': 'cbi-input-text', 'data-cred-key': keyName, 'placeholder': keyName + '=...' }),
+								keyInfo.desc ? E('div', { 'class': 'cbi-value-description' }, keyInfo.desc) : null
 							]);
 							dnsCredsContainer.appendChild(row);
 						}
@@ -302,39 +300,45 @@ return view.extend({
 				ui.showModal(_('Add Certificate'), [
 					E('div', { 'class': 'cbi-value' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('Certificate Name')),
-						certNameInput
+						E('div', { 'class': 'cbi-value-field' }, certNameInput)
 					]),
 					E('div', { 'class': 'cbi-value' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('Type')),
-						certTypeSelect
+						E('div', { 'class': 'cbi-value-field' }, certTypeSelect)
 					]),
 					E('div', { 'class': 'cbi-value', 'id': 'cert-domain-row' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('Domain')),
-						certDomainInput
+						E('div', { 'class': 'cbi-value-field' }, certDomainInput)
 					]),
 					E('div', { 'class': 'cbi-value', 'id': 'cert-acme-method-row', 'style': 'display:none' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('ACME Validation')),
-						acmeMethodSelect
+						E('div', { 'class': 'cbi-value-field' }, acmeMethodSelect)
 					]),
 					E('div', { 'class': 'cbi-value cert-dns-row', 'style': 'display:none' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('DNS Provider')),
-						dnsApiSelect
+						E('div', { 'class': 'cbi-value-field' }, dnsApiSelect)
 					]),
 					E('div', { 'class': 'cbi-value', 'id': 'cert-dns-api-custom-row', 'style': 'display:none' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('Custom DNS API Name')),
-						dnsApiCustomInput,
-						E('div', { 'class': 'cbi-value-description' }, _('acme.sh DNS API script name, e.g. dns_myapi. See acme.sh dnsapi wiki for full list.'))
+						E('div', { 'class': 'cbi-value-field' }, [
+							dnsApiCustomInput,
+							E('div', { 'class': 'cbi-value-description' }, _('acme.sh DNS API script name, e.g. dns_myapi. See acme.sh dnsapi wiki for full list.'))
+						])
 					]),
-					E('div', { 'id': 'cert-dns-creds-row', 'style': 'display:none' }, [
+					E('div', { 'class': 'cbi-value', 'id': 'cert-dns-creds-row', 'style': 'display:none' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('DNS Credentials')),
-						dnsCredsContainer,
-						dnsCredentialsInput,
-						E('div', { 'class': 'cbi-value-description', 'id': 'cert-dns-creds-desc', 'style': 'display:none' }, _('One credential per line in KEY=VALUE format'))
+						E('div', { 'class': 'cbi-value-field' }, [
+							dnsCredsContainer,
+							dnsCredentialsInput,
+							E('div', { 'class': 'cbi-value-description', 'id': 'cert-dns-creds-desc', 'style': 'display:none' }, _('One credential per line in KEY=VALUE format'))
+						])
 					]),
 					E('div', { 'class': 'cbi-value cert-dns-row', 'style': 'display:none' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('DNS Wait Seconds')),
-						dnsWaitInput,
-						E('div', { 'class': 'cbi-value-description' }, _('Seconds to wait for DNS propagation before validation. Leave empty for default.'))
+						E('div', { 'class': 'cbi-value-field' }, [
+							dnsWaitInput,
+							E('div', { 'class': 'cbi-value-description' }, _('Seconds to wait for DNS propagation before validation. Leave empty for default.'))
+						])
 					]),
 					E('div', { 'class': 'right' }, [
 						E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
@@ -443,14 +447,14 @@ return view.extend({
 									var certPemInput = E('textarea', { 'id': 'cert-pem', 'class': 'cbi-input-textarea nm-modal-textarea', 'rows': 10 });
 									var keyPemInput = E('textarea', { 'id': 'key-pem', 'class': 'cbi-input-textarea nm-modal-textarea', 'rows': 10 });
 									ui.showModal(_('Upload Certificate'), [
-										E('div', { 'class': 'cbi-value' }, [
-											E('label', { 'class': 'cbi-value-title' }, _('Certificate (PEM)')),
-											certPemInput
-										]),
-										E('div', { 'class': 'cbi-value' }, [
-											E('label', { 'class': 'cbi-value-title' }, _('Private Key (PEM)')),
-											keyPemInput
-										]),
+									E('div', { 'class': 'cbi-value' }, [
+										E('label', { 'class': 'cbi-value-title' }, _('Certificate (PEM)')),
+										E('div', { 'class': 'cbi-value-field' }, certPemInput)
+									]),
+									E('div', { 'class': 'cbi-value' }, [
+										E('label', { 'class': 'cbi-value-title' }, _('Private Key (PEM)')),
+										E('div', { 'class': 'cbi-value-field' }, keyPemInput)
+									]),
 										E('div', { 'class': 'right' }, [
 											E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 											E('button', {

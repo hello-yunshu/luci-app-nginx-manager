@@ -376,7 +376,7 @@ return view.extend({
 		page.appendChild(loggingSection);
 
 		/* ========== Actions ========== */
-		var actionsDiv = E('div', { 'class': 'nm-btn-group' });
+		var actionsDiv = E('div', { 'class': 'nm-btn-group', 'style': 'justify-content: flex-end; margin-top: 1.5em;' });
 
 		if (!isNew) {
 			actionsDiv.appendChild(E('button', {

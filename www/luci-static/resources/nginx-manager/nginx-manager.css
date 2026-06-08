@@ -173,6 +173,19 @@
 	padding: 20px;
 }
 
+/* === DNS Credential Sub-fields === */
+.nm-cred-field {
+	margin-bottom: 0.6em;
+}
+.nm-cred-field:last-child {
+	margin-bottom: 0;
+}
+.nm-cred-label {
+	display: block;
+	font-weight: bold;
+	margin-bottom: 0.2em;
+}
+
 .ys-tool-footer {
 	--ys-footer-blue: #2f7df6;
 	--ys-footer-blue-bg: rgba(47, 125, 246, 0.12);
