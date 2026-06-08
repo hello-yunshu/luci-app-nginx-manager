@@ -762,6 +762,18 @@ msgstr "nginx -T 输出"
 msgid "ACME Validation"
 msgstr "ACME 验证方式"
 
+msgid "ACME Account Email"
+msgstr "ACME 账户邮箱"
+
+msgid "A real email address is required for ACME account registration."
+msgstr "ACME 账户注册需要填写真实邮箱。"
+
+msgid "ACME account email is required"
+msgstr "需要填写 ACME 账户邮箱"
+
+msgid "Invalid ACME account email"
+msgstr "ACME 账户邮箱无效"
+
 msgid "Auto (ACME DNS-01)"
 msgstr "自动 (ACME DNS-01)"
 
@@ -873,6 +885,12 @@ msgstr "HTTP-01 Standalone"
 msgid "invalid acme validation method"
 msgstr "无效的 ACME 验证方式"
 
+msgid "invalid acme account email"
+msgstr "ACME 账户邮箱无效"
+
+msgid "missing acme account email"
+msgstr "缺少 ACME 账户邮箱"
+
 msgid "invalid dns api"
 msgstr "无效的 DNS API"
 
@@ -926,9 +944,6 @@ msgstr "重载前测试"
 
 msgid "Certificate Directory"
 msgstr "证书目录"
-
-msgid "Directory for storing SSL certificates."
-msgstr "SSL 证书目录。"
 
 msgid "Managed Config Directory"
 msgstr "管理配置目录"

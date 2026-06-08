@@ -63,7 +63,7 @@ var callIssueSelfSigned = rpc.declare({
 var callAcmeIssue = rpc.declare({
 	object: 'nginx_manager',
 	method: 'acme_issue',
-	params: ['id', 'domain', 'validation_method', 'dns_api', 'credentials', 'dns_wait'],
+	params: ['id', 'domain', 'account_email', 'validation_method', 'dns_api', 'credentials', 'dns_wait'],
 	expect: {}
 });
 
@@ -88,7 +88,7 @@ var callUploadCert = rpc.declare({
 });
 
 var ACME_POLL_INTERVAL = 3000;
-var ACME_POLL_TIMEOUT = 300000;
+var ACME_POLL_TIMEOUT = 900000;
 
 function pollAcmeStatus(taskId, onSuccess, onFailed) {
 	var startTime = Date.now();
@@ -194,6 +194,12 @@ return view.extend({
 					E('option', { 'value': 'acme' }, _('Auto (ACME)'))
 				]);
 				var certDomainInput = E('input', { 'type': 'text', 'id': 'new-cert-domain', 'class': 'cbi-input-text' });
+				var acmeAccountEmailInput = E('input', {
+					'type': 'email',
+					'id': 'new-acme-account-email',
+					'class': 'cbi-input-text',
+					'placeholder': 'admin@your-domain.com'
+				});
 				var acmeMethodSelect = E('select', { 'id': 'new-acme-method', 'class': 'cbi-input-select' }, [
 					E('option', { 'value': 'webroot' }, _('HTTP-01 Webroot')),
 					E('option', { 'value': 'dns' }, _('DNS-01')),
@@ -277,11 +283,13 @@ return view.extend({
 
 				function updateAcmeRows() {
 					var domainRow = document.getElementById('cert-domain-row');
+					var acmeEmailRow = document.getElementById('cert-acme-email-row');
 					var acmeMethodRow = document.getElementById('cert-acme-method-row');
 					var isAcme = certTypeSelect.value === 'acme';
 					var isDns = isAcme && acmeMethodSelect.value === 'dns';
 
 					if (domainRow) domainRow.style.display = certTypeSelect.value === 'manual' ? 'none' : '';
+					if (acmeEmailRow) acmeEmailRow.style.display = isAcme ? '' : 'none';
 					if (acmeMethodRow) acmeMethodRow.style.display = isAcme ? '' : 'none';
 
 					// Toggle basic DNS rows (provider select + wait)
@@ -309,6 +317,13 @@ return view.extend({
 					E('div', { 'class': 'cbi-value', 'id': 'cert-domain-row' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('Domain')),
 						E('div', { 'class': 'cbi-value-field' }, certDomainInput)
+					]),
+					E('div', { 'class': 'cbi-value', 'id': 'cert-acme-email-row', 'style': 'display:none' }, [
+						E('label', { 'class': 'cbi-value-title' }, _('ACME Account Email')),
+						E('div', { 'class': 'cbi-value-field' }, [
+							acmeAccountEmailInput,
+							E('div', { 'class': 'cbi-value-description' }, _('A real email address is required for ACME account registration.'))
+						])
 					]),
 					E('div', { 'class': 'cbi-value', 'id': 'cert-acme-method-row', 'style': 'display:none' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('ACME Validation')),
@@ -348,6 +363,7 @@ return view.extend({
 								var certName = certNameInput.value.trim();
 								var certType = certTypeSelect.value;
 								var certDomain = certDomainInput.value.trim();
+								var acmeAccountEmail = acmeAccountEmailInput.value.trim();
 								var acmeMethod = acmeMethodSelect.value;
 								var dnsApi, dnsCredentials, dnsWait;
 
@@ -403,6 +419,14 @@ return view.extend({
 										ui.addNotification(null, E('p', {}, _('Domain is required for ACME certificates')), 'error');
 										return;
 									}
+									if (!acmeAccountEmail) {
+										ui.addNotification(null, E('p', {}, _('ACME account email is required')), 'error');
+										return;
+									}
+									if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(acmeAccountEmail) || /@(example\.(com|net|org)|localhost)$/i.test(acmeAccountEmail)) {
+										ui.addNotification(null, E('p', {}, _('Invalid ACME account email')), 'error');
+										return;
+									}
 										if ((acmeMethod === 'webroot' || acmeMethod === 'standalone') && certDomain.includes('*')) {
 											ui.addNotification(null, E('p', {}, _('Wildcard domains are not supported for ACME certificates')), 'error');
 											return;
@@ -418,7 +442,7 @@ return view.extend({
 										}
 									}
 									ui.showModal(_('Requesting...'), [E('p', {}, _('Please wait, ACME certificate issuance may take a while...'))]);
-									callAcmeIssue(certName, certDomain, acmeMethod, dnsApi, dnsCredentials, dnsWait).then(function(result) {
+									callAcmeIssue(certName, certDomain, acmeAccountEmail, acmeMethod, dnsApi, dnsCredentials, dnsWait).then(function(result) {
 										if (result && result.error) {
 											ui.hideModal();
 											var errMsg = _(result.error);

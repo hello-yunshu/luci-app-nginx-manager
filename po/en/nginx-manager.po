@@ -756,6 +756,18 @@ msgstr "nginx -T Output"
 msgid "ACME Validation"
 msgstr "ACME Validation"
 
+msgid "ACME Account Email"
+msgstr "ACME Account Email"
+
+msgid "A real email address is required for ACME account registration."
+msgstr "A real email address is required for ACME account registration."
+
+msgid "ACME account email is required"
+msgstr "ACME account email is required"
+
+msgid "Invalid ACME account email"
+msgstr "Invalid ACME account email"
+
 msgid "Auto (ACME DNS-01)"
 msgstr "Auto (ACME DNS-01)"
 
@@ -867,6 +879,12 @@ msgstr "HTTP-01 Standalone"
 msgid "invalid acme validation method"
 msgstr "Invalid ACME validation method"
 
+msgid "invalid acme account email"
+msgstr "Invalid ACME account email"
+
+msgid "missing acme account email"
+msgstr "Missing ACME account email"
+
 msgid "invalid dns api"
 msgstr "Invalid DNS API"
 
@@ -920,9 +938,6 @@ msgstr "Test Before Reload"
 
 msgid "Certificate Directory"
 msgstr "Certificate Directory"
-
-msgid "Directory for storing SSL certificates."
-msgstr "Directory for storing SSL certificates."
 
 msgid "Managed Config Directory"
 msgstr "Managed Config Directory"
