@@ -837,6 +837,9 @@ msgstr "DNS API is required for DNS-01 validation"
 msgid "DNS Credentials"
 msgstr "DNS Credentials"
 
+msgid "Leave empty to keep existing credentials."
+msgstr "Leave empty to keep existing credentials."
+
 msgid "DNS credentials are required for DNS-01 validation"
 msgstr "DNS credentials are required for DNS-01 validation"
 
@@ -863,6 +866,9 @@ msgstr "Custom..."
 
 msgid "Optional"
 msgstr "Optional"
+
+msgid "Configured"
+msgstr "Configured"
 
 msgid "One credential per line in KEY=VALUE format"
 msgstr "One credential per line in KEY=VALUE format"

@@ -843,6 +843,9 @@ msgstr "DNS-01 验证需要填写 DNS API"
 msgid "DNS Credentials"
 msgstr "DNS 凭据"
 
+msgid "Leave empty to keep existing credentials."
+msgstr "留空则保留现有凭据。"
+
 msgid "DNS credentials are required for DNS-01 validation"
 msgstr "DNS-01 验证需要填写 DNS 凭据"
 
@@ -869,6 +872,9 @@ msgstr "自定义..."
 
 msgid "Optional"
 msgstr "可选"
+
+msgid "Configured"
+msgstr "已配置"
 
 msgid "One credential per line in KEY=VALUE format"
 msgstr "每行一条凭据，格式为 KEY=VALUE"

@@ -658,6 +658,21 @@ _list_cert() {
 	[ -n "${acme_detail}" ] && json_add_string "acme_detail" "${acme_detail}"
 	[ -n "${account_email}" ] && json_add_string "account_email" "${account_email}"
 
+	# Return masked credential keys for editing (values hidden for security)
+	if [ "${type}" = "acme" ] && [ "${validation_method}" = "dns" ] && uci -q get "acme.${section}" >/dev/null 2>&1; then
+		local cred_keys=""
+		local cred_line
+		uci -q get "acme.${section}.credentials" | while IFS= read -r cred_line; do
+			[ -z "${cred_line}" ] && continue
+			local key_name
+			key_name="$(printf '%s' "${cred_line}" | sed -n 's/^\([A-Za-z_][A-Za-z0-9_]*\)=.*/\1/p')"
+			[ -n "${key_name}" ] && echo "${key_name}"
+		done | tr '\n' ',' | sed 's/,$//' > /tmp/_nm_cred_keys_$$
+		cred_keys="$(cat /tmp/_nm_cred_keys_$$ 2>/dev/null)"
+		rm -f /tmp/_nm_cred_keys_$$
+		[ -n "${cred_keys}" ] && json_add_string "credential_keys" "${cred_keys}"
+	fi
+
 	local status="valid"
 	if [ "${type}" = "acme" ] && [ "${acme_status}" = "running" ]; then
 		status="acme_running"
