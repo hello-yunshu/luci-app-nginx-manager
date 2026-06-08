@@ -143,8 +143,7 @@ return view.extend({
 		o.placeholder = 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
 		o.rmempty = true;
 
-		o = s2.option(form.Value, 'cert_dir', _('Certificate Directory'),
-			_('Directory for storing SSL certificates.'));
+		o = s2.option(form.Value, 'cert_dir', _('Certificate Directory'));
 		o.rmempty = true;
 		o.placeholder = '/etc/nginx/certs/luci-manager';
 

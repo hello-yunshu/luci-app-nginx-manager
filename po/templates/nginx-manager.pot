@@ -753,6 +753,18 @@ msgstr ""
 msgid "ACME Validation"
 msgstr ""
 
+msgid "ACME Account Email"
+msgstr ""
+
+msgid "A real email address is required for ACME account registration."
+msgstr ""
+
+msgid "ACME account email is required"
+msgstr ""
+
+msgid "Invalid ACME account email"
+msgstr ""
+
 msgid "Auto (ACME DNS-01)"
 msgstr ""
 
@@ -867,6 +879,12 @@ msgstr ""
 msgid "invalid acme validation method"
 msgstr ""
 
+msgid "invalid acme account email"
+msgstr ""
+
+msgid "missing acme account email"
+msgstr ""
+
 msgid "invalid dns api"
 msgstr ""
 
@@ -901,9 +919,6 @@ msgid "Test Before Reload"
 msgstr ""
 
 msgid "Certificate Directory"
-msgstr ""
-
-msgid "Directory for storing SSL certificates."
 msgstr ""
 
 msgid "Managed Config Directory"
