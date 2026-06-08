@@ -928,7 +928,7 @@ msgid "Certificate Directory"
 msgstr "证书目录"
 
 msgid "Directory for storing SSL certificates."
-msgstr "SSL 证书存储目录。"
+msgstr "SSL 证书目录。"
 
 msgid "Managed Config Directory"
 msgstr "管理配置目录"
