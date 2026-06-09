@@ -307,7 +307,7 @@ handle_get_site() {
 
 	local opt
 	for opt in name mode server_name listen_addr listen_port proxy_pass root index websocket proxy_type grpc_path grpc_pass custom_proxy_headers redirect_https redirect_http_port \
-		proxy_host proxy_xff proxy_xfp proxy_xri ssl_cert ssl_protocols ssl_ciphers \
+		proxy_host proxy_xff proxy_xfp proxy_xri ssl_cert ssl_protocols ssl_ciphers hsts_max_age \
 		access_log error_log \
 		custom_server_block redirect_target enabled \
 		proxy_connect_timeout proxy_read_timeout proxy_send_timeout; do
@@ -360,7 +360,7 @@ _collect_listen() {
 handle_set_site() {
 	local site_id name mode server_name proxy_pass root index
 	local websocket proxy_type custom_proxy_headers redirect_https redirect_http_port proxy_host proxy_xff proxy_xfp proxy_xri
-	local ssl_cert ssl_protocols ssl_ciphers access_log error_log custom_server_block redirect_target enabled
+	local ssl_cert ssl_protocols ssl_ciphers hsts_max_age access_log error_log custom_server_block redirect_target enabled
 	local listen_addr listen_port grpc_path grpc_pass
 	local proxy_connect_timeout proxy_read_timeout proxy_send_timeout
 
@@ -387,6 +387,7 @@ handle_set_site() {
 	json_get_var ssl_cert "ssl_cert"
 	json_get_var ssl_protocols "ssl_protocols"
 	json_get_var ssl_ciphers "ssl_ciphers"
+	json_get_var hsts_max_age "hsts_max_age"
 	json_get_var access_log "access_log"
 	json_get_var error_log "error_log"
 	json_get_var custom_server_block "custom_server_block"
@@ -500,6 +501,7 @@ handle_set_site() {
 	[ -n "${ssl_cert}" ] && uci set "nginx_manager.${site_id}.ssl_cert=${ssl_cert}" || uci -q delete "nginx_manager.${site_id}.ssl_cert"
 	[ -n "${ssl_protocols}" ] && uci set "nginx_manager.${site_id}.ssl_protocols=${ssl_protocols}" || uci -q delete "nginx_manager.${site_id}.ssl_protocols"
 	[ -n "${ssl_ciphers}" ] && uci set "nginx_manager.${site_id}.ssl_ciphers=${ssl_ciphers}" || uci -q delete "nginx_manager.${site_id}.ssl_ciphers"
+	[ -n "${hsts_max_age}" ] && uci set "nginx_manager.${site_id}.hsts_max_age=${hsts_max_age}" || uci -q delete "nginx_manager.${site_id}.hsts_max_age"
 	[ -n "${access_log}" ] && uci set "nginx_manager.${site_id}.access_log=${access_log}"
 	[ -n "${error_log}" ] && uci set "nginx_manager.${site_id}.error_log=${error_log}"
 	[ -n "${custom_server_block}" ] && uci set "nginx_manager.${site_id}.custom_server_block=${custom_server_block}" || uci -q delete "nginx_manager.${site_id}.custom_server_block"
@@ -2443,6 +2445,7 @@ case "$1" in
 		json_add_string "ssl_cert" ""
 		json_add_string "ssl_protocols" ""
 		json_add_string "ssl_ciphers" ""
+		json_add_string "hsts_max_age" ""
 		json_add_string "access_log" ""
 		json_add_string "error_log" ""
 		json_add_string "custom_server_block" ""

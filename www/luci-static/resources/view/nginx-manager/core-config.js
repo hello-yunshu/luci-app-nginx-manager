@@ -43,6 +43,7 @@ var callGetFileReadonly = rpc.declare({
 var callSetFileDangerous = rpc.declare({
 	object: 'nginx_manager',
 	method: 'set_file_dangerous',
+	params: ['path', 'content'],
 	expect: {}
 });
 
@@ -98,10 +99,10 @@ return view.extend({
 		o.rmempty = true;
 
 		o = s1.option(form.Value, 'error_log', _('Error Log'));
-	o.placeholder = '/var/log/nginx/error.log';
-	o.rmempty = true;
+		o.placeholder = '/var/log/nginx/error.log';
+		o.rmempty = true;
 
-	/* ========== System Behavior ========== */
+		/* ========== System Behavior ========== */
 		var s3 = m.section(form.TypedSection, 'global', _('System Behavior'));
 		s3.anonymous = true;
 
@@ -149,6 +150,15 @@ return view.extend({
 		o.rmempty = true;
 		o.default = '1';
 
+		o = s2.option(form.Flag, 'http2', _('HTTP/2'),
+			_('Enable HTTP/2 for SSL sites. Adds http2 parameter to listen directives.'));
+		o.rmempty = true;
+		o.default = '1';
+
+		o = s2.option(form.Flag, 'http3', _('HTTP/3 (QUIC)'),
+			_('Enable HTTP/3 over QUIC. Adds quic reuseport to listen directives and Alt-Svc header. Requires nginx built with QUIC support.'));
+		o.rmempty = true;
+
 		o = s2.option(form.Value, 'ssl_buffer_size', _('SSL Buffer Size'),
 			_('Send buffer size for SSL data, e.g. 4k, 8k, 16k. Leave empty for default.'));
 		o.placeholder = '16k';
@@ -178,7 +188,7 @@ return view.extend({
 					callGetNginxT().then(function(result) {
 						ui.showModal(_('nginx -T Output'), [
 							E('pre', { 'class': 'nm-code-block' }, (result && result.content) || ''),
-							E('div', { 'class': 'right', 'style': 'margin-top: 8px;' }, [
+							E('div', { 'class': 'right' }, [
 								E('button', { 'type': 'button', 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
 							])
 						]);
@@ -193,7 +203,7 @@ return view.extend({
 					callGetFileReadonly('/etc/nginx/uci.conf.template').then(function(result) {
 						ui.showModal(_('/etc/nginx/uci.conf.template'), [
 							E('pre', { 'class': 'nm-code-block' }, (result && result.content) || _('File not found')),
-							E('div', { 'class': 'right', 'style': 'margin-top: 8px;' }, [
+							E('div', { 'class': 'right' }, [
 								E('button', { 'type': 'button', 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
 							])
 						]);
@@ -207,7 +217,7 @@ return view.extend({
 			/* ========== Danger Zone Section ========== */
 			var dangerous = (uci.get('nginx_manager', 'global', 'dangerous_core_edit') || '0') === '1';
 
-			var dangerZone = E('div', { 'class': 'cbi-section', 'style': 'border-left: 5px solid var(--danger-color, #d94b4b);' });
+			var dangerZone = E('div', { 'class': 'cbi-section nm-danger-zone' });
 			dangerZone.appendChild(E('h3', {}, _('Danger Zone')));
 
 			var dangerWarning = E('div', { 'class': 'alert-message warning' });
@@ -279,10 +289,7 @@ return view.extend({
 										'class': 'cbi-button cbi-button-reset',
 										'click': function() {
 											ui.hideModal();
-											callSetFileDangerous({
-												path: file.path,
-												content: textarea.value
-											}).then(function(result) {
+											callSetFileDangerous(file.path, textarea.value).then(function(result) {
 												if (result && result.error) {
 													ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (result.detail || result.error)), 'error');
 												} else {

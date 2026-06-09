@@ -18,7 +18,7 @@ var callSetSite = rpc.declare({
 	method: 'set_site',
 	params: ['id', 'name', 'mode', 'server_name', 'listen_addr', 'listen_port', 'proxy_pass', 'root', 'index',
 		'websocket', 'proxy_type', 'grpc_path', 'grpc_pass', 'custom_proxy_headers', 'redirect_https', 'redirect_http_port', 'proxy_host', 'proxy_xff', 'proxy_xfp', 'proxy_xri',
-		'ssl_cert', 'ssl_protocols', 'ssl_ciphers',
+		'ssl_cert', 'ssl_protocols', 'ssl_ciphers', 'hsts_max_age',
 		'access_log', 'error_log', 'custom_server_block', 'redirect_target', 'enabled',
 		'proxy_connect_timeout', 'proxy_read_timeout', 'proxy_send_timeout'],
 	expect: {}
@@ -104,7 +104,7 @@ return view.extend({
 		var sslSection, proxySection, staticSection, redirectSection, customSection;
 
 		/* references for visibility updates */
-		var proxyTypeSelect, proxyPassInput, websocketRow, grpcPassthroughSection;
+		var proxyTypeSelect, proxyPassInput, websocketRow, grpcPassthroughRow, grpcPassthroughFields;
 		var proxyHostRow, proxyXffRow, proxyXfpRow, proxyXriRow;
 		var proxyHeadersTitle, customHeadersField, customHeadersInput, customHeadersDesc;
 
@@ -123,11 +123,15 @@ return view.extend({
 				if (isGrpc) {
 					proxyPassInput.placeholder = 'grpc://192.168.1.1:9000';
 					websocketRow.style.display = 'none';
-					grpcPassthroughSection.style.display = 'none';
+					grpcPassthroughRow.style.display = 'none';
+					grpcPassthroughFields.style.display = 'none';
 				} else {
 					proxyPassInput.placeholder = 'http://192.168.1.1:3000';
 					websocketRow.style.display = '';
-					grpcPassthroughSection.style.display = '';
+					grpcPassthroughRow.style.display = '';
+					/* gRPC passthrough fields visibility depends on checkbox */
+					var grpcPassthroughCb = document.getElementById('opt-grpc_passthrough');
+					grpcPassthroughFields.style.display = (grpcPassthroughCb && grpcPassthroughCb.checked) ? '' : 'none';
 				}
 
 				/* gRPC: hide XFF/XFP (not applicable), update headers title & custom placeholder */
@@ -224,28 +228,24 @@ return view.extend({
 		var redirectHttpsCb = redirectHttpsRow.querySelector('input[type="checkbox"]');
 		sslSection.appendChild(redirectHttpsRow);
 
-		var redirectHttpPortWrapper = E('div', { 'class': 'cbi-option' }, [
-			E('label', { 'class': 'cbi-value-title' }, _('HTTP Redirect Port')),
-			E('div', { 'class': 'cbi-value-field' }, [
-				E('input', {
-					'type': 'text',
-					'id': 'opt-redirect_http_port',
-					'class': 'cbi-input-text',
-					'placeholder': _('Leave empty to use same-port redirect (error_page 497)'),
-					'value': !isNew && site ? (site.redirect_http_port || '') : ''
-				})
-			])
-		]);
-		sslSection.appendChild(redirectHttpPortWrapper);
+		var redirectHttpPortInput = E('input', {
+			'type': 'text',
+			'class': 'cbi-input-text',
+			'placeholder': _('Leave empty to use same-port redirect (error_page 497)')
+		});
+		if (!isNew && site && site.redirect_http_port) redirectHttpPortInput.value = site.redirect_http_port;
+		var redirectHttpPortRow = makeField('opt-redirect_http_port', _('HTTP Redirect Port'), redirectHttpPortInput,
+			_('Leave empty to use same-port redirect (error_page 497)'));
+		sslSection.appendChild(redirectHttpPortRow);
 
 		function updateRedirectHttpPortVisibility() {
-			redirectHttpPortWrapper.style.display = redirectHttpsCb.checked ? '' : 'none';
+			redirectHttpPortRow.style.display = redirectHttpsCb.checked ? '' : 'none';
 		}
 		redirectHttpsCb.addEventListener('change', updateRedirectHttpPortVisibility);
 		updateRedirectHttpPortVisibility();
 
 		/* SSL Advanced Options */
-		var sslAdvancedWrapper = E('div', { 'class': 'cbi-option', 'style': 'display:none;' });
+		var sslAdvancedWrapper = E('div', { 'style': 'display:none;' });
 
 		var sslProtocolsInput = E('input', {
 			'type': 'text', 'class': 'cbi-input-text',
@@ -262,6 +262,14 @@ return view.extend({
 		});
 		sslAdvancedWrapper.appendChild(makeField('opt-ssl_ciphers', _('SSL Ciphers'), sslCiphersInput,
 			_('Leave empty to use default ciphers.')));
+
+		var hstsMaxAgeInput = E('input', {
+			'type': 'text', 'class': 'cbi-input-text',
+			'placeholder': '31536000'
+		});
+		if (!isNew && site && site.hsts_max_age) hstsMaxAgeInput.value = site.hsts_max_age;
+		sslAdvancedWrapper.appendChild(makeField('opt-hsts_max_age', _('HSTS Max-Age'), hstsMaxAgeInput,
+			_('HSTS max-age in seconds. Default: 31536000 (1 year). Set to 0 to disable HSTS.')));
 
 		sslSection.appendChild(sslAdvancedWrapper);
 
@@ -311,24 +319,34 @@ return view.extend({
 			!isNew && site ? site.websocket === '1' : false);
 		proxySection.appendChild(websocketRow);
 
-		/* gRPC Passthrough Section (only visible when proxy_type=http) */
-		grpcPassthroughSection = E('div', { 'class': 'cbi-section' });
-		grpcPassthroughSection.appendChild(E('h4', { 'style': 'margin-top:1em;margin-bottom:0.5em;' }, _('gRPC Passthrough')));
+		/* gRPC Passthrough (only visible when proxy_type=http, requires checkbox) */
+		grpcPassthroughRow = makeFlag('opt-grpc_passthrough', _('gRPC Passthrough'),
+			!isNew && site ? (site.grpc_path || site.grpc_pass) : false);
+		var grpcPassthroughCb = grpcPassthroughRow.querySelector('input[type="checkbox"]');
+		proxySection.appendChild(grpcPassthroughRow);
+
+		grpcPassthroughFields = E('div', { 'style': 'display:none;' });
 
 		var grpcPathInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': '/grpc' });
 		if (!isNew && site && site.grpc_path) grpcPathInput.value = site.grpc_path;
-		grpcPassthroughSection.appendChild(makeField('opt-grpc_path', _('gRPC Path'), grpcPathInput,
+		grpcPassthroughFields.appendChild(makeField('opt-grpc_path', _('gRPC Path'), grpcPathInput,
 			_('URL path for gRPC traffic, e.g. /grpc or /api.Service')));
 
 		var grpcPassInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': 'grpc://192.168.1.1:9000' });
 		if (!isNew && site && site.grpc_pass) grpcPassInput.value = site.grpc_pass;
-		grpcPassthroughSection.appendChild(makeField('opt-grpc_pass', _('gRPC Backend Address'), grpcPassInput,
+		grpcPassthroughFields.appendChild(makeField('opt-grpc_pass', _('gRPC Backend Address'), grpcPassInput,
 			_('Uses grpc:// or grpcs:// scheme.')));
 
-		proxySection.appendChild(grpcPassthroughSection);
+		proxySection.appendChild(grpcPassthroughFields);
+
+		function updateGrpcPassthroughVisibility() {
+			var isHttp = proxyTypeSelect.value === 'http';
+			grpcPassthroughFields.style.display = (isHttp && grpcPassthroughCb.checked) ? '' : 'none';
+		}
+		grpcPassthroughCb.addEventListener('change', updateGrpcPassthroughVisibility);
 
 		/* Common Proxy Headers */
-		proxyHeadersTitle = E('h4', { 'style': 'margin-top:1em;margin-bottom:0.5em;' }, _('Common Proxy Headers'));
+		proxyHeadersTitle = E('h4', { 'class': 'nm-subsection-title' }, _('Common Proxy Headers'));
 		proxySection.appendChild(proxyHeadersTitle);
 
 		proxyHostRow = makeFlag('opt-proxy_host', _('Proxy Host Header'),
@@ -360,7 +378,7 @@ return view.extend({
 		proxySection.appendChild(customHeadersField);
 
 		/* Proxy Timeouts */
-		proxySection.appendChild(E('h4', { 'style': 'margin-top:1em;margin-bottom:0.5em;' }, _('Proxy Timeouts')));
+		proxySection.appendChild(E('h4', { 'class': 'nm-subsection-title' }, _('Proxy Timeouts')));
 
 		var proxyConnectTimeoutInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': '60s' });
 		if (!isNew && site && site.proxy_connect_timeout) proxyConnectTimeoutInput.value = site.proxy_connect_timeout;
@@ -436,7 +454,7 @@ return view.extend({
 					callRenderSite(siteId).then(function(result) {
 						ui.showModal(_('Generated Config'), [
 							E('pre', { 'class': 'nm-code-block' }, (result && result.config) || ''),
-							E('div', { 'class': 'right', 'style': 'margin-top:8px;' }, [
+							E('div', { 'class': 'right' }, [
 								E('button', {
 									'class': 'btn',
 									'click': function() { ui.hideModal(); }
@@ -480,6 +498,7 @@ return view.extend({
 			data.ssl_cert            = document.getElementById('opt-ssl_cert').value;
 			data.ssl_protocols       = document.getElementById('opt-ssl_protocols').value.trim();
 			data.ssl_ciphers         = document.getElementById('opt-ssl_ciphers').value.trim();
+			data.hsts_max_age        = document.getElementById('opt-hsts_max_age').value.trim();
 			data.redirect_https      = document.getElementById('opt-redirect_https').checked ? '1' : '0';
 			data.redirect_http_port  = document.getElementById('opt-redirect_http_port').value.trim();
 			data.proxy_pass          = document.getElementById('opt-proxy_pass').value.trim();
@@ -527,6 +546,7 @@ return view.extend({
 				data.ssl_cert,
 				data.ssl_protocols,
 				data.ssl_ciphers,
+				data.hsts_max_age,
 				data.access_log,
 				data.error_log,
 				data.custom_server_block,

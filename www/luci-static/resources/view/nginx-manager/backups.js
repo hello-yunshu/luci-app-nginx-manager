@@ -65,18 +65,13 @@ return view.extend({
 		section.appendChild(E('h3', {}, _('Backup Management')));
 
 		var settingsRow = E('div', {
-			'class': 'cbi-value',
-			'style': 'display: flex; align-items: center; gap: 0.6em; margin: 0; padding: 0;'
+			'class': 'cbi-value nm-inline-setting'
 		}, [
 			E('label', {
 				'class': 'cbi-value-title',
-				'for': 'backup-max-backups',
-				'style': 'float: none; width: auto; margin: 0; padding: 0; white-space: nowrap;'
+				'for': 'backup-max-backups'
 			}, _('Maximum Backups')),
-			E('div', {
-				'class': 'cbi-value-field',
-				'style': 'display: flex; align-items: center; gap: 0.5em; margin: 0;'
-			}, [
+			E('div', { 'class': 'cbi-value-field' }, [
 				E('input', {
 					'id': 'backup-max-backups',
 					'type': 'number',
@@ -88,7 +83,6 @@ return view.extend({
 				}),
 				E('button', {
 					'class': 'cbi-button cbi-button-apply',
-					'style': 'margin: 0;',
 					'click': function() {
 						var input = document.getElementById('backup-max-backups');
 						var value = input ? input.value.trim() : '';
@@ -113,7 +107,6 @@ return view.extend({
 
 		var createBtn = E('button', {
 			'class': 'cbi-button cbi-button-apply',
-			'style': 'margin: 0; white-space: nowrap;',
 			'click': function() {
 				callCreateBackup().then(function(result) {
 					if (result && result.error) {
@@ -126,9 +119,7 @@ return view.extend({
 			}
 		}, '\u271A ' + _('Create Backup'));
 
-		section.appendChild(E('div', {
-			'style': 'display: flex; flex-wrap: nowrap; align-items: center; gap: 1em; margin-bottom: 12px; overflow-x: auto;'
-		}, [ createBtn, settingsRow ]));
+		section.appendChild(E('div', { 'class': 'nm-btn-group', 'style': 'margin-bottom: 12px;' }, [ createBtn, settingsRow ]));
 
 		if (backups.length === 0) {
 			section.appendChild(E('div', { 'class': 'nm-empty-state' },
@@ -164,7 +155,7 @@ return view.extend({
 					callDiffBackup(backup.id).then(function(result) {
 						ui.showModal(_('Compare with Current'), [
 							E('pre', { 'class': 'nm-code-block' }, (result && result.diff) || _('No differences')),
-							E('div', { 'class': 'right', 'style': 'margin-top: 8px;' }, [
+							E('div', { 'class': 'right' }, [
 								E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
 							])
 						]);
