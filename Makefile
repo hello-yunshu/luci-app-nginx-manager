@@ -10,7 +10,7 @@ PKG_LICENSE:=AGPL-3.0-only
 PKG_MAINTAINER:=yunshu
 
 LUCI_TITLE:=Nginx Manager for LuCI
-LUCI_DEPENDS:=+luci-base +nginx-ssl +rpcd +rpcd-mod-file +openssl-util +acme +acme-acmesh-dnsapi
+LUCI_DEPENDS:=+luci-base +nginx-ssl +rpcd +rpcd-mod-file +openssl-util +acme +acme-acmesh-dnsapi +coreutils-diff +util-linux-flock
 LUCI_PKGARCH:=all
 
 include $(INCLUDE_DIR)/package.mk
