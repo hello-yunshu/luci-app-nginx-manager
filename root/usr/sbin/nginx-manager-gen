@@ -806,19 +806,19 @@ _add_upstream_server() {
 	printf '    server %s;\n' "$1"
 }
 
-# Comment out directives in /etc/nginx/uci.conf.template that are also generated
-# into 00-global.conf, to prevent "duplicate directive" errors when nginx
+# Comment out directives in OpenWrt's nginx UCI files that are also generated
+# into 00-global.conf, to prevent duplicate/conflicting directives when nginx
 # includes both files in the same http{} block.
 # Using comments (with marker) instead of deletion so that:
 #   1. It's clear which lines are managed by nginx-manager
 #   2. The original values are preserved for reference / recovery
 #   3. If nginx-ssl package updates restore the template, the next generate
 #      will re-comment the conflicting lines automatically
-_strip_template_directives() {
-	local template="/etc/nginx/uci.conf.template"
-	[ -f "${template}" ] || return 0
+_strip_directives_from_file() {
+	local conf_file="$1"
+	[ -f "${conf_file}" ] || return 0
 
-	local tmp="${template}.tmp"
+	local tmp="${conf_file}.tmp"
 
 	# Build the list of directives present in 00-global.conf
 	local directives=""
@@ -852,33 +852,45 @@ _strip_template_directives() {
 		sed_pass2="${sed_pass2} /^[[:space:]]*${d}[[:space:]]/s|^[[:space:]]*|#managed-by-nginx-manager |;"
 	done
 
-	sed "${sed_pass1}${sed_pass2}" "${template}" > "${tmp}" || { rm -f "${tmp}"; return 1; }
+	sed "${sed_pass1}${sed_pass2}" "${conf_file}" > "${tmp}" || { rm -f "${tmp}"; return 1; }
 
 	# Only overwrite if something actually changed
-	if ! cmp -s "${template}" "${tmp}"; then
-		mv "${tmp}" "${template}"
+	if ! cmp -s "${conf_file}" "${tmp}"; then
+		mv "${tmp}" "${conf_file}"
 	else
 		rm -f "${tmp}"
 	fi
 }
 
-# Restore previously commented-out directives in uci.conf.template
-# when 00-global.conf is no longer being generated (all UCI values empty).
-_restore_template_directives() {
-	local template="/etc/nginx/uci.conf.template"
-	[ -f "${template}" ] || return 0
+_strip_template_directives() {
+	_strip_directives_from_file "/etc/nginx/uci.conf.template" || return 1
+	# /etc/nginx/uci.conf may already have been rendered from the old template.
+	# Keep the active test target in sync before running nginx -t.
+	_strip_directives_from_file "/etc/nginx/uci.conf" || return 1
+}
+
+# Restore previously commented-out UCI directives when 00-global.conf is no
+# longer being generated (all UCI values empty).
+_restore_directives_in_file() {
+	local conf_file="$1"
+	[ -f "${conf_file}" ] || return 0
 
 	# Quick check: if no marker exists, nothing to restore
-	grep -q "managed-by-nginx-manager" "${template}" 2>/dev/null || return 0
+	grep -q "managed-by-nginx-manager" "${conf_file}" 2>/dev/null || return 0
 
-	local tmp="${template}.tmp"
-	sed 's/#managed-by-nginx-manager //g' "${template}" > "${tmp}" || { rm -f "${tmp}"; return 1; }
+	local tmp="${conf_file}.tmp"
+	sed 's/#managed-by-nginx-manager //g' "${conf_file}" > "${tmp}" || { rm -f "${tmp}"; return 1; }
 
-	if ! cmp -s "${template}" "${tmp}"; then
-		mv "${tmp}" "${template}"
+	if ! cmp -s "${conf_file}" "${tmp}"; then
+		mv "${tmp}" "${conf_file}"
 	else
 		rm -f "${tmp}"
 	fi
+}
+
+_restore_template_directives() {
+	_restore_directives_in_file "/etc/nginx/uci.conf.template" || return 1
+	_restore_directives_in_file "/etc/nginx/uci.conf" || return 1
 }
 
 generate_global_conf() {
@@ -886,7 +898,7 @@ generate_global_conf() {
 	local max_body keepalive gzip
 	local server_tokens sendfile access_log error_log
 	local tcp_nopush tcp_nodelay
-	local ssl_session_timeout ssl_session_cache ssl_stapling ssl_buffer_size custom_ssl_directives
+	local ssl_session_timeout ssl_session_cache ssl_stapling ssl_buffer_size
 
 	max_body="$(uci -q get nginx_manager.global.client_max_body_size)" || max_body=""
 	keepalive="$(uci -q get nginx_manager.global.keepalive_timeout)" || keepalive=""
@@ -904,14 +916,13 @@ generate_global_conf() {
 	ssl_session_tickets="$(uci -q get nginx_manager.global.ssl_session_tickets)" || ssl_session_tickets=""
 	ssl_stapling="$(uci -q get nginx_manager.global.ssl_stapling)" || ssl_stapling=""
 	ssl_buffer_size="$(uci -q get nginx_manager.global.ssl_buffer_size)" || ssl_buffer_size=""
-	custom_ssl_directives="$(uci -q get nginx_manager.global.custom_ssl_directives)" || custom_ssl_directives=""
 
 	[ -z "${max_body}" ] && [ -z "${keepalive}" ] && [ -z "${gzip}" ] && \
 	[ -z "${server_tokens}" ] && [ -z "${sendfile}" ] && \
 	[ -z "${tcp_nopush}" ] && [ -z "${tcp_nodelay}" ] && \
 	[ -z "${access_log}" ] && [ -z "${error_log}" ] && \
 	[ -z "${ssl_session_timeout}" ] && [ -z "${_ssl_session_cache_set}" ] && [ -z "${ssl_session_tickets}" ] && [ -z "${ssl_stapling}" ] && [ -z "${ssl_buffer_size}" ] && \
-	[ -z "${custom_ssl_directives}" ] && {
+	{
 		# No directives to generate, restore any previously commented lines
 		_restore_template_directives
 		return 0
@@ -952,7 +963,7 @@ generate_global_conf() {
 		[ -n "${access_log}" ] && echo "access_log ${access_log};"
 		[ -n "${error_log}" ] && echo "error_log ${error_log};"
 
-		if [ -n "${ssl_session_timeout}" ] || [ -n "${ssl_session_cache}" ] || [ -n "${ssl_session_tickets}" ] || [ -n "${ssl_stapling}" ] || [ -n "${ssl_buffer_size}" ] || [ -n "${custom_ssl_directives}" ]; then
+		if [ -n "${ssl_session_timeout}" ] || [ -n "${ssl_session_cache}" ] || [ -n "${ssl_session_tickets}" ] || [ -n "${ssl_stapling}" ] || [ -n "${ssl_buffer_size}" ]; then
 			echo ""
 			if [ -n "${ssl_session_timeout}" ]; then
 				echo "ssl_session_timeout ${ssl_session_timeout};"
@@ -973,9 +984,6 @@ generate_global_conf() {
 			fi
 			if [ -n "${ssl_buffer_size}" ]; then
 				echo "ssl_buffer_size ${ssl_buffer_size};"
-			fi
-			if [ -n "${custom_ssl_directives}" ]; then
-				echo "${custom_ssl_directives}"
 			fi
 		fi
 	} > "${output_file}"
