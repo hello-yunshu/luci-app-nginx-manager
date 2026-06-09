@@ -269,7 +269,7 @@ return view.extend({
 		});
 		if (!isNew && site && site.hsts_max_age) hstsMaxAgeInput.value = site.hsts_max_age;
 		sslAdvancedWrapper.appendChild(makeField('opt-hsts_max_age', _('HSTS Max-Age'), hstsMaxAgeInput,
-			_('HSTS max-age in seconds. Default: 31536000 (1 year). Set to 0 to disable HSTS.')));
+			_('HSTS max-age in seconds. Default: 31536000 (1 year). Set to 0 to disable.')));
 
 		sslSection.appendChild(sslAdvancedWrapper);
 

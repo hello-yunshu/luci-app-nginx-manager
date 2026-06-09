@@ -151,7 +151,7 @@ return view.extend({
 		o.default = '1';
 
 		o = s2.option(form.Flag, 'http2', _('HTTP/2'),
-			_('Enable HTTP/2 for SSL sites. Adds http2 parameter to listen directives.'));
+			_('Enable HTTP/2 for SSL sites. Uses the http2 directive (nginx 1.25.1+).'));
 		o.rmempty = true;
 		o.default = '1';
 

@@ -354,13 +354,14 @@ EOF
 	# HSTS (per-site)
 	local hsts_max_age
 	hsts_max_age="$(uci -q get "nginx_manager.${section}.hsts_max_age")" || hsts_max_age=""
-	[ -n "${hsts_max_age}" ] && [ "${hsts_max_age}" != "0" ] && \
+	hsts_max_age="${hsts_max_age:-31536000}"
+	[ "${hsts_max_age}" != "0" ] && \
 		echo "    add_header Strict-Transport-Security \"max-age=${hsts_max_age}\" always;"
 
-	# HTTP/3 Alt-Svc header
+	# HTTP/3 Alt-Svc header (only if nginx supports QUIC)
 	local http3
 	http3="$(uci -q get nginx_manager.global.http3)" || http3=""
-	if [ "${http3}" = "1" ]; then
+	if [ "${http3}" = "1" ] && _nginx_has_v3; then
 		local alt_port
 		alt_port="$(uci -q get "nginx_manager.${section}.listen_port")" || alt_port="443"
 		echo "    add_header Alt-Svc 'h3=\":${alt_port}\"; ma=86400' always;"
@@ -511,6 +512,15 @@ generate_reverse_proxy_site() {
 
 _CURRENT_SSL_CERT=""
 
+# Check if nginx was built with ngx_http_v3_module (QUIC/HTTP3 support)
+_nginx_has_v3() {
+	[ -z "${_NGINX_HAS_V3+x}" ] && {
+		_NGINX_HAS_V3=0
+		nginx -V 2>&1 | grep -q "http_v3_module" && _NGINX_HAS_V3=1
+	}
+	[ "${_NGINX_HAS_V3}" = "1" ]
+}
+
 # Legacy: used for backward compat with old listen list format
 _collect_listen_ports() {
 	local val="$1"
@@ -523,7 +533,7 @@ _collect_listen_ports() {
 generate_listen_directives() {
 	local section="$1"
 	local ssl_cert="$2"
-	local listen_addr listen_port ssl_flag="" http2_flag="" quic_flag=""
+	local listen_addr listen_port ssl_flag="" quic_flag=""
 
 	config_get listen_addr "${section}" listen_addr
 	config_get listen_port "${section}" listen_port
@@ -547,18 +557,14 @@ generate_listen_directives() {
 	if [ -n "${ssl_cert}" ]; then
 		ssl_flag=" ssl"
 
-		# HTTP/2: add http2 parameter to listen directive
-		local http2
-		http2="$(uci -q get nginx_manager.global.http2)" || http2="1"
-		[ "${http2}" = "1" ] && http2_flag=" http2"
-
 		# HTTP/3: quic with reuseport (only once per port)
+		# Requires ngx_http_v3_module — skip if nginx lacks it
 		local http3
 		http3="$(uci -q get nginx_manager.global.http3)" || http3=""
-		if [ "${http3}" = "1" ]; then
-			quic_flag=" quic"
+		if [ "${http3}" = "1" ] && _nginx_has_v3; then
 			case " ${_QUIC_REUSEPORT_PORTS} " in
 				*" ${listen_port} "*)
+					quic_flag=" quic"
 					;;
 				*)
 					quic_flag=" quic reuseport"
@@ -568,12 +574,19 @@ generate_listen_directives() {
 		fi
 	fi
 
-	# Generate listen directives
+	# Generate listen directives (http2 parameter removed — deprecated since nginx 1.25.1)
 	if [ -n "${listen_addr}" ]; then
-		printf '    listen %s:%s%s%s%s;\n' "${listen_addr}" "${listen_port}" "${ssl_flag}" "${http2_flag}" "${quic_flag}"
+		printf '    listen %s:%s%s%s;\n' "${listen_addr}" "${listen_port}" "${ssl_flag}" "${quic_flag}"
 	else
-		printf '    listen %s%s%s%s;\n' "${listen_port}" "${ssl_flag}" "${http2_flag}" "${quic_flag}"
-		printf '    listen [::]:%s%s%s%s;\n' "${listen_port}" "${ssl_flag}" "${http2_flag}" "${quic_flag}"
+		printf '    listen %s%s%s;\n' "${listen_port}" "${ssl_flag}" "${quic_flag}"
+		printf '    listen [::]:%s%s%s;\n' "${listen_port}" "${ssl_flag}" "${quic_flag}"
+	fi
+
+	# HTTP/2: use standalone directive instead of deprecated listen parameter
+	if [ -n "${ssl_cert}" ]; then
+		local http2
+		http2="$(uci -q get nginx_manager.global.http2)" || http2="1"
+		[ "${http2}" = "1" ] && echo "    http2 on;"
 	fi
 }
 
