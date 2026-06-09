@@ -119,6 +119,7 @@ return view.extend({
 
 		function setLogText(text) {
 			logOutput.value = text;
+			logOutput.scrollTop = logOutput.scrollHeight;
 		}
 
 		function setLoading() {
