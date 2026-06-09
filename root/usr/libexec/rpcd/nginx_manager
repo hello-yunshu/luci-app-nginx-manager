@@ -1338,6 +1338,72 @@ handle_sync_core_from_nginx() {
 	json_dump
 }
 
+custom_ssl_directive_conflicts() {
+	local custom_ssl_directives ssl_session_cache ssl_stapling ssl_buffer_size
+	local managed_zone managed_size managed_directives
+
+	custom_ssl_directives="$(uci -q get nginx_manager.global.custom_ssl_directives)" || custom_ssl_directives=""
+	[ -n "${custom_ssl_directives}" ] || return 0
+
+	ssl_session_cache="$(uci -q get nginx_manager.global.ssl_session_cache)" || ssl_session_cache=""
+	[ -z "${ssl_session_cache}" ] && ssl_session_cache="shared:SSL:10m"
+	managed_zone="$(printf '%s\n' "${ssl_session_cache}" | sed -n 's/.*shared:\([^:;[:space:]]*\):\([^;[:space:]]*\).*/\1/p')"
+	managed_size="$(printf '%s\n' "${ssl_session_cache}" | sed -n 's/.*shared:\([^:;[:space:]]*\):\([^;[:space:]]*\).*/\2/p')"
+
+	ssl_stapling="$(uci -q get nginx_manager.global.ssl_stapling)" || ssl_stapling="1"
+	ssl_buffer_size="$(uci -q get nginx_manager.global.ssl_buffer_size)" || ssl_buffer_size=""
+
+	managed_directives="ssl_certificate ssl_certificate_key ssl_protocols ssl_ciphers ssl_prefer_server_ciphers ssl_session_timeout ssl_session_tickets"
+	[ -n "${ssl_buffer_size}" ] && managed_directives="${managed_directives} ssl_buffer_size"
+	if [ "${ssl_stapling}" = "1" ]; then
+		managed_directives="${managed_directives} ssl_stapling ssl_stapling_verify resolver resolver_timeout"
+	fi
+
+	local _CUSTOM_SSL_LINE_NO=0
+	printf '%s\n' "${custom_ssl_directives}" | while IFS= read -r line; do
+		_CUSTOM_SSL_LINE_NO=$((_CUSTOM_SSL_LINE_NO + 1))
+		local trimmed directive custom_zone custom_size
+
+		trimmed="$(printf '%s\n' "${line}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+		case "${trimmed}" in
+			''|\#*) continue ;;
+		esac
+
+		directive="$(printf '%s\n' "${line}" | sed -n 's/^[[:space:]]*\([A-Za-z0-9_][A-Za-z0-9_]*\)\([[:space:];].*\)\{0,1\}$/\1/p')"
+		[ -n "${directive}" ] || continue
+
+		if [ "${directive}" = "ssl_session_cache" ] && [ -n "${managed_zone}" ]; then
+			custom_zone="$(printf '%s\n' "${line}" | sed -n 's/.*shared:\([^:;[:space:]]*\):\([^;[:space:]]*\).*/\1/p')"
+			custom_size="$(printf '%s\n' "${line}" | sed -n 's/.*shared:\([^:;[:space:]]*\):\([^;[:space:]]*\).*/\2/p')"
+			if [ -n "${custom_zone}" ] && [ "${custom_zone}" = "${managed_zone}" ] && [ "${custom_size}" != "${managed_size}" ]; then
+				printf 'Line %s: ssl_session_cache reuses shared zone "%s" with size %s, but SSL Session Cache uses %s. Use a different zone name or change the SSL Session Cache field.\n' \
+					"${_CUSTOM_SSL_LINE_NO}" "${custom_zone}" "${custom_size}" "${ssl_session_cache}"
+			fi
+			continue
+		fi
+
+		case " ${managed_directives} " in
+			*" ${directive} "*)
+				printf 'Line %s: "%s" is already managed by Nginx Manager. Remove this line from Custom SSL Directives and use the dedicated field instead.\n' \
+					"${_CUSTOM_SSL_LINE_NO}" "${directive}"
+				;;
+		esac
+	done
+}
+
+validate_custom_ssl_directives_or_error() {
+	local conflicts
+
+	conflicts="$(custom_ssl_directive_conflicts)"
+	[ -z "${conflicts}" ] && return 0
+
+	json_init
+	json_add_string "error" "custom_ssl_directives_conflict"
+	json_add_string "detail" "${conflicts}"
+	json_dump
+	return 1
+}
+
 handle_apply_core_config() {
 	local dangerous
 	dangerous="$(uci -q get nginx_manager.global.dangerous_core_edit)" || dangerous="0"
@@ -1347,6 +1413,8 @@ handle_apply_core_config() {
 		json_dump
 		return
 	fi
+
+	validate_custom_ssl_directives_or_error || return
 
 	run_apply_or_error || return
 
