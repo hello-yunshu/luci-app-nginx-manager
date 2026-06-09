@@ -103,7 +103,7 @@ sha256sum -c sha256sums.txt
 ### Dependencies
 
 ```
-luci-base  nginx-ssl  rpcd  rpcd-mod-file  openssl-util  acme  acme-acmesh-dnsapi
+luci-base  nginx-ssl  rpcd  rpcd-mod-file  openssl-util  acme  acme-acmesh-dnsapi  diffutils  flock
 ```
 
 ## Usage Guide

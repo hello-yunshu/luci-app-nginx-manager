@@ -292,6 +292,8 @@ return view.extend({
 			{ key: 'openssl_util', label: 'openssl-util' },
 			{ key: 'acme', label: 'acme' },
 			{ key: 'acme_dnsapi', label: 'acme-acmesh-dnsapi' },
+			{ key: 'diffutils', label: 'diffutils' },
+			{ key: 'flock', label: 'flock' },
 			{ key: 'rpcd', label: 'rpcd' },
 			{ key: 'initd_nginx', label: 'init.d nginx' },
 			{ key: 'uci_template', label: 'uci.conf.template' }
