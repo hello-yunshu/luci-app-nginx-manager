@@ -504,6 +504,9 @@ msgstr "Non-Managed Configs"
 msgid "OCSP Stapling"
 msgstr "OCSP Stapling"
 
+msgid "Enable OCSP stapling so clients can verify certificate revocation status without contacting the CA directly. ACME certificates will automatically use the full chain for verification."
+msgstr "Enable OCSP stapling so clients can verify certificate revocation status without contacting the CA directly. ACME certificates will automatically use the full chain for verification."
+
 msgid "OK"
 msgstr "OK"
 
@@ -1055,3 +1058,27 @@ msgstr "Run nginx -t to test configuration before reloading. Prevents invalid co
 
 msgid "Changes saved but not applied because dangerous edit mode is enabled. Disable it to apply changes."
 msgstr "Changes saved but not applied because dangerous edit mode is enabled. Disable it to apply changes."
+
+msgid "HSTS Max-Age"
+msgstr "HSTS Max-Age"
+
+msgid "HSTS max-age in seconds. Default: 31536000 (1 year). Set to 0 to disable."
+msgstr "HSTS max-age in seconds. Default: 31536000 (1 year). Set to 0 to disable."
+
+msgid "HTTP/2"
+msgstr "HTTP/2"
+
+msgid "Enable HTTP/2 for SSL sites. Uses the http2 directive (nginx 1.25.1+)."
+msgstr "Enable HTTP/2 for SSL sites. Uses the http2 directive (nginx 1.25.1+)."
+
+msgid "HTTP/3 (QUIC)"
+msgstr "HTTP/3 (QUIC)"
+
+msgid "Enable HTTP/3 over QUIC. Adds quic reuseport to listen directives and Alt-Svc header. Requires nginx built with QUIC support."
+msgstr "Enable HTTP/3 over QUIC. Adds quic reuseport to listen directives and Alt-Svc header. Requires nginx built with QUIC support."
+
+msgid "SSL Session Tickets"
+msgstr "SSL Session Tickets"
+
+msgid "Enable to improve TLS resumption performance, or disable for stricter forward secrecy."
+msgstr "Enable to improve TLS resumption performance, or disable for stricter forward secrecy."

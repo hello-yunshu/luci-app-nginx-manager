@@ -154,8 +154,16 @@ function showAcmeTaskModal(cert) {
 	var statusNode = E('span', { 'class': certStatusClass(cert.status) }, certStatusLabel(cert.status));
 	var commandNode = E('pre', { 'class': 'nm-code-block' }, _('Loading...'));
 	var detailNode = E('pre', { 'class': 'nm-code-block' }, '');
-	var logNode = E('pre', { 'class': 'nm-log-area is-loading' }, '');
+	var logNode = E('textarea', {
+		'class': 'cbi-input-textarea nm-log-area is-loading',
+		'rows': 20,
+		'readonly': 'readonly'
+	}, '');
 	var modalOpen = true;
+
+	function setLogText(text) {
+		logNode.value = text;
+	}
 
 	function update(result) {
 		var status = (result && result.status) || cert.acme_status || 'unknown';
@@ -176,12 +184,12 @@ function showAcmeTaskModal(cert) {
 
 		var log = (result && result.log) || '';
 		if (log && log.trim()) {
-			logNode.className = 'nm-log-area';
-			logNode.textContent = log;
+			logNode.className = 'cbi-input-textarea nm-log-area';
+			setLogText(log);
 			logNode.scrollTop = logNode.scrollHeight;
 		} else {
-			logNode.className = 'nm-log-area is-empty';
-			logNode.textContent = _('No ACME log entries yet.');
+			logNode.className = 'cbi-input-textarea nm-log-area is-empty';
+			setLogText(_('No ACME log entries yet.'));
 		}
 
 		if (modalOpen && status === 'running')
@@ -190,8 +198,8 @@ function showAcmeTaskModal(cert) {
 
 	function refresh() {
 		callAcmeStatus(cert.id).then(update).catch(function(err) {
-			logNode.className = 'nm-log-area is-error';
-			logNode.textContent = String(err);
+			logNode.className = 'cbi-input-textarea nm-log-area is-error';
+			setLogText(String(err));
 		});
 	}
 
