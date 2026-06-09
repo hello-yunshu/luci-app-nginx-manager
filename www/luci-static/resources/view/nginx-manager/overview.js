@@ -80,43 +80,6 @@ function reloadSoon(ms) {
 	setTimeout(function() { location.reload(); }, ms || 1200);
 }
 
-var css = `
-	.nm-status-banner {
-		display: flex; align-items: center; gap: 1.2em;
-		padding: 1.5em; margin-bottom: 1.5em;
-	}
-	.nm-status-banner.running { border-left: 5px solid var(--success-color, #3aa657); }
-	.nm-status-banner.stopped { border-left: 5px solid var(--danger-color, #d94b4b); }
-	.nm-status-icon { font-size: 2.5em; line-height: 1; }
-	.nm-status-icon.running { color: var(--success-color, #3aa657); }
-	.nm-status-icon.stopped { color: var(--danger-color, #d94b4b); }
-	.nm-status-text h3 { margin: 0 0 0.2em 0; font-size: 1.3em; }
-	.nm-status-text h3.running { color: var(--success-color, #3aa657); }
-	.nm-status-text h3.stopped { color: var(--danger-color, #d94b4b); }
-	.nm-status-text p { margin: 0; color: var(--subtext-color, #666); font-size: 0.9em; }
-	.nm-stats-grid {
-		display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-		gap: 1em; margin-bottom: 1.5em;
-	}
-	.nm-stat-card {
-		padding: 1em 1.2em; border-radius: 8px; text-align: center;
-	}
-	.nm-stat-card .nm-stat-value {
-		font-size: 1.8em; font-weight: bold; line-height: 1.2;
-		color: var(--main-color, #0069d9);
-	}
-	.nm-stat-card .nm-stat-value.green { color: var(--success-color, #3aa657); }
-	.nm-stat-card .nm-stat-value.red { color: var(--danger-color, #d94b4b); }
-	.nm-stat-card .nm-stat-value.orange { color: var(--warning-color, #c68014); }
-	.nm-stat-card .nm-stat-label {
-		font-size: 0.85em; color: var(--subtext-color, #666); margin-top: 0.3em;
-	}
-	.nm-stat-card .nm-stat-detail {
-		font-size: 0.75em; color: color-mix(in srgb, var(--subtext-color, #666) 70%, transparent); margin-top: 0.4em;
-		word-break: break-all;
-	}
-`;
-
 return view.extend({
 	load: function() {
 		return Promise.all([
@@ -133,7 +96,6 @@ return view.extend({
 		var running = status.running === '1';
 
 		var container = E('div', { 'class': 'cbi-map' });
-		container.appendChild(E('style', {}, css));
 
 		utils.loadSharedCSS();
 
@@ -251,7 +213,7 @@ return view.extend({
 					var output = (result && result.output) || _('No output');
 					ui.showModal(_('Config Test Result'), [
 						E('pre', { 'class': 'nm-code-block' }, output),
-						E('div', { 'class': 'right', 'style': 'margin-top: 8px;' }, [
+						E('div', { 'class': 'right' }, [
 							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); reloadSoon(); } }, _('OK'))
 						])
 					]);

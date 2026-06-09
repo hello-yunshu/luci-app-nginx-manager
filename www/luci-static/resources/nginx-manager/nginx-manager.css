@@ -69,6 +69,7 @@ button.nm-badge {
 	gap: 0.5em;
 	justify-content: flex-end;
 	align-items: center;
+	margin-top: 8px;
 }
 
 .modal .right button,
@@ -142,6 +143,10 @@ button.nm-badge {
 .nm-value-full .cbi-value-field { width: 100%; }
 
 /* === Danger Zone === */
+.nm-danger-zone {
+	border-left: 5px solid var(--danger-color, #d94b4b);
+}
+
 .nm-danger-file {
 	margin-bottom: 1em;
 	padding-bottom: 1em;
@@ -183,6 +188,34 @@ button.nm-badge {
 	padding: 20px;
 }
 
+/* === Sub-section Title (h4 within cbi-section) === */
+.nm-subsection-title {
+	margin-top: 1em;
+	margin-bottom: 0.5em;
+}
+
+/* === Inline Setting (label + input + button on one line) === */
+.nm-inline-setting {
+	display: flex;
+	align-items: center;
+	gap: 0.6em;
+	margin: 0;
+	padding: 0;
+}
+.nm-inline-setting .cbi-value-title {
+	float: none;
+	width: auto;
+	margin: 0;
+	padding: 0;
+	white-space: nowrap;
+}
+.nm-inline-setting .cbi-value-field {
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+	margin: 0;
+}
+
 /* === DNS Credential Sub-fields === */
 .nm-cred-field {
 	margin-bottom: 0.6em;
@@ -194,6 +227,44 @@ button.nm-badge {
 	display: block;
 	font-weight: bold;
 	margin-bottom: 0.2em;
+}
+
+/* === Overview: Status Banner === */
+.nm-status-banner {
+	display: flex; align-items: center; gap: 1.2em;
+	padding: 1.5em; margin-bottom: 1.5em;
+}
+.nm-status-banner.running { border-left: 5px solid var(--success-color, #3aa657); }
+.nm-status-banner.stopped { border-left: 5px solid var(--danger-color, #d94b4b); }
+.nm-status-icon { font-size: 2.5em; line-height: 1; }
+.nm-status-icon.running { color: var(--success-color, #3aa657); }
+.nm-status-icon.stopped { color: var(--danger-color, #d94b4b); }
+.nm-status-text h3 { margin: 0 0 0.2em 0; font-size: 1.3em; }
+.nm-status-text h3.running { color: var(--success-color, #3aa657); }
+.nm-status-text h3.stopped { color: var(--danger-color, #d94b4b); }
+.nm-status-text p { margin: 0; color: var(--subtext-color, #666); font-size: 0.9em; }
+
+/* === Overview: Stats Grid === */
+.nm-stats-grid {
+	display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+	gap: 1em; margin-bottom: 1.5em;
+}
+.nm-stat-card {
+	padding: 1em 1.2em; border-radius: 8px; text-align: center;
+}
+.nm-stat-card .nm-stat-value {
+	font-size: 1.8em; font-weight: bold; line-height: 1.2;
+	color: var(--main-color, #0069d9);
+}
+.nm-stat-card .nm-stat-value.green { color: var(--success-color, #3aa657); }
+.nm-stat-card .nm-stat-value.red { color: var(--danger-color, #d94b4b); }
+.nm-stat-card .nm-stat-value.orange { color: var(--warning-color, #c68014); }
+.nm-stat-card .nm-stat-label {
+	font-size: 0.85em; color: var(--subtext-color, #666); margin-top: 0.3em;
+}
+.nm-stat-card .nm-stat-detail {
+	font-size: 0.75em; color: color-mix(in srgb, var(--subtext-color, #666) 70%, transparent); margin-top: 0.4em;
+	word-break: break-all;
 }
 
 .ys-tool-footer {

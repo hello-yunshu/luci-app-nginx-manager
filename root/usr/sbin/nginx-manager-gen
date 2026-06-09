@@ -350,6 +350,21 @@ EOF
 	local custom_ssl_directives
 	custom_ssl_directives="$(uci -q get nginx_manager.global.custom_ssl_directives)" || custom_ssl_directives=""
 	[ -n "${custom_ssl_directives}" ] && echo "    ${custom_ssl_directives}"
+
+	# HSTS (per-site)
+	local hsts_max_age
+	hsts_max_age="$(uci -q get "nginx_manager.${section}.hsts_max_age")" || hsts_max_age=""
+	[ -n "${hsts_max_age}" ] && [ "${hsts_max_age}" != "0" ] && \
+		echo "    add_header Strict-Transport-Security \"max-age=${hsts_max_age}\" always;"
+
+	# HTTP/3 Alt-Svc header
+	local http3
+	http3="$(uci -q get nginx_manager.global.http3)" || http3=""
+	if [ "${http3}" = "1" ]; then
+		local alt_port
+		alt_port="$(uci -q get "nginx_manager.${section}.listen_port")" || alt_port="443"
+		echo "    add_header Alt-Svc 'h3=\":${alt_port}\"; ma=86400' always;"
+	fi
 }
 
 generate_proxy_headers() {
@@ -508,7 +523,7 @@ _collect_listen_ports() {
 generate_listen_directives() {
 	local section="$1"
 	local ssl_cert="$2"
-	local listen_addr listen_port ssl_flag=""
+	local listen_addr listen_port ssl_flag="" http2_flag="" quic_flag=""
 
 	config_get listen_addr "${section}" listen_addr
 	config_get listen_port "${section}" listen_port
@@ -526,20 +541,39 @@ generate_listen_directives() {
 		fi
 	fi
 
-	# Determine ssl flag
-	if [ -n "${ssl_cert}" ]; then
-		ssl_flag=" ssl"
-	fi
-
 	# Default port
 	listen_port="${listen_port:-80}"
 
+	if [ -n "${ssl_cert}" ]; then
+		ssl_flag=" ssl"
+
+		# HTTP/2: add http2 parameter to listen directive
+		local http2
+		http2="$(uci -q get nginx_manager.global.http2)" || http2="1"
+		[ "${http2}" = "1" ] && http2_flag=" http2"
+
+		# HTTP/3: quic with reuseport (only once per port)
+		local http3
+		http3="$(uci -q get nginx_manager.global.http3)" || http3=""
+		if [ "${http3}" = "1" ]; then
+			quic_flag=" quic"
+			case " ${_QUIC_REUSEPORT_PORTS} " in
+				*" ${listen_port} "*)
+					;;
+				*)
+					quic_flag=" quic reuseport"
+					_QUIC_REUSEPORT_PORTS="${_QUIC_REUSEPORT_PORTS} ${listen_port}"
+					;;
+			esac
+		fi
+	fi
+
 	# Generate listen directives
 	if [ -n "${listen_addr}" ]; then
-		printf '    listen %s:%s%s;\n' "${listen_addr}" "${listen_port}" "${ssl_flag}"
+		printf '    listen %s:%s%s%s%s;\n' "${listen_addr}" "${listen_port}" "${ssl_flag}" "${http2_flag}" "${quic_flag}"
 	else
-		printf '    listen %s%s;\n' "${listen_port}" "${ssl_flag}"
-		printf '    listen [::]:%s%s;\n' "${listen_port}" "${ssl_flag}"
+		printf '    listen %s%s%s%s;\n' "${listen_port}" "${ssl_flag}" "${http2_flag}" "${quic_flag}"
+		printf '    listen [::]:%s%s%s%s;\n' "${listen_port}" "${ssl_flag}" "${http2_flag}" "${quic_flag}"
 	fi
 }
 
@@ -973,6 +1007,9 @@ generate_all() {
 
 	. /lib/functions.sh
 	config_load nginx_manager
+
+	# Track reuseport per port (only one reuseport allowed per port)
+	_QUIC_REUSEPORT_PORTS=""
 
 	generate_global_conf
 	generate_upstreams_conf
