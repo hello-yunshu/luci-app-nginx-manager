@@ -525,6 +525,9 @@ msgstr ""
 msgid "OCSP Stapling"
 msgstr ""
 
+msgid "Enable OCSP stapling so clients can verify certificate revocation status without contacting the CA directly. ACME certificates will automatically use the full chain for verification."
+msgstr ""
+
 msgid "OK"
 msgstr ""
 
@@ -1054,4 +1057,28 @@ msgid "Certificate name must start with a letter, number or underscore, and can 
 msgstr ""
 
 msgid "wildcard domains not supported for acme"
+msgstr ""
+
+msgid "HSTS Max-Age"
+msgstr ""
+
+msgid "HSTS max-age in seconds. Default: 31536000 (1 year). Set to 0 to disable."
+msgstr ""
+
+msgid "HTTP/2"
+msgstr ""
+
+msgid "Enable HTTP/2 for SSL sites. Uses the http2 directive (nginx 1.25.1+)."
+msgstr ""
+
+msgid "HTTP/3 (QUIC)"
+msgstr ""
+
+msgid "Enable HTTP/3 over QUIC. Adds quic reuseport to listen directives and Alt-Svc header. Requires nginx built with QUIC support."
+msgstr ""
+
+msgid "SSL Session Tickets"
+msgstr ""
+
+msgid "Enable to improve TLS resumption performance, or disable for stricter forward secrecy."
 msgstr ""

@@ -146,7 +146,13 @@ return view.extend({
 		o.placeholder = 'shared:SSL:10m';
 		o.rmempty = true;
 
-		o = s2.option(form.Flag, 'ssl_stapling', _('OCSP Stapling'));
+		o = s2.option(form.Flag, 'ssl_session_tickets', _('SSL Session Tickets'),
+			_('Enable to improve TLS resumption performance, or disable for stricter forward secrecy.'));
+		o.rmempty = true;
+		o.default = '1';
+
+		o = s2.option(form.Flag, 'ssl_stapling', _('OCSP Stapling'),
+			_('Enable OCSP stapling so clients can verify certificate revocation status without contacting the CA directly. ACME certificates will automatically use the full chain for verification.'));
 		o.rmempty = true;
 		o.default = '1';
 

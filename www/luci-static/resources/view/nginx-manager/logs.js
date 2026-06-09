@@ -106,8 +106,10 @@ return view.extend({
 		var logSection = E('div', { 'class': 'cbi-section' });
 		logSection.appendChild(E('h3', {}, _('Log Output')));
 
-		var logOutput = E('pre', {
-			'class': 'nm-log-area is-loading'
+		var logOutput = E('textarea', {
+			'class': 'cbi-input-textarea nm-log-area is-loading',
+			'rows': 20,
+			'readonly': 'readonly'
 		}, _('Loading...'));
 
 		logSection.appendChild(logOutput);
@@ -115,9 +117,13 @@ return view.extend({
 
 		var filterTimer = null;
 
+		function setLogText(text) {
+			logOutput.value = text;
+		}
+
 		function setLoading() {
-			logOutput.textContent = _('Loading...');
-			logOutput.className = 'nm-log-area is-loading';
+			setLogText(_('Loading...'));
+			logOutput.className = 'cbi-input-textarea nm-log-area is-loading';
 			refreshBtn.disabled = true;
 			clearBtn.disabled = true;
 		}
@@ -136,21 +142,22 @@ return view.extend({
 				siteSelect.value
 			).then(function(result) {
 				if (result && result.error) {
-					logOutput.textContent = result.error;
+					var errorText = result.error;
 					if (result.path) {
-						logOutput.textContent += '\n' + _('Path') + ': ' + result.path;
+						errorText += '\n' + _('Path') + ': ' + result.path;
 					}
-					logOutput.className = 'nm-log-area is-error';
+					setLogText(errorText);
+					logOutput.className = 'cbi-input-textarea nm-log-area is-error';
 				} else if (result && result.content) {
-					logOutput.textContent = result.content || _('No log entries found');
-					logOutput.className = 'nm-log-area';
+					setLogText(result.content || _('No log entries found'));
+					logOutput.className = 'cbi-input-textarea nm-log-area';
 				} else {
-					logOutput.textContent = _('No log entries found');
-					logOutput.className = 'nm-log-area';
+					setLogText(_('No log entries found'));
+					logOutput.className = 'cbi-input-textarea nm-log-area';
 				}
 			}).catch(function(err) {
-				logOutput.textContent = _('Failed to load logs') + ': ' + err;
-				logOutput.className = 'nm-log-area is-error';
+				setLogText(_('Failed to load logs') + ': ' + err);
+				logOutput.className = 'cbi-input-textarea nm-log-area is-error';
 			}).finally(function() {
 				setReady();
 			});
@@ -168,26 +175,27 @@ return view.extend({
 		filterInput.addEventListener('input', queueLoadLogs);
 
 		clearBtn.addEventListener('click', function() {
-			logOutput.textContent = _('Clearing...');
-			logOutput.className = 'nm-log-area is-loading';
+			setLogText(_('Clearing...'));
+			logOutput.className = 'cbi-input-textarea nm-log-area is-loading';
 			refreshBtn.disabled = true;
 			clearBtn.disabled = true;
 
 			callClearLogs(typeSelect.value, siteSelect.value).then(function(result) {
 				if (result && result.error) {
-					logOutput.textContent = result.error;
+					var errorText = result.error;
 					if (result.path) {
-						logOutput.textContent += '\n' + _('Path') + ': ' + result.path;
+						errorText += '\n' + _('Path') + ': ' + result.path;
 					}
-					logOutput.className = 'nm-log-area is-error';
+					setLogText(errorText);
+					logOutput.className = 'cbi-input-textarea nm-log-area is-error';
 					return;
 				}
 
 				ui.addNotification(null, E('p', {}, _('Log cleared')), 'info');
 				loadLogs();
 			}).catch(function(err) {
-				logOutput.textContent = _('Failed to clear logs') + ': ' + err;
-				logOutput.className = 'nm-log-area is-error';
+				setLogText(_('Failed to clear logs') + ': ' + err);
+				logOutput.className = 'cbi-input-textarea nm-log-area is-error';
 			}).finally(function() {
 				setReady();
 			});
