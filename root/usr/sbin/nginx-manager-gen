@@ -46,17 +46,6 @@ validate_domain() {
 	echo "$1" | grep -qE '^[a-zA-Z0-9._-]+$'
 }
 
-validate_path() {
-	case "$1" in
-		/etc/nginx/certs/*|/etc/nginx/conf.d/luci-manager/*|/www/*|/tmp/nginx-manager-*)
-			return 0
-			;;
-		*)
-			return 1
-			;;
-	esac
-}
-
 is_acme_webroot_cert() {
 	local cert_name="$1"
 	[ -z "${cert_name}" ] && return 1
@@ -438,7 +427,7 @@ generate_reverse_proxy_site() {
 	local ssl_cert access_log error_log enabled
 	local proxy_type custom_proxy_headers listen_addr listen_port
 	local proxy_connect_timeout proxy_read_timeout proxy_send_timeout
-	local redirect_http_port
+	local redirect_http_port grpc_path grpc_pass
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
 	server_name="$(uci -q get "nginx_manager.${section}.server_name")" || return 1
@@ -461,6 +450,8 @@ generate_reverse_proxy_site() {
 	proxy_read_timeout="$(uci -q get "nginx_manager.${section}.proxy_read_timeout")" || proxy_read_timeout=""
 	proxy_send_timeout="$(uci -q get "nginx_manager.${section}.proxy_send_timeout")" || proxy_send_timeout=""
 	redirect_http_port="$(uci -q get "nginx_manager.${section}.redirect_http_port")" || redirect_http_port=""
+	grpc_path="$(uci -q get "nginx_manager.${section}.grpc_path")" || grpc_path=""
+	grpc_pass="$(uci -q get "nginx_manager.${section}.grpc_pass")" || grpc_pass=""
 
 	local output_file="${BUILD_DIR}/${name}.conf"
 	{
@@ -516,6 +507,19 @@ generate_reverse_proxy_site() {
 		generate_custom_proxy_headers "${custom_proxy_headers}"
 
 		echo "    }"
+
+		# gRPC Passthrough: when proxy_type=http and grpc_path/grpc_pass are set
+		if [ "${proxy_type}" = "http" ] && [ -n "${grpc_path}" ] && [ -n "${grpc_pass}" ]; then
+			echo ""
+			echo "    location ${grpc_path} {"
+			echo "        grpc_pass ${grpc_pass};"
+			generate_grpc_headers "${proxy_host}" "${proxy_xff}" "${proxy_xfp}" "${proxy_xri}"
+			[ -n "${proxy_connect_timeout}" ] && echo "        grpc_connect_timeout ${proxy_connect_timeout};"
+			[ -n "${proxy_read_timeout}" ] && echo "        grpc_read_timeout ${proxy_read_timeout};"
+			[ -n "${proxy_send_timeout}" ] && echo "        grpc_send_timeout ${proxy_send_timeout};"
+			echo "    }"
+		fi
+
 		echo "}"
 	} > "${output_file}"
 

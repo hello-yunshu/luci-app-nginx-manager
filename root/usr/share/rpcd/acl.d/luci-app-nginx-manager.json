@@ -43,6 +43,7 @@
 					"upload_cert",
 					"issue_self_signed",
 					"acme_issue",
+					"acme_update",
 					"acme_renew",
 					"acme_status",
 					"apply_core_config",

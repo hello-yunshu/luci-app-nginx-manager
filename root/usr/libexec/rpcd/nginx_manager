@@ -474,6 +474,11 @@ handle_set_site() {
 		[ "${listen_port}" -ge 1 ] && [ "${listen_port}" -le 65535 ] || { json_init; json_add_string "error" "listen_port out of range"; json_dump; return; }
 	fi
 
+	if [ -n "${redirect_http_port}" ]; then
+		echo "${redirect_http_port}" | grep -qE '^[0-9]+$' || { json_init; json_add_string "error" "invalid redirect_http_port"; json_dump; return; }
+		[ "${redirect_http_port}" -ge 1 ] && [ "${redirect_http_port}" -le 65535 ] || { json_init; json_add_string "error" "redirect_http_port out of range"; json_dump; return; }
+	fi
+
 	uci set "nginx_manager.${site_id}=site"
 	uci set "nginx_manager.${site_id}.name=${name}"
 	[ -n "${mode}" ] && uci set "nginx_manager.${site_id}.mode=${mode}"

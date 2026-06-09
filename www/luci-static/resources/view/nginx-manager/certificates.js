@@ -925,10 +925,10 @@ return view.extend({
 										ui.addNotification(null, E('p', {}, _('Invalid ACME account email')), 'error');
 										return;
 									}
-										if ((acmeMethod === 'webroot' || acmeMethod === 'standalone') && certDomain.includes('*')) {
-											ui.addNotification(null, E('p', {}, _('Wildcard domains are not supported for ACME certificates')), 'error');
-											return;
-										}
+									if ((acmeMethod === 'webroot' || acmeMethod === 'standalone') && certDomain.includes('*')) {
+										ui.addNotification(null, E('p', {}, _('Wildcard domains are not supported for ACME certificates')), 'error');
+										return;
+									}
 									if (acmeMethod === 'dns') {
 										if (!dnsApi) {
 											ui.addNotification(null, E('p', {}, _('DNS API is required for DNS-01 validation')), 'error');

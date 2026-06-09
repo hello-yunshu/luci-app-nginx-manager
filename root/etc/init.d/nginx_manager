@@ -22,10 +22,17 @@ validate_nginx_manager_global() {
         'sendfile:bool:0' \
         'access_log:string:' \
         'error_log:string:' \
-        'ssl_protocols:string:' \
-        'ssl_ciphers:string:' \
+        'ssl_session_timeout:string:' \
+        'ssl_session_cache:string:' \
+        'ssl_session_tickets:string:' \
+        'ssl_stapling:string:' \
+        'ssl_buffer_size:string:' \
+        'custom_ssl_directives:string:' \
+        'http2:bool:1' \
+        'http3:bool:0' \
         'advanced_mode:bool:0' \
-        'dangerous_core_edit:bool:0'
+        'dangerous_core_edit:bool:0' \
+        'core_config_initialized:bool:0'
 }
 
 validate_nginx_manager_site() {
@@ -45,15 +52,22 @@ validate_nginx_manager_site() {
         'grpc_pass:string' \
         'custom_proxy_headers:string' \
         'redirect_https:bool:0' \
+        'redirect_http_port:string' \
         'proxy_host:bool:1' \
         'proxy_xff:bool:1' \
         'proxy_xfp:bool:1' \
         'proxy_xri:bool:1' \
         'ssl_cert:string' \
+        'ssl_protocols:string' \
+        'ssl_ciphers:string' \
+        'hsts_max_age:string' \
         'access_log:bool:0' \
         'error_log:bool:1' \
         'custom_server_block:string' \
-        'redirect_target:string'
+        'redirect_target:string' \
+        'proxy_connect_timeout:string' \
+        'proxy_read_timeout:string' \
+        'proxy_send_timeout:string'
 }
 
 validate_nginx_manager_cert() {
