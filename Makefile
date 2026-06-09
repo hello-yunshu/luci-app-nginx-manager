@@ -4,13 +4,13 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-nginx-manager
 PKG_VERSION:=1.2.0
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_LICENSE:=AGPL-3.0-only
 PKG_MAINTAINER:=yunshu
 
 LUCI_TITLE:=Nginx Manager for LuCI
-LUCI_DEPENDS:=+luci-base +nginx-ssl +rpcd +rpcd-mod-file +openssl-util +acme +acme-acmesh-dnsapi +coreutils-diff +util-linux-flock
+LUCI_DEPENDS:=+luci-base +nginx-ssl +rpcd +rpcd-mod-file +openssl-util +acme +acme-acmesh-dnsapi +diffutils +flock
 LUCI_PKGARCH:=all
 
 include $(INCLUDE_DIR)/package.mk
