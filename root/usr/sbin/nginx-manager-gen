@@ -313,41 +313,17 @@ EOF
 
 	echo "    ssl_protocols ${ssl_protocols};"
 	echo "    ssl_ciphers ${ssl_ciphers};"
-	echo "    ssl_prefer_server_ciphers off;"
-
-	local ssl_session_timeout
-	ssl_session_timeout="$(uci -q get nginx_manager.global.ssl_session_timeout)" || \
-		ssl_session_timeout="1d"
-	echo "    ssl_session_timeout ${ssl_session_timeout};"
-
-	local ssl_session_tickets
-	ssl_session_tickets="$(uci -q get nginx_manager.global.ssl_session_tickets)" || \
-		ssl_session_tickets="1"
-	if [ "${ssl_session_tickets}" = "1" ]; then
-		echo "    ssl_session_tickets on;"
-	else
-		echo "    ssl_session_tickets off;"
-	fi
-
-	local ssl_buffer_size
-	ssl_buffer_size="$(uci -q get nginx_manager.global.ssl_buffer_size)" || \
-		ssl_buffer_size=""
-	[ -n "${ssl_buffer_size}" ] && echo "    ssl_buffer_size ${ssl_buffer_size};"
 
 	local ssl_stapling
 	ssl_stapling="$(uci -q get nginx_manager.global.ssl_stapling)" || \
 		ssl_stapling="1"
 	if [ "${ssl_stapling}" = "1" ]; then
-		echo "    ssl_stapling on;"
-		echo "    ssl_stapling_verify on;"
 		# For ACME certs, use fullchain as trusted certificate for OCSP verification
 		local cert_type
 		cert_type="$(uci -q get "nginx_manager.${cert_name}.type")" || cert_type=""
 		if [ "${cert_type}" = "acme" ]; then
 			echo "    ssl_trusted_certificate ${cert_path};"
 		fi
-		echo "    resolver 127.0.0.1 valid=300s ipv6=off;"
-		echo "    resolver_timeout 5s;"
 	fi
 
 	local custom_ssl_directives
@@ -599,13 +575,6 @@ generate_listen_directives() {
 		printf '    listen %s%s%s;\n' "${listen_port}" "${ssl_flag}" "${quic_flag}"
 		printf '    listen [::]:%s%s%s;\n' "${listen_port}" "${ssl_flag}" "${quic_flag}"
 	fi
-
-	# HTTP/2: use standalone directive instead of deprecated listen parameter
-	if [ -n "${ssl_cert}" ]; then
-		local http2
-		http2="$(uci -q get nginx_manager.global.http2)" || http2="1"
-		[ "${http2}" = "1" ] && echo "    http2 on;"
-	fi
 }
 
 generate_static_site() {
@@ -838,8 +807,10 @@ _strip_directives_from_file() {
 	[ -n "${ssl_session_timeout}" ] && directives="${directives} ssl_session_timeout"
 	[ -n "${ssl_session_cache}" ] && directives="${directives} ssl_session_cache"
 	[ -n "${ssl_session_tickets}" ] && directives="${directives} ssl_session_tickets"
-	[ -n "${ssl_stapling}" ] && directives="${directives} ssl_stapling ssl_stapling_verify"
+	[ -n "${ssl_stapling}" ] && directives="${directives} ssl_stapling ssl_stapling_verify resolver resolver_timeout"
 	[ -n "${ssl_buffer_size}" ] && directives="${directives} ssl_buffer_size"
+	[ -n "${http2}" ] && directives="${directives} http2"
+	directives="${directives} ssl_prefer_server_ciphers"
 
 	[ -z "${directives}" ] && return 0
 
@@ -903,6 +874,7 @@ generate_global_conf() {
 	local server_tokens sendfile access_log error_log
 	local tcp_nopush tcp_nodelay
 	local ssl_session_timeout ssl_session_cache ssl_stapling ssl_buffer_size
+	local http2
 
 	max_body="$(uci -q get nginx_manager.global.client_max_body_size)" || max_body=""
 	keepalive="$(uci -q get nginx_manager.global.keepalive_timeout)" || keepalive=""
@@ -914,18 +886,27 @@ generate_global_conf() {
 	access_log="$(uci -q get nginx_manager.global.access_log)" || access_log=""
 	error_log="$(uci -q get nginx_manager.global.error_log)" || error_log=""
 	ssl_session_timeout="$(uci -q get nginx_manager.global.ssl_session_timeout)" || ssl_session_timeout=""
+	local _ssl_session_timeout_set="${ssl_session_timeout}"
+	[ -z "${ssl_session_timeout}" ] && ssl_session_timeout="1d"
 	ssl_session_cache="$(uci -q get nginx_manager.global.ssl_session_cache)" || ssl_session_cache=""
 	local _ssl_session_cache_set="${ssl_session_cache}"
 	[ -z "${ssl_session_cache}" ] && ssl_session_cache="shared:SSL:10m"
 	ssl_session_tickets="$(uci -q get nginx_manager.global.ssl_session_tickets)" || ssl_session_tickets=""
+	local _ssl_session_tickets_set="${ssl_session_tickets}"
+	[ -z "${ssl_session_tickets}" ] && ssl_session_tickets="1"
 	ssl_stapling="$(uci -q get nginx_manager.global.ssl_stapling)" || ssl_stapling=""
+	local _ssl_stapling_set="${ssl_stapling}"
+	[ -z "${ssl_stapling}" ] && ssl_stapling="1"
 	ssl_buffer_size="$(uci -q get nginx_manager.global.ssl_buffer_size)" || ssl_buffer_size=""
+	local _ssl_buffer_size_set="${ssl_buffer_size}"
+	[ -z "${ssl_buffer_size}" ] && ssl_buffer_size="16k"
+	http2="$(uci -q get nginx_manager.global.http2)" || http2="1"
 
 	[ -z "${max_body}" ] && [ -z "${keepalive}" ] && [ -z "${gzip}" ] && \
 	[ -z "${server_tokens}" ] && [ -z "${sendfile}" ] && \
 	[ -z "${tcp_nopush}" ] && [ -z "${tcp_nodelay}" ] && \
 	[ -z "${access_log}" ] && [ -z "${error_log}" ] && \
-	[ -z "${ssl_session_timeout}" ] && [ -z "${_ssl_session_cache_set}" ] && [ -z "${ssl_session_tickets}" ] && [ -z "${ssl_stapling}" ] && [ -z "${ssl_buffer_size}" ] && \
+	[ -z "${_ssl_session_timeout_set}" ] && [ -z "${_ssl_session_cache_set}" ] && [ -z "${_ssl_session_tickets_set}" ] && [ -z "${_ssl_stapling_set}" ] && [ -z "${_ssl_buffer_size_set}" ] && \
 	{
 		# No directives to generate, restore any previously commented lines
 		_restore_template_directives
@@ -983,12 +964,21 @@ generate_global_conf() {
 			if [ "${ssl_stapling}" = "1" ]; then
 				echo "ssl_stapling on;"
 				echo "ssl_stapling_verify on;"
+				echo "resolver 127.0.0.1 valid=300s ipv6=off;"
+				echo "resolver_timeout 5s;"
 			elif [ "${ssl_stapling}" = "0" ]; then
 				echo "ssl_stapling off;"
 			fi
 			if [ -n "${ssl_buffer_size}" ]; then
 				echo "ssl_buffer_size ${ssl_buffer_size};"
 			fi
+			echo "ssl_prefer_server_ciphers off;"
+		fi
+
+		if [ "${http2}" = "1" ]; then
+			echo "http2 on;"
+		elif [ "${http2}" = "0" ]; then
+			echo "http2 off;"
 		fi
 	} > "${output_file}"
 
