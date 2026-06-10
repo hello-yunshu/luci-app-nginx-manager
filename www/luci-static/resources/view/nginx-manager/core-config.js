@@ -285,7 +285,7 @@ return view.extend({
 		o.default = '1';
 
 		o = s2.option(form.Flag, 'ssl_stapling', _('OCSP Stapling'),
-			_('Enable OCSP stapling so clients can verify certificate revocation status without contacting the CA directly. ACME certificates will automatically use the full chain for verification.'));
+			_('Enable OCSP stapling for managed ACME certificates. Other certificate types keep stapling off to avoid issuer-chain or missing-OCSP warnings.'));
 		o.rmempty = true;
 		o.default = '1';
 		this.customSslOptions.sslStapling = o;

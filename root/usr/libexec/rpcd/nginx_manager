@@ -1277,12 +1277,7 @@ handle_get_core_config() {
 		off) ssl_session_tickets_val="0" ;;
 		*) ssl_session_tickets_val="" ;;
 	esac
-	_val="$(_read_nginx_directive ssl_stapling)"
-	case "${_val}" in
-		on) ssl_stapling_val="1" ;;
-		off) ssl_stapling_val="0" ;;
-		*) ssl_stapling_val="" ;;
-	esac
+	ssl_stapling_val="$(uci -q get nginx_manager.global.ssl_stapling || true)"
 	_val="$(_read_nginx_directive ssl_buffer_size)"
 	ssl_buffer_size_val="${_val}"
 
@@ -1297,7 +1292,7 @@ handle_get_core_config() {
 	[ -z "${ssl_session_timeout_val}" ] && ssl_session_timeout_val="$(uci -q get nginx_manager.global.ssl_session_timeout || true)"
 	[ -z "${ssl_session_cache_val}" ] && ssl_session_cache_val="$(uci -q get nginx_manager.global.ssl_session_cache || true)"
 	[ -z "${ssl_session_tickets_val}" ] && ssl_session_tickets_val="$(uci -q get nginx_manager.global.ssl_session_tickets || true)"
-	[ -z "${ssl_stapling_val}" ] && ssl_stapling_val="$(uci -q get nginx_manager.global.ssl_stapling || true)"
+	[ -z "${ssl_stapling_val}" ] && ssl_stapling_val="1"
 	[ -z "${ssl_buffer_size_val}" ] && ssl_buffer_size_val="$(uci -q get nginx_manager.global.ssl_buffer_size || true)"
 
 	json_init
@@ -1369,12 +1364,6 @@ handle_sync_core_from_nginx() {
 	case "${nginx_val}" in
 		on)  uci set "nginx_manager.global.tcp_nodelay=1" ;;
 		off) uci set "nginx_manager.global.tcp_nodelay=0" ;;
-	esac
-
-	nginx_val="$(_read_nginx_directive "ssl_stapling")"
-	case "${nginx_val}" in
-		on)  uci set "nginx_manager.global.ssl_stapling=1" ;;
-		off) uci set "nginx_manager.global.ssl_stapling=0" ;;
 	esac
 
 	nginx_val="$(_read_nginx_directive "ssl_session_tickets")"

@@ -318,13 +318,16 @@ EOF
 	local ssl_stapling
 	ssl_stapling="$(uci -q get nginx_manager.global.ssl_stapling)" || \
 		ssl_stapling="1"
-	if [ "${ssl_stapling}" = "1" ]; then
-		# For ACME certs, use fullchain as trusted certificate for OCSP verification
-		local cert_type
-		cert_type="$(uci -q get "nginx_manager.${cert_name}.type")" || cert_type=""
-		if [ "${cert_type}" = "acme" ]; then
-			echo "    ssl_trusted_certificate ${cert_path};"
-		fi
+	local cert_type
+	cert_type="$(uci -q get "nginx_manager.${cert_name}.type")" || cert_type=""
+	if [ "${ssl_stapling}" = "1" ] && [ "${cert_type}" = "acme" ]; then
+		echo "    ssl_stapling on;"
+		echo "    ssl_stapling_verify on;"
+		echo "    ssl_trusted_certificate ${cert_path};"
+		echo "    resolver 127.0.0.1 valid=300s ipv6=off;"
+		echo "    resolver_timeout 5s;"
+	else
+		echo "    ssl_stapling off;"
 	fi
 
 	local custom_ssl_directives
@@ -823,7 +826,7 @@ _strip_directives_from_file() {
 	[ -n "${ssl_session_timeout}" ] && directives="${directives} ssl_session_timeout"
 	[ -n "${ssl_session_cache}" ] && directives="${directives} ssl_session_cache"
 	[ -n "${ssl_session_tickets}" ] && directives="${directives} ssl_session_tickets"
-	[ -n "${ssl_stapling}" ] && directives="${directives} ssl_stapling ssl_stapling_verify resolver resolver_timeout"
+	[ -n "${ssl_stapling_managed}" ] && directives="${directives} ssl_stapling ssl_stapling_verify resolver resolver_timeout"
 	[ -n "${ssl_buffer_size}" ] && directives="${directives} ssl_buffer_size"
 	[ -n "${http2}" ] && directives="${directives} http2"
 	directives="${directives} ssl_prefer_server_ciphers"
@@ -889,7 +892,8 @@ generate_global_conf() {
 	local max_body keepalive gzip
 	local server_tokens sendfile access_log error_log
 	local tcp_nopush tcp_nodelay
-	local ssl_session_timeout ssl_session_cache ssl_stapling ssl_buffer_size
+	local ssl_session_timeout ssl_session_cache ssl_buffer_size
+	local ssl_stapling_managed="1"
 	local http2
 
 	max_body="$(uci -q get nginx_manager.global.client_max_body_size)" || max_body=""
@@ -910,9 +914,6 @@ generate_global_conf() {
 	ssl_session_tickets="$(uci -q get nginx_manager.global.ssl_session_tickets)" || ssl_session_tickets=""
 	local _ssl_session_tickets_set="${ssl_session_tickets}"
 	[ -z "${ssl_session_tickets}" ] && ssl_session_tickets="1"
-	ssl_stapling="$(uci -q get nginx_manager.global.ssl_stapling)" || ssl_stapling=""
-	local _ssl_stapling_set="${ssl_stapling}"
-	[ -z "${ssl_stapling}" ] && ssl_stapling="1"
 	ssl_buffer_size="$(uci -q get nginx_manager.global.ssl_buffer_size)" || ssl_buffer_size=""
 	local _ssl_buffer_size_set="${ssl_buffer_size}"
 	[ -z "${ssl_buffer_size}" ] && ssl_buffer_size="16k"
@@ -922,7 +923,7 @@ generate_global_conf() {
 	[ -z "${server_tokens}" ] && [ -z "${sendfile}" ] && \
 	[ -z "${tcp_nopush}" ] && [ -z "${tcp_nodelay}" ] && \
 	[ -z "${access_log}" ] && [ -z "${error_log}" ] && \
-	[ -z "${_ssl_session_timeout_set}" ] && [ -z "${_ssl_session_cache_set}" ] && [ -z "${_ssl_session_tickets_set}" ] && [ -z "${_ssl_stapling_set}" ] && [ -z "${_ssl_buffer_size_set}" ] && \
+	[ -z "${_ssl_session_timeout_set}" ] && [ -z "${_ssl_session_cache_set}" ] && [ -z "${_ssl_session_tickets_set}" ] && [ -z "${ssl_stapling_managed}" ] && [ -z "${_ssl_buffer_size_set}" ] && \
 	{
 		# No directives to generate, restore any previously commented lines
 		_restore_template_directives
@@ -964,7 +965,7 @@ generate_global_conf() {
 		[ -n "${access_log}" ] && echo "access_log ${access_log};"
 		[ -n "${error_log}" ] && echo "error_log ${error_log};"
 
-		if [ -n "${ssl_session_timeout}" ] || [ -n "${ssl_session_cache}" ] || [ -n "${ssl_session_tickets}" ] || [ -n "${ssl_stapling}" ] || [ -n "${ssl_buffer_size}" ]; then
+		if [ -n "${ssl_session_timeout}" ] || [ -n "${ssl_session_cache}" ] || [ -n "${ssl_session_tickets}" ] || [ -n "${ssl_buffer_size}" ]; then
 			echo ""
 			if [ -n "${ssl_session_timeout}" ]; then
 				echo "ssl_session_timeout ${ssl_session_timeout};"
@@ -976,14 +977,6 @@ generate_global_conf() {
 				echo "ssl_session_tickets on;"
 			elif [ "${ssl_session_tickets}" = "0" ]; then
 				echo "ssl_session_tickets off;"
-			fi
-			if [ "${ssl_stapling}" = "1" ]; then
-				echo "ssl_stapling on;"
-				echo "ssl_stapling_verify on;"
-				echo "resolver 127.0.0.1 valid=300s ipv6=off;"
-				echo "resolver_timeout 5s;"
-			elif [ "${ssl_stapling}" = "0" ]; then
-				echo "ssl_stapling off;"
 			fi
 			if [ -n "${ssl_buffer_size}" ]; then
 				echo "ssl_buffer_size ${ssl_buffer_size};"

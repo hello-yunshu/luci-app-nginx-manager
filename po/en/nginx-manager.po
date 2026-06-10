@@ -516,8 +516,8 @@ msgstr "Non-Managed Configs"
 msgid "OCSP Stapling"
 msgstr "OCSP Stapling"
 
-msgid "Enable OCSP stapling so clients can verify certificate revocation status without contacting the CA directly. ACME certificates will automatically use the full chain for verification."
-msgstr "Enable OCSP stapling so clients can verify certificate revocation status without contacting the CA directly. ACME certificates will automatically use the full chain for verification."
+msgid "Enable OCSP stapling for managed ACME certificates. Other certificate types keep stapling off to avoid issuer-chain or missing-OCSP warnings."
+msgstr "Enable OCSP stapling for managed ACME certificates. Other certificate types keep stapling off to avoid issuer-chain or missing-OCSP warnings."
 
 msgid "OK"
 msgstr "OK"
