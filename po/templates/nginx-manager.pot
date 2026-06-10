@@ -537,7 +537,7 @@ msgstr ""
 msgid "OCSP Stapling"
 msgstr ""
 
-msgid "Enable OCSP stapling so clients can verify certificate revocation status without contacting the CA directly. ACME certificates will automatically use the full chain for verification."
+msgid "Enable OCSP stapling for managed ACME certificates. Other certificate types keep stapling off to avoid issuer-chain or missing-OCSP warnings."
 msgstr ""
 
 msgid "OK"

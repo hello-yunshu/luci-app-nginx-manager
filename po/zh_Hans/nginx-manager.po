@@ -522,8 +522,8 @@ msgstr "非管理配置数"
 msgid "OCSP Stapling"
 msgstr "OCSP 装订"
 
-msgid "Enable OCSP stapling so clients can verify certificate revocation status without contacting the CA directly. ACME certificates will automatically use the full chain for verification."
-msgstr "启用 OCSP 装订，客户端无需直接联系 CA 即可验证证书吊销状态。ACME 证书将自动使用完整证书链进行验证。"
+msgid "Enable OCSP stapling for managed ACME certificates. Other certificate types keep stapling off to avoid issuer-chain or missing-OCSP warnings."
+msgstr "为托管的 ACME 证书启用 OCSP 装订。其他证书类型会保持关闭，以避免 issuer 链或缺少 OCSP 信息导致的警告。"
 
 msgid "OK"
 msgstr "正常"
