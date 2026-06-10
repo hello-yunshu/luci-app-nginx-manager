@@ -1413,7 +1413,7 @@ custom_ssl_directive_conflicts() {
 	ssl_stapling="$(uci -q get nginx_manager.global.ssl_stapling)" || ssl_stapling="1"
 	ssl_buffer_size="$(uci -q get nginx_manager.global.ssl_buffer_size)" || ssl_buffer_size=""
 
-	managed_directives="ssl_certificate ssl_certificate_key ssl_protocols ssl_ciphers ssl_prefer_server_ciphers ssl_session_timeout ssl_session_tickets"
+	managed_directives="ssl_certificate ssl_certificate_key ssl_protocols ssl_ciphers ssl_prefer_server_ciphers ssl_session_timeout ssl_session_tickets http2"
 	[ -n "${ssl_buffer_size}" ] && managed_directives="${managed_directives} ssl_buffer_size"
 	if [ "${ssl_stapling}" = "1" ]; then
 		managed_directives="${managed_directives} ssl_stapling ssl_stapling_verify resolver resolver_timeout"
