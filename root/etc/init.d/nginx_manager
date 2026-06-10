@@ -30,6 +30,7 @@ validate_nginx_manager_global() {
         'custom_ssl_directives:string:' \
         'http2:bool:1' \
         'http3:bool:0' \
+        'security_headers:bool:1' \
         'advanced_mode:bool:0' \
         'dangerous_core_edit:bool:0' \
         'core_config_initialized:bool:0'

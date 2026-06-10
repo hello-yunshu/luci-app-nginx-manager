@@ -28,8 +28,11 @@
 每个站点支持：
 - 多个 listen 端口（含 SSL）
 - 自动 HTTP→HTTPS 跳转
+- gRPC 透传（gRPC Path + gRPC Backend Address）
+- 站点级 HSTS（max-age 自定义）
 - 独立的访问日志与错误日志控制
 - 一键启用/禁用，禁用后配置文件保留但不会被 nginx 加载
+- 站点复制（一键复制已有站点配置）
 
 ### SSL 证书管理
 
@@ -74,7 +77,11 @@
 - `gzip` — 压缩开关，启用时对齐 OpenWrt `uci.conf.template` 的 `gzip_vary on` 与 `gzip_proxied any`
 - `server_tokens` — 版本信息显示
 - `sendfile` — 零拷贝传输
+- `http2` — HTTP/2 开关（nginx 1.25.1+ 用 `http2 on;` 指令）
+- `http3` — HTTP/3 (QUIC) 开关，需 nginx 编译 QUIC 支持
 - `ssl_protocols` / `ssl_ciphers` — SSL 协议与加密套件
+- `ssl_stapling` — OCSP Stapling
+- `ssl_buffer_size` — SSL 缓冲区大小
 
 ## 安装
 
@@ -158,7 +165,7 @@ root/
 │   ├── config/nginx_manager                    # UCI 配置文件
 │   └── uci-defaults/90-luci-app-nginx-manager  # 首次安装初始化脚本
 ├── usr/
-│   ├── libexec/rpcd/nginx_manager              # RPC 后端（30 个 API 方法）
+│   ├── libexec/rpcd/nginx_manager              # RPC 后端（38 个 API 方法）
 │   ├── sbin/nginx-manager-gen                  # 配置生成与部署工具
 │   └── share/
 │       ├── luci/menu.d/                        # LuCI 菜单注册
@@ -166,6 +173,7 @@ root/
 
 htdocs/luci-static/resources/
 ├── nginx-manager/nginx-manager.css             # 全局样式
+├── nginx-manager/utils.js                      # 共享工具函数
 └── view/nginx-manager/
     ├── overview.js                             # 总览仪表盘
     ├── sites.js                                # 站点列表
@@ -181,7 +189,7 @@ htdocs/luci-static/resources/
 ```
 ┌──────────────┐     ubus/rpcd     ┌──────────────────┐     UCI      ┌──────────────┐
 │  LuCI 前端    │ ──────────────→  │  rpcd 后端        │ ──────────→ │  UCI 配置     │
-│  (7 个 JS 视图)│ ←──────────────  │  (30 个 API 方法)  │ ←──────────  │  nginx_manager│
+│  (7 个 JS 视图)│ ←──────────────  │  (38 个 API 方法)  │ ←──────────  │  nginx_manager│
 └──────────────┘     JSON 响应      └──────────────────┘              └──────┬───────┘
                                                                             │
                                                               nginx-manager-gen

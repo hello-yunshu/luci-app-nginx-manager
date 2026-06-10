@@ -1092,6 +1092,24 @@ msgstr "HTTP/3 (QUIC)"
 msgid "Enable HTTP/3 over QUIC. Adds quic reuseport to listen directives and Alt-Svc header. Requires nginx built with QUIC support."
 msgstr "Enable HTTP/3 over QUIC. Adds quic reuseport to listen directives and Alt-Svc header. Requires nginx built with QUIC support."
 
+msgid "Security Headers"
+msgstr "Security Headers"
+
+msgid "Add X-Frame-Options, CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy to SSL sites."
+msgstr "Add X-Frame-Options, CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy to SSL sites."
+
+msgid "is already managed by Security Headers. Disable Security Headers to customize it."
+msgstr "is already managed by Security Headers. Disable Security Headers to customize it."
+
+msgid "is managed by HSTS settings. Set HSTS Max Age to 0 to disable it."
+msgstr "is managed by HSTS settings. Set HSTS Max Age to 0 to disable it."
+
+msgid "is managed by HTTP/3 settings. Disable HTTP/3 to customize it."
+msgstr "is managed by HTTP/3 settings. Disable HTTP/3 to customize it."
+
+msgid "is managed by Security Headers. Disable Security Headers to customize it."
+msgstr "is managed by Security Headers. Disable Security Headers to customize it."
+
 msgid "SSL Session Tickets"
 msgstr "SSL Session Tickets"
 
