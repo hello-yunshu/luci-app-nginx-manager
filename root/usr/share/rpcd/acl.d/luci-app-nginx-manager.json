@@ -33,6 +33,7 @@
 					"delete_site",
 					"enable_site",
 					"disable_site",
+					"duplicate_site",
 					"reload_nginx",
 					"restart_nginx",
 					"start_nginx",

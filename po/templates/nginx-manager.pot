@@ -153,6 +153,9 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
+msgid "Copy"
+msgstr ""
+
 msgid "Common Proxy Headers"
 msgstr ""
 
@@ -205,6 +208,9 @@ msgid "Create Backup"
 msgstr ""
 
 msgid "Creating site..."
+msgstr ""
+
+msgid "Create a copy of this site with a new name? The copy will be disabled by default."
 msgstr ""
 
 msgid "Custom Proxy Headers"
@@ -277,6 +283,12 @@ msgid "Disabled"
 msgstr ""
 
 msgid "Domain"
+msgstr ""
+
+msgid "Duplicating..."
+msgstr ""
+
+msgid "Duplicate Site"
 msgstr ""
 
 msgid "Domain is required for ACME certificates"
@@ -700,6 +712,9 @@ msgid "Site deleted successfully"
 msgstr ""
 
 msgid "Site disabled"
+msgstr ""
+
+msgid "Site duplicated, redirecting to edit page..."
 msgstr ""
 
 msgid "Site enabled"

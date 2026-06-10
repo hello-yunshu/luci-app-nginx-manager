@@ -331,6 +331,50 @@ button.nm-badge {
 	background: color-mix(in srgb, var(--ys-footer-blue) 18%, transparent);
 	text-decoration: none;
 }
+/* === Responsive Tables === */
+@media (max-width: 768px) {
+	.nm-responsive-table {
+		display: block;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.nm-responsive-table thead {
+		display: none;
+	}
+
+	.nm-responsive-table tr {
+		display: block;
+		margin-bottom: 0.8em;
+		padding: 0.8em;
+		border: 1px solid var(--border-color, #ddd);
+		border-radius: 6px;
+	}
+
+	.nm-responsive-table td {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.3em 0;
+		border: none;
+		text-align: right;
+	}
+
+	.nm-responsive-table td::before {
+		content: attr(data-label);
+		font-weight: 600;
+		margin-right: 1em;
+		text-align: left;
+		white-space: nowrap;
+		color: var(--subtext-color, #666);
+		font-size: 0.85em;
+	}
+
+	.nm-responsive-table .nm-actions {
+		justify-content: flex-end;
+	}
+}
+
 @media (max-width: 600px) {
 	.ys-tool-footer {
 		gap: 0.5em;
