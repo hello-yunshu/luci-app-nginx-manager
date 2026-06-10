@@ -62,6 +62,17 @@ button.nm-badge {
 	white-space: nowrap;
 }
 
+.nm-responsive-table {
+	width: 100%;
+}
+.nm-responsive-table th {
+	white-space: nowrap;
+}
+.nm-responsive-table td {
+	vertical-align: top;
+	word-break: break-word;
+}
+
 /* === Modal Button Row === */
 .modal .right {
 	display: flex;
@@ -332,10 +343,10 @@ button.nm-badge {
 	text-decoration: none;
 }
 /* === Responsive Tables === */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
 	.nm-responsive-table {
 		display: block;
-		overflow-x: auto;
+		overflow: visible;
 		-webkit-overflow-scrolling: touch;
 	}
 
@@ -343,35 +354,48 @@ button.nm-badge {
 		display: none;
 	}
 
+	.nm-responsive-table tbody,
 	.nm-responsive-table tr {
 		display: block;
+	}
+
+	.nm-responsive-table tr {
 		margin-bottom: 0.8em;
 		padding: 0.8em;
 		border: 1px solid var(--border-color, #ddd);
 		border-radius: 6px;
+		width: 100%;
+		box-sizing: border-box;
 	}
 
 	.nm-responsive-table td {
 		display: flex;
 		justify-content: space-between;
-		align-items: center;
+		align-items: flex-start;
+		gap: 1em;
 		padding: 0.3em 0;
 		border: none;
 		text-align: right;
+		min-width: 0;
 	}
 
 	.nm-responsive-table td::before {
 		content: attr(data-label);
+		flex: 0 0 9em;
 		font-weight: 600;
-		margin-right: 1em;
 		text-align: left;
-		white-space: nowrap;
+		white-space: normal;
 		color: var(--subtext-color, #666);
 		font-size: 0.85em;
+		word-break: break-word;
 	}
 
 	.nm-responsive-table .nm-actions {
-		justify-content: flex-end;
+		justify-content: flex-start;
+	}
+
+	.nm-responsive-table .nm-actions::before {
+		margin-right: auto;
 	}
 }
 
