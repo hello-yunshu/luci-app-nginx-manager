@@ -1315,6 +1315,7 @@ handle_get_core_config() {
 	json_add_string "ssl_buffer_size" "${ssl_buffer_size_val}"
 	json_add_string "custom_ssl_directives" "$(uci -q get nginx_manager.global.custom_ssl_directives || true)"
 	json_add_string "advanced_mode" "$(uci -q get nginx_manager.global.advanced_mode || echo '0')"
+	json_add_string "security_headers" "$(uci -q get nginx_manager.global.security_headers || echo '1')"
 	json_add_string "dangerous_core_edit" "$(uci -q get nginx_manager.global.dangerous_core_edit || echo '0')"
 	json_dump
 }
@@ -1389,6 +1390,9 @@ handle_sync_core_from_nginx() {
 	esac
 
 	# Mark as initialized
+	# Set security_headers default if not already configured
+	uci -q get nginx_manager.global.security_headers >/dev/null 2>&1 || \
+		uci set "nginx_manager.global.security_headers=1"
 	uci set "nginx_manager.global.core_config_initialized=1"
 	uci commit nginx_manager
 
@@ -1412,8 +1416,10 @@ custom_ssl_directive_conflicts() {
 
 	ssl_stapling="$(uci -q get nginx_manager.global.ssl_stapling)" || ssl_stapling="1"
 	ssl_buffer_size="$(uci -q get nginx_manager.global.ssl_buffer_size)" || ssl_buffer_size=""
+	local security_headers
+	security_headers="$(uci -q get nginx_manager.global.security_headers)" || security_headers="1"
 
-	managed_directives="ssl_certificate ssl_certificate_key ssl_protocols ssl_ciphers ssl_prefer_server_ciphers ssl_session_timeout ssl_session_tickets http2"
+	managed_directives="ssl_certificate ssl_certificate_key ssl_protocols ssl_ciphers ssl_prefer_server_ciphers ssl_session_timeout ssl_session_tickets ssl_trusted_certificate http2"
 	[ -n "${ssl_buffer_size}" ] && managed_directives="${managed_directives} ssl_buffer_size"
 	if [ "${ssl_stapling}" = "1" ]; then
 		managed_directives="${managed_directives} ssl_stapling ssl_stapling_verify resolver resolver_timeout"
@@ -1439,6 +1445,29 @@ custom_ssl_directive_conflicts() {
 				printf 'Line %s: ssl_session_cache reuses shared zone "%s" with size %s, but SSL Session Cache uses %s. Use a different zone name or change the SSL Session Cache field.\n' \
 					"${_CUSTOM_SSL_LINE_NO}" "${custom_zone}" "${custom_size}" "${ssl_session_cache}"
 			fi
+			continue
+		fi
+
+		# Check add_header conflicts with managed headers
+		if [ "${directive}" = "add_header" ]; then
+			local header_name
+			header_name="$(printf '%s\n' "${line}" | sed -n 's/^[[:space:]]*add_header[[:space:]]\+\([^[:space:];"'"'"']*\).*/\1/p')"
+			case "${header_name}" in
+				Strict-Transport-Security)
+					printf 'Line %s: "add_header Strict-Transport-Security" is managed by HSTS settings. Set HSTS Max Age to 0 to disable it.\n' \
+						"${_CUSTOM_SSL_LINE_NO}"
+					;;
+				Alt-Svc)
+					printf 'Line %s: "add_header Alt-Svc" is managed by HTTP/3 settings. Disable HTTP/3 to customize it.\n' \
+						"${_CUSTOM_SSL_LINE_NO}"
+					;;
+				X-Frame-Options|Content-Security-Policy|X-Content-Type-Options|Referrer-Policy|Permissions-Policy)
+					if [ "${security_headers}" = "1" ]; then
+						printf 'Line %s: "add_header %s" is managed by Security Headers. Disable Security Headers to customize it.\n' \
+							"${_CUSTOM_SSL_LINE_NO}" "${header_name}"
+					fi
+					;;
+			esac
 			continue
 		fi
 

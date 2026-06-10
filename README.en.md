@@ -28,8 +28,11 @@ Four site modes covering common use cases:
 Per-site options:
 - Multiple listen ports (including SSL)
 - Automatic HTTP→HTTPS redirect
+- gRPC Passthrough (gRPC Path + gRPC Backend Address)
+- Site-level HSTS (customizable max-age)
 - Independent access/error log controls
 - One-click enable/disable — disabled sites are preserved but not loaded by nginx
+- Site duplication (one-click copy an existing site config)
 
 ### SSL Certificate Management
 
@@ -74,7 +77,11 @@ Adjust common parameters through a visual editor — no manual file editing need
 - `gzip` — Compression toggle; when enabled, aligns with OpenWrt `uci.conf.template` by emitting `gzip_vary on` and `gzip_proxied any`
 - `server_tokens` — Version info visibility
 - `sendfile` — Zero-copy file transfer
+- `http2` — HTTP/2 toggle (uses `http2 on;` directive for nginx 1.25.1+)
+- `http3` — HTTP/3 (QUIC) toggle, requires nginx with QUIC support
 - `ssl_protocols` / `ssl_ciphers` — SSL protocol and cipher suite selection
+- `ssl_stapling` — OCSP Stapling
+- `ssl_buffer_size` — SSL buffer size
 
 ## Installation
 
@@ -158,7 +165,7 @@ root/
 │   ├── config/nginx_manager                    # UCI configuration
 │   └── uci-defaults/90-luci-app-nginx-manager  # First-install init script
 ├── usr/
-│   ├── libexec/rpcd/nginx_manager              # RPC backend (30 API methods)
+│   ├── libexec/rpcd/nginx_manager              # RPC backend (38 API methods)
 │   ├── sbin/nginx-manager-gen                  # Config generator & deployer
 │   └── share/
 │       ├── luci/menu.d/                        # LuCI menu registration
@@ -166,6 +173,7 @@ root/
 
 htdocs/luci-static/resources/
 ├── nginx-manager/nginx-manager.css             # Global styles
+├── nginx-manager/utils.js                      # Shared utilities
 └── view/nginx-manager/
     ├── overview.js                             # Dashboard overview
     ├── sites.js                                # Site listing
@@ -181,7 +189,7 @@ htdocs/luci-static/resources/
 ```
 ┌──────────────┐     ubus/rpcd     ┌──────────────────┐     UCI      ┌──────────────┐
 │  LuCI Frontend│ ──────────────→  │  rpcd Backend     │ ──────────→ │  UCI Config   │
-│  (7 JS views) │ ←──────────────  │  (30 API methods) │ ←──────────  │  nginx_manager│
+│  (7 JS views) │ ←──────────────  │  (38 API methods) │ ←──────────  │  nginx_manager│
 └──────────────┘     JSON response └──────────────────┘              └──────┬───────┘
                                                                             │
                                                               nginx-manager-gen
