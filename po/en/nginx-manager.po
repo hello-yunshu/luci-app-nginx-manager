@@ -162,6 +162,9 @@ msgstr "Client Max Body Size"
 msgid "Close"
 msgstr "Close"
 
+msgid "Copy"
+msgstr "Copy"
+
 msgid "Common Proxy Headers"
 msgstr "Common Proxy Headers"
 
@@ -200,6 +203,9 @@ msgstr "Create Backup"
 
 msgid "Creating site..."
 msgstr "Creating site..."
+
+msgid "Create a copy of this site with a new name? The copy will be disabled by default."
+msgstr "Create a copy of this site with a new name? The copy will be disabled by default."
 
 msgid "Custom Proxy Headers"
 msgstr "Custom Proxy Headers"
@@ -272,6 +278,12 @@ msgstr "Disabled"
 
 msgid "Domain"
 msgstr "Domain"
+
+msgid "Duplicating..."
+msgstr "Duplicating..."
+
+msgid "Duplicate Site"
+msgstr "Duplicate Site"
 
 msgid "Domain is required for ACME certificates"
 msgstr "Domain is required for ACME certificates"
@@ -683,6 +695,9 @@ msgstr "Site deleted successfully"
 
 msgid "Site disabled"
 msgstr "Site disabled"
+
+msgid "Site duplicated, redirecting to edit page..."
+msgstr "Site duplicated, redirecting to edit page..."
 
 msgid "Site enabled"
 msgstr "Site enabled"

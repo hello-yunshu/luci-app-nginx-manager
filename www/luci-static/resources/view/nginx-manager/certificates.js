@@ -1014,7 +1014,7 @@ return view.extend({
 		});
 		}
 
-		var table = E('table', { 'class': 'table' });
+		var table = E('table', { 'class': 'table nm-responsive-table' });
 		var thead = E('thead');
 		var headerRow = E('tr');
 		[_('Name'), _('Type'), _('Domain'), _('Status'), _('Actions')].forEach(function(title) {
@@ -1026,21 +1026,21 @@ return view.extend({
 		certs.forEach(function(cert) {
 			var row = E('tr');
 
-			row.appendChild(E('td', {}, cert.name || '-'));
-			row.appendChild(E('td', {}, acmeModeLabel(cert)));
+			row.appendChild(E('td', { 'data-label': _('Name') }, cert.name || '-'));
+			row.appendChild(E('td', { 'data-label': _('Type') }, acmeModeLabel(cert)));
 
-			var domainCell = E('td');
+			var domainCell = E('td', { 'data-label': _('Domain') });
 			domainCell.textContent = cert.domain || '-';
 			row.appendChild(domainCell);
 
-			var statusCell = E('td');
+			var statusCell = E('td', { 'data-label': _('Status') });
 			statusCell.appendChild(E('button', {
 				'class': certStatusClass(cert.status),
 				'click': function() { showCertStatusModal(cert); }
 			}, certStatusLabel(cert.status)));
 			row.appendChild(statusCell);
 
-			var actionsCell = E('td', { 'class': 'nm-actions' });
+			var actionsCell = E('td', { 'class': 'nm-actions', 'data-label': _('Actions') });
 
 			if (cert.type === 'acme') {
 				actionsCell.appendChild(E('button', {

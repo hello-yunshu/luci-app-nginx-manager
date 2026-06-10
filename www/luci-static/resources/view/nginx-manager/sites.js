@@ -40,6 +40,13 @@ var callRenderSite = rpc.declare({
 	expect: {}
 });
 
+var callDuplicateSite = rpc.declare({
+	object: 'nginx_manager',
+	method: 'duplicate_site',
+	params: ['id'],
+	expect: {}
+});
+
 var callSetSite = rpc.declare({
 	object: 'nginx_manager',
 	method: 'set_site',
@@ -150,7 +157,7 @@ return view.extend({
 			});
 		}
 
-		var table = E('table', { 'class': 'table' });
+		var table = E('table', { 'class': 'table nm-responsive-table' });
 		var thead = E('thead');
 		var headerRow = E('tr');
 		[_('Enabled'), _('Name'), _('Domain'), _('Type'), _('SSL'), _('Backend / Root'), _('Actions')].forEach(function(title) {
@@ -162,23 +169,23 @@ return view.extend({
 		sites.forEach(function(site) {
 			var row = E('tr');
 
-			var enabledCell = E('td');
+			var enabledCell = E('td', { 'data-label': _('Enabled') });
 			enabledCell.appendChild(E('span', { 'class': 'nm-badge ' + (site.enabled === '1' ? 'success' : 'disabled') },
 				site.enabled === '1' ? _('Enabled') : _('Disabled')));
 			row.appendChild(enabledCell);
 
-			row.appendChild(E('td', {}, site.name || '-'));
-			row.appendChild(E('td', {}, site.server_name || '-'));
-			row.appendChild(E('td', {}, modeLabel(site.mode)));
+			row.appendChild(E('td', { 'data-label': _('Name') }, site.name || '-'));
+			row.appendChild(E('td', { 'data-label': _('Domain') }, site.server_name || '-'));
+			row.appendChild(E('td', { 'data-label': _('Type') }, modeLabel(site.mode)));
 
-			var sslCell = E('td');
+			var sslCell = E('td', { 'data-label': _('SSL') });
 			sslCell.appendChild(E('span', { 'class': 'nm-badge ' + (site.has_ssl === '1' ? 'success' : 'disabled') },
 				site.has_ssl === '1' ? _('SSL') : '-'));
 			row.appendChild(sslCell);
 
-			row.appendChild(E('td', {}, site.proxy_pass || site.root || '-'));
+			row.appendChild(E('td', { 'data-label': _('Backend / Root') }, site.proxy_pass || site.root || '-'));
 
-			var actionsCell = E('td', { 'class': 'nm-actions' });
+			var actionsCell = E('td', { 'class': 'nm-actions', 'data-label': _('Actions') });
 
 			actionsCell.appendChild(E('button', {
 				'class': 'cbi-button',
@@ -186,6 +193,37 @@ return view.extend({
 					location.href = L.url('admin/services/nginx-manager/sites/edit', site.id);
 				}
 			}, _('Edit')));
+
+			actionsCell.appendChild(E('button', {
+				'class': 'cbi-button',
+				'click': function() {
+					ui.showModal(_('Duplicate Site'), [
+						E('p', {}, _('Create a copy of this site with a new name? The copy will be disabled by default.')),
+						E('div', { 'class': 'right' }, [
+							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+							E('button', {
+								'class': 'cbi-button cbi-button-apply',
+								'click': function() {
+									ui.hideModal();
+									ui.showModal(_('Duplicating...'), [E('p', {}, _('Please wait...'))]);
+									callDuplicateSite(site.id).then(function(result) {
+										ui.hideModal();
+										if (result && result.error) {
+											ui.addNotification(null, E('p', {}, result.error), 'error');
+										} else {
+											ui.showModal(_('Redirecting'), [E('p', {}, _('Site duplicated, redirecting to edit page...'))]);
+											setTimeout(function() {
+												ui.hideModal();
+												location.href = L.url('admin/services/nginx-manager/sites/edit', result.new_id);
+											}, 500);
+										}
+									});
+								}
+							}, _('Copy'))
+						])
+					]);
+				}
+			}, '\u2398 ' + _('Copy')));
 
 			actionsCell.appendChild(E('button', {
 				'class': 'cbi-button',

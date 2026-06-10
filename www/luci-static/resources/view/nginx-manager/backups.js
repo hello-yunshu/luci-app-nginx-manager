@@ -131,7 +131,7 @@ return view.extend({
 		});
 		}
 
-		var table = E('table', { 'class': 'table' });
+		var table = E('table', { 'class': 'table nm-responsive-table' });
 		var thead = E('thead');
 		var headerRow = E('tr');
 		[_('Backup Time'), _('Source'), _('Actions')].forEach(function(title) {
@@ -144,10 +144,10 @@ return view.extend({
 
 		backups.forEach(function(backup) {
 			var row = E('tr');
-			row.appendChild(E('td', {}, backup.timestamp || '-'));
-			row.appendChild(E('td', {}, backup.source || '-'));
+			row.appendChild(E('td', { 'data-label': _('Backup Time') }, backup.timestamp || '-'));
+			row.appendChild(E('td', { 'data-label': _('Source') }, backup.source || '-'));
 
-			var actionsCell = E('td', { 'class': 'nm-actions' });
+			var actionsCell = E('td', { 'class': 'nm-actions', 'data-label': _('Actions') });
 
 			actionsCell.appendChild(E('button', {
 				'class': 'cbi-button',

@@ -168,6 +168,9 @@ msgstr "客户端最大请求体"
 msgid "Close"
 msgstr "关闭"
 
+msgid "Copy"
+msgstr "复制"
+
 msgid "Common Proxy Headers"
 msgstr "常用代理头"
 
@@ -206,6 +209,9 @@ msgstr "创建备份"
 
 msgid "Creating site..."
 msgstr "正在创建站点..."
+
+msgid "Create a copy of this site with a new name? The copy will be disabled by default."
+msgstr "创建一份此站点的副本吗？副本默认会被禁用。"
 
 msgid "Custom Proxy Headers"
 msgstr "自定义代理头"
@@ -278,6 +284,12 @@ msgstr "已禁用"
 
 msgid "Domain"
 msgstr "域名"
+
+msgid "Duplicating..."
+msgstr "正在复制..."
+
+msgid "Duplicate Site"
+msgstr "复制站点"
 
 msgid "Domain is required for ACME certificates"
 msgstr "ACME 证书需要填写域名"
@@ -689,6 +701,9 @@ msgstr "站点已删除"
 
 msgid "Site disabled"
 msgstr "站点已禁用"
+
+msgid "Site duplicated, redirecting to edit page..."
+msgstr "站点已复制，正在跳转到编辑页面..."
 
 msgid "Site enabled"
 msgstr "站点已启用"

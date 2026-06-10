@@ -611,6 +611,61 @@ handle_disable_site() {
 	json_dump
 }
 
+handle_duplicate_site() {
+	local site_id
+	json_get_var site_id "id"
+	[ -z "${site_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
+	validate_uci_id "${site_id}" || { json_init; json_add_string "error" "invalid id"; json_dump; return; }
+
+	uci -q get "nginx_manager.${site_id}" >/dev/null 2>&1 || {
+		json_init
+		json_add_string "error" "site not found"
+		json_dump
+		return
+	}
+
+	# Read the original name
+	local original_name
+	original_name="$(uci -q get "nginx_manager.${site_id}.name")" || original_name="${site_id}"
+
+	# Generate a unique new section ID
+	local new_id="${site_id}_copy"
+	local suffix=2
+	while uci -q get "nginx_manager.${new_id}" >/dev/null 2>&1; do
+		new_id="${site_id}_copy${suffix}"
+		suffix=$((suffix + 1))
+	done
+
+	# Create the new UCI section
+	uci set "nginx_manager.${new_id}=site"
+
+	# Copy all fields, modifying name and enabled
+	local new_name="${original_name} (Copy)"
+	uci set "nginx_manager.${new_id}.name=${new_name}"
+
+	local opt val
+	for opt in mode server_name listen_addr listen_port proxy_pass root index websocket proxy_type grpc_path grpc_pass custom_proxy_headers redirect_https redirect_http_port \
+		proxy_host proxy_xff proxy_xfp proxy_xri ssl_cert ssl_protocols ssl_ciphers hsts_max_age \
+		access_log error_log \
+		custom_server_block redirect_target \
+		proxy_connect_timeout proxy_read_timeout proxy_send_timeout; do
+		val="$(uci -q get "nginx_manager.${site_id}.${opt}")" || continue
+		uci set "nginx_manager.${new_id}.${opt}=${val}"
+	done
+
+	# Set enabled=0 (disabled by default to avoid conflicts)
+	uci set "nginx_manager.${new_id}.enabled=0"
+
+	uci commit nginx_manager
+
+	run_apply_or_error || return
+
+	json_init
+	json_add_string "result" "ok"
+	json_add_string "new_id" "${new_id}"
+	json_dump
+}
+
 handle_render_site() {
 	local site_id
 	json_get_var site_id "id"
@@ -2555,6 +2610,10 @@ case "$1" in
 		json_add_string "id" ""
 		json_close_object
 
+		json_add_object "duplicate_site"
+		json_add_string "id" ""
+		json_close_object
+
 		json_add_object "render_site"
 		json_add_string "id" ""
 		json_close_object
@@ -2728,6 +2787,7 @@ case "$1" in
 			delete_site)        handle_delete_site ;;
 			enable_site)        handle_enable_site ;;
 			disable_site)       handle_disable_site ;;
+			duplicate_site)     handle_duplicate_site ;;
 			render_site)        handle_render_site ;;
 			list_certs)         handle_list_certs ;;
 			get_cert)           handle_get_cert ;;
