@@ -214,7 +214,7 @@ return view.extend({
 					ui.showModal(_('Config Test Result'), [
 						E('pre', { 'class': 'nm-code-block' }, output),
 						E('div', { 'class': 'right' }, [
-							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); reloadSoon(); } }, _('OK'))
+							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('OK'))
 						])
 					]);
 				}).catch(function(err) {
