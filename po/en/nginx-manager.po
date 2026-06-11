@@ -516,8 +516,8 @@ msgstr "Non-Managed Configs"
 msgid "OCSP Stapling"
 msgstr "OCSP Stapling"
 
-msgid "Enable OCSP stapling for SSL certificates. Works with both ACME and custom certificates."
-msgstr "Enable OCSP stapling for SSL certificates. Works with both ACME and custom certificates."
+msgid "OCSP stapling for custom certificates only. ACME certs not supported — Let's Encrypt has discontinued OCSP."
+msgstr "OCSP stapling for custom certificates only. ACME certs not supported — Let's Encrypt has discontinued OCSP."
 
 msgid "OK"
 msgstr "OK"

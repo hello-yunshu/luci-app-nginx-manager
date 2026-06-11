@@ -295,9 +295,16 @@ EOF
 generate_ssl_directives() {
 	local cert_name="$1"
 	local section="${2:-}"
-	local cert_path key_path
+	local cert_path key_path cert_type
 
-	cert_path="$(uci -q get "nginx_manager.${cert_name}.cert_path")" || cert_path="${CERT_DIR}/${cert_name}/fullchain.pem"
+	cert_type="$(uci -q get "nginx_manager.${cert_name}.type")" || cert_type="manual"
+
+	# ACME certs always use fullchain.pem for better security (includes intermediate CA chain)
+	if [ "${cert_type}" = "acme" ]; then
+		cert_path="${CERT_DIR}/${cert_name}/fullchain.pem"
+	else
+		cert_path="$(uci -q get "nginx_manager.${cert_name}.cert_path")" || cert_path="${CERT_DIR}/${cert_name}/fullchain.pem"
+	fi
 	key_path="$(uci -q get "nginx_manager.${cert_name}.key_path")" || key_path="${CERT_DIR}/${cert_name}/privkey.pem"
 
 	cat <<EOF
@@ -315,17 +322,24 @@ EOF
 	echo "    ssl_ciphers ${ssl_ciphers};"
 	echo "    ssl_prefer_server_ciphers off;"
 
-	local ssl_stapling
-	ssl_stapling="$(uci -q get nginx_manager.global.ssl_stapling)" || \
-		ssl_stapling="1"
-	if [ "${ssl_stapling}" = "1" ]; then
-		echo "    ssl_stapling on;"
-		echo "    ssl_stapling_verify on;"
-		echo "    ssl_trusted_certificate ${cert_path};"
-		echo "    resolver 127.0.0.1 valid=300s ipv6=off;"
-		echo "    resolver_timeout 5s;"
-	else
+	# Let's Encrypt has officially discontinued OCSP support.
+	# OCSP stapling is not available for ACME-issued certificates.
+	if [ "${cert_type}" = "acme" ]; then
+		echo "    # Let's Encrypt has discontinued OCSP, stapling not supported for ACME certs"
 		echo "    ssl_stapling off;"
+	else
+		local ssl_stapling
+		ssl_stapling="$(uci -q get nginx_manager.global.ssl_stapling)" || \
+			ssl_stapling="1"
+		if [ "${ssl_stapling}" = "1" ]; then
+			echo "    ssl_stapling on;"
+			echo "    ssl_stapling_verify on;"
+			echo "    ssl_trusted_certificate ${cert_path};"
+			echo "    resolver 127.0.0.1 valid=300s ipv6=off;"
+			echo "    resolver_timeout 5s;"
+		else
+			echo "    ssl_stapling off;"
+		fi
 	fi
 
 	local custom_ssl_directives

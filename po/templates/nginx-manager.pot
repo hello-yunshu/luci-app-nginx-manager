@@ -537,7 +537,7 @@ msgstr ""
 msgid "OCSP Stapling"
 msgstr ""
 
-msgid "Enable OCSP stapling for managed ACME certificates. Other certificate types keep stapling off to avoid issuer-chain or missing-OCSP warnings."
+msgid "OCSP stapling for custom certificates only. ACME certs not supported — Let's Encrypt has discontinued OCSP."
 msgstr ""
 
 msgid "OK"
