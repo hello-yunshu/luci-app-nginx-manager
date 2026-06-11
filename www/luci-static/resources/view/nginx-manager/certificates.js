@@ -265,6 +265,29 @@ function showCertStatusModal(cert) {
 		E('div', { 'class': 'cbi-value-field' }, E('span', { 'class': certStatusClass(cert.status) }, certStatusLabel(cert.status)))
 	]));
 
+	if (cert.expiry_days) {
+		var daysInt = parseInt(cert.expiry_days, 10);
+		var expiryText;
+		if (daysInt < 0) {
+			expiryText = _('Expired %d days ago').replace('%d', Math.abs(daysInt));
+		} else if (daysInt === 0) {
+			expiryText = _('Expires today');
+		} else {
+			expiryText = _('Expires in %d days').replace('%d', daysInt);
+		}
+		infoItems.push(E('div', { 'class': 'cbi-value' }, [
+			E('label', { 'class': 'cbi-value-title' }, _('Remaining')),
+			E('div', { 'class': 'cbi-value-field' }, expiryText)
+		]));
+	}
+
+	if (cert.expiry_date) {
+		infoItems.push(E('div', { 'class': 'cbi-value' }, [
+			E('label', { 'class': 'cbi-value-title' }, _('Expiry Date')),
+			E('div', { 'class': 'cbi-value-field' }, cert.expiry_date)
+		]));
+	}
+
 	var statusMsg = '';
 	if (cert.status === 'valid') {
 		statusMsg = _('Certificate is valid and active.');

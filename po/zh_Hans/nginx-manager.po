@@ -126,8 +126,14 @@ msgstr "基本设置"
 msgid "Both certificate and key are required"
 msgstr "证书和私钥均为必填"
 
+msgid "Back"
+msgstr "后退"
+
 msgid "Cancel"
 msgstr "取消"
+
+msgid "Cannot delete root directory"
+msgstr "不能删除根目录"
 
 msgid "Certificate (PEM)"
 msgstr "证书 (PEM)"
@@ -168,9 +174,6 @@ msgstr "客户端最大请求体"
 msgid "Close"
 msgstr "关闭"
 
-msgid "Copy"
-msgstr "复制"
-
 msgid "Common Proxy Headers"
 msgstr "常用代理头"
 
@@ -182,6 +185,12 @@ msgstr "与当前配置比较"
 
 msgid "Confirm Delete"
 msgstr "确认删除"
+
+msgid "Confirm Overwrite"
+msgstr "确认覆盖"
+
+msgid "Confirm Path"
+msgstr "确认路径"
 
 msgid "Confirm Restore"
 msgstr "确认恢复"
@@ -209,9 +218,6 @@ msgstr "创建备份"
 
 msgid "Creating site..."
 msgstr "正在创建站点..."
-
-msgid "Create a copy of this site with a new name? The copy will be disabled by default."
-msgstr "创建一份此站点的副本吗？副本默认会被禁用。"
 
 msgid "Custom Proxy Headers"
 msgstr "自定义代理头"
@@ -273,23 +279,38 @@ msgstr "默认"
 msgid "Delete"
 msgstr "删除"
 
+msgid "Deleted successfully"
+msgstr "删除成功"
+
 msgid "Disable"
 msgstr "禁用"
 
 msgid "Disable Dangerous Edit"
 msgstr "关闭危险编辑"
 
+msgid "Directory Name"
+msgstr "目录名"
+
+msgid "Directory"
+msgstr "目录"
+
+msgid "Directory name is required"
+msgstr "目录名为必填"
+
+msgid "Directory created"
+msgstr "目录已创建"
+
+msgid "Create a new directory in"
+msgstr "在以下目录创建新目录"
+
 msgid "Disabled"
 msgstr "已禁用"
 
+msgid "Download"
+msgstr "下载"
+
 msgid "Domain"
 msgstr "域名"
-
-msgid "Duplicating..."
-msgstr "正在复制..."
-
-msgid "Duplicate Site"
-msgstr "复制站点"
 
 msgid "Domain is required for ACME certificates"
 msgstr "ACME 证书需要填写域名"
@@ -363,6 +384,9 @@ msgstr "文件未找到或不可读"
 msgid "File saved successfully"
 msgstr "文件保存成功"
 
+msgid "File uploaded successfully"
+msgstr "文件上传成功"
+
 msgid "Filter"
 msgstr "过滤"
 
@@ -383,6 +407,12 @@ msgstr "gRPC 使用 grpc:// 或 grpcs:// 协议。"
 
 msgid "Gzip"
 msgstr "Gzip 压缩"
+
+msgid "Forward"
+msgstr "前进"
+
+msgid "Go"
+msgstr "跳转"
 
 msgid "HTTP"
 msgstr "HTTP"
@@ -436,7 +466,7 @@ msgid "Listen Port"
 msgstr "监听端口"
 
 msgid "Listening Ports"
-msgstr "监听端口"
+msgstr "监听端口列表"
 
 msgid "Loading..."
 msgstr "加载中..."
@@ -480,8 +510,29 @@ msgstr "缺少 ID"
 msgid "Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point."
 msgstr "修改核心配置可能导致 Nginx 无法启动，甚至导致 LuCI 后台不可访问。请确保 SSH 可用，或保留 uhttpd 作为备用入口。"
 
+msgid "Modified"
+msgstr "修改时间"
+
 msgid "Name"
 msgstr "名称"
+
+msgid "Name is required"
+msgstr "名称为必填"
+
+msgid "Name cannot contain slashes or parent directory references"
+msgstr "名称不能包含斜杠或父目录引用"
+
+msgid "Network error"
+msgstr "网络错误"
+
+msgid "New Dir"
+msgstr "新建目录"
+
+msgid "New Directory"
+msgstr "新建目录"
+
+msgid "New Name"
+msgstr "新名称"
 
 msgid "Nginx Manager"
 msgstr "Nginx 管理器"
@@ -549,6 +600,18 @@ msgstr "包管理器"
 msgid "Path"
 msgstr "路径"
 
+msgid "Path confirmation does not match"
+msgstr "路径确认不匹配"
+
+msgid "Perms"
+msgstr "权限"
+
+msgid "Permissions"
+msgstr "权限"
+
+msgid "No files"
+msgstr "无文件"
+
 msgid "Permission denied. Make sure UCI changes are applied."
 msgstr "权限不足，请确保 UCI 更改已应用。"
 
@@ -590,6 +653,12 @@ msgstr "正在跳转"
 
 msgid "Refresh"
 msgstr "刷新"
+
+msgid "Rename"
+msgstr "重命名"
+
+msgid "Renamed successfully"
+msgstr "重命名成功"
 
 msgid "Reload"
 msgstr "重新加载"
@@ -651,6 +720,9 @@ msgstr "SSL 设置"
 msgid "Save"
 msgstr "保存"
 
+msgid "Size"
+msgstr "大小"
+
 msgid "Save failed"
 msgstr "保存失败"
 
@@ -702,9 +774,6 @@ msgstr "站点已删除"
 msgid "Site disabled"
 msgstr "站点已禁用"
 
-msgid "Site duplicated, redirecting to edit page..."
-msgstr "站点已复制，正在跳转到编辑页面..."
-
 msgid "Site enabled"
 msgstr "站点已启用"
 
@@ -729,6 +798,9 @@ msgstr "静态网站"
 msgid "Status"
 msgstr "状态"
 
+msgid "Open"
+msgstr "打开"
+
 msgid "Test Config"
 msgstr "测试配置"
 
@@ -741,8 +813,20 @@ msgstr "此证书即将过期。"
 msgid "Type"
 msgstr "类型"
 
+msgid "Type the full path to confirm deletion. This operation cannot be undone."
+msgstr "请输入完整路径以确认删除。此操作无法撤销。"
+
+msgid "Type the full path to confirm overwriting the existing file."
+msgstr "请输入完整路径以确认覆盖现有文件。"
+
 msgid "Upload"
 msgstr "上传"
+
+msgid "Upload failed"
+msgstr "上传失败"
+
+msgid "Uploading..."
+msgstr "正在上传..."
 
 msgid "Upload Certificate"
 msgstr "上传证书"
@@ -755,6 +839,9 @@ msgstr "有效"
 
 msgid "Version"
 msgstr "版本"
+
+msgid "items"
+msgstr "项"
 
 msgid "View Config"
 msgstr "查看配置"
@@ -1044,6 +1131,12 @@ msgstr "应用失败"
 msgid "System Behavior"
 msgstr "系统行为"
 
+msgid "System virtual directories cannot be modified"
+msgstr "不能修改系统虚拟目录"
+
+msgid "System virtual directories cannot be opened"
+msgstr "不能打开系统虚拟目录"
+
 msgid "Auto Backup"
 msgstr "自动备份"
 
@@ -1121,3 +1214,150 @@ msgstr "SSL 会话票据"
 
 msgid "Enable to improve TLS resumption performance, or disable for stricter forward secrecy."
 msgstr "开启可提升 TLS 会话恢复性能，关闭可增强前向保密安全性。"
+
+msgid "Files"
+msgstr "文件"
+
+msgid "New File"
+msgstr "新建文件"
+
+msgid "Create a new file in"
+msgstr "在以下目录创建新文件"
+
+msgid "File Name"
+msgstr "文件名"
+
+msgid "Creating..."
+msgstr "正在创建..."
+
+msgid "File created"
+msgstr "文件已创建"
+
+msgid "Failed to create file"
+msgstr "文件创建失败"
+
+msgid "Failed to create directory"
+msgstr "目录创建失败"
+
+msgid "Failed to download"
+msgstr "下载失败"
+
+msgid "Failed to delete"
+msgstr "删除失败"
+
+msgid "Failed to rename"
+msgstr "重命名失败"
+
+msgid "Failed to load directory"
+msgstr "目录加载失败"
+
+msgid "Failed to load file"
+msgstr "文件加载失败"
+
+msgid "Failed to save file"
+msgstr "文件保存失败"
+
+msgid "File name is required"
+msgstr "文件名为必填"
+
+msgid "No file selected"
+msgstr "未选择文件"
+
+msgid "Saving..."
+msgstr "正在保存..."
+
+msgid "Clear All"
+msgstr "全部清除"
+
+msgid "Clear All Logs"
+msgstr "清除所有日志"
+
+msgid "Are you sure you want to clear ALL access and error logs for all sites? This cannot be undone."
+msgstr "确定要清除所有站点的访问日志和错误日志吗？此操作不可撤销。"
+
+msgid "Cleared"
+msgstr "已清除"
+
+msgid "log file(s)"
+msgstr "个日志文件"
+
+msgid "Clone Site"
+msgstr "克隆站点"
+
+msgid "Clone this site with a new name? The clone will be disabled by default."
+msgstr "为站点创建一个新名称的副本？副本默认会被禁用。"
+
+msgid "Cloning..."
+msgstr "正在克隆..."
+
+msgid "Clone"
+msgstr "克隆"
+
+msgid "Site cloned, redirecting to edit page..."
+msgstr "站点已克隆，正在跳转到编辑页面..."
+
+msgid "e.g. my-cert"
+msgstr "例如 my-cert"
+
+msgid "Invalid certificate name"
+msgstr "证书名称无效"
+
+msgid "Letters, digits, underscore to start; dots and hyphens are also allowed after that."
+msgstr "须以字母、数字或下划线开头，后续可包含字母、数字、点号、连字符和下划线"
+
+msgid "e.g. my-site, my_site_01"
+msgstr "例如 my-site、my_site_01"
+
+msgid "Change Permissions"
+msgstr "修改权限"
+
+msgid "Octal"
+msgstr "八进制"
+
+msgid "Owner"
+msgstr "属主"
+
+msgid "Group"
+msgstr "属组"
+
+msgid "Other"
+msgstr "其他"
+
+msgid "Read"
+msgstr "读"
+
+msgid "Write"
+msgstr "写"
+
+msgid "Execute"
+msgstr "执行"
+
+msgid "Permissions updated"
+msgstr "权限已更新"
+
+msgid "Failed to change permissions"
+msgstr "修改权限失败"
+
+msgid "Invalid permissions"
+msgstr "无效的权限"
+
+msgid "Apply"
+msgstr "应用"
+
+msgid "Are you sure you want to delete"
+msgstr "确定要删除"
+
+msgid "Remaining"
+msgstr "剩余时间"
+
+msgid "Expiry Date"
+msgstr "过期日期"
+
+msgid "Expired %d days ago"
+msgstr "已过期 %d 天"
+
+msgid "Expires today"
+msgstr "今天过期"
+
+msgid "Expires in %d days"
+msgstr "%d 天后过期"

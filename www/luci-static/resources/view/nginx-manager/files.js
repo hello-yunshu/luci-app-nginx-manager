@@ -2,326 +2,595 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 'require view';
+'require fs';
 'require ui';
 'require rpc';
 'require nginx-manager/utils as utils';
 
-var callListFiles = rpc.declare({
-	object: 'nginx_manager',
-	method: 'list_files',
-	params: ['dir'],
-	expect: {}
-});
+var DEFAULT_DIR = '/etc/nginx';
+var currentPath = DEFAULT_DIR;
+var currentEntries = [];
+var selectedPath = '';
+var BLOCKED_ROOTS = [ '/proc', '/sys', '/dev' ];
 
-var callGetFileReadonly = rpc.declare({
-	object: 'nginx_manager',
-	method: 'get_file_readonly',
-	params: ['path'],
-	expect: {}
-});
+function normalizePath(path) {
+	path = (path || '/').trim();
+	if (path === '') path = '/';
+	if (path.charAt(0) !== '/') path = '/' + path;
 
-var callSaveFile = rpc.declare({
-	object: 'nginx_manager',
-	method: 'save_file',
-	params: ['path', 'content'],
-	expect: {}
-});
+	var parts = [];
+	path.split('/').forEach(function(part) {
+		if (!part || part === '.') return;
+		if (part === '..') parts.pop();
+		else parts.push(part);
+	});
 
-function highlightNginx(text) {
-	if (!text) return '';
-	return text
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/#.*/g, function(m) { return '<span class="cm">' + m + '</span>'; })
-		.replace(/("[^"]*")/g, '<span class="str">$1</span>')
-		.replace(/(\$[\w_]+)/g, '<span class="var">$1</span>')
-		.replace(/\b(server|location|listen|proxy_pass|upstream|return|if|set|include|root|index|ssl_certificate|ssl_certificate_key|ssl_protocols|ssl_ciphers|ssl_prefer_server_ciphers|ssl_session_cache|ssl_session_timeout|ssl_session_tickets|ssl_stapling|ssl_stapling_verify|ssl_trusted_certificate|ssl_buffer_size|add_header|error_page|access_log|error_log|http2|http3|quic|server_name|client_max_body_size|keepalive_timeout|sendfile|tcp_nopush|tcp_nodelay|gzip|server_tokens|resolver|resolver_timeout|proxy_set_header|proxy_redirect|proxy_buffering|proxy_buffer_size|proxy_buffers|proxy_busy_buffers_size|proxy_connect_timeout|proxy_read_timeout|proxy_send_timeout|grpc_pass|grpc_set_header|try_files|autoindex|alias|rewrite|limit_rate|limit_rate_after|default_type|types|charset|etag|expires|cache_control)\b/g,
-			'<span class="kw">$1</span>');
+	return '/' + parts.join('/');
 }
 
-var currentPath = '';
-var currentDir = 'conf.d/luci-manager';
-var ROOT_DIR = '/etc/nginx';
+function joinPath(dir, name) {
+	dir = normalizePath(dir);
+	return dir === '/' ? '/' + name : dir + '/' + name;
+}
 
-function loadFileTree(container, dir) {
-	callListFiles(dir).then(function(data) {
-		renderFileTree(container, data);
-	}).catch(function(err) {
-		container.innerHTML = '';
-		container.appendChild(E('div', { 'class': 'nm-file-tree-item' },
-			_('Failed to load directory') + ': ' + (err.message || err)));
+function parentPath(path) {
+	path = normalizePath(path);
+	if (path === '/') return '/';
+	var idx = path.lastIndexOf('/');
+	return idx <= 0 ? '/' : path.substring(0, idx);
+}
+
+function isBlockedPath(path) {
+	path = normalizePath(path);
+	return BLOCKED_ROOTS.some(function(root) {
+		return path === root || path.indexOf(root + '/') === 0;
 	});
 }
 
-function renderFileTree(container, data) {
-	container.innerHTML = '';
+function blockIfUnsafe(path) {
+	if (!isBlockedPath(path))
+		return false;
 
-	// Root /etc/nginx entry
-	var rootItem = E('div', {
-		'class': 'nm-file-tree-item nm-file-tree-dir expanded',
-		'click': function(e) {
-			e.stopPropagation();
-			this.classList.toggle('expanded');
-			var children = this.nextElementSibling;
-			if (children) children.style.display = children.style.display === 'none' ? '' : 'none';
-		}
-	}, ROOT_DIR);
-	container.appendChild(rootItem);
-
-	var rootChildren = E('div', { 'class': 'nm-file-tree-children' });
-	container.appendChild(rootChildren);
-
-	function loadSubDir(childrenEl, subDirPath) {
-		childrenEl.innerHTML = E('div', { 'class': 'nm-file-tree-item' }, _('Loading...'));
-		callListFiles(subDirPath).then(function(subData) {
-			childrenEl.innerHTML = '';
-			var subEntries = (subData && subData.entries) || [];
-			renderEntries(childrenEl, subEntries, subDirPath);
-		}).catch(function() {
-			childrenEl.innerHTML = '';
-		});
-	}
-
-	function renderEntries(parentEl, entries, dirPath) {
-		var sorted = (entries || []).slice().sort(function(a, b) {
-			if (a.type !== b.type) return a.type === 'dir' ? -1 : 1;
-			return a.name.localeCompare(b.name);
-		});
-
-		sorted.forEach(function(entry) {
-			if (entry.type === 'dir') {
-				var subDirPath = dirPath ? dirPath + '/' + entry.name : entry.name;
-				var subItem = E('div', {
-					'class': 'nm-file-tree-item nm-file-tree-dir',
-					'click': function(e) {
-						e.stopPropagation();
-						this.classList.toggle('expanded');
-						var children = this.nextElementSibling;
-						if (children) {
-							var wasHidden = children.style.display === 'none';
-							children.style.display = wasHidden ? '' : 'none';
-							if (wasHidden && children.getAttribute('data-loaded') !== '1') {
-								children.setAttribute('data-loaded', '1');
-								loadSubDir(children, subDirPath);
-							}
-						}
-					}
-				}, entry.name);
-				parentEl.appendChild(subItem);
-
-				var subChildren = E('div', { 'class': 'nm-file-tree-children', 'style': 'display:none' });
-				parentEl.appendChild(subChildren);
-			} else {
-				var filePath = dirPath ? ROOT_DIR + '/' + dirPath + '/' + entry.name : ROOT_DIR + '/' + entry.name;
-				var fileItem = E('div', {
-					'class': 'nm-file-tree-item nm-file-tree-file',
-					'click': function(e) {
-						e.stopPropagation();
-						loadFileContent(filePath);
-						parentEl.querySelectorAll('.nm-file-tree-item.active').forEach(function(el) {
-							el.classList.remove('active');
-						});
-						this.classList.add('active');
-					}
-				}, entry.name);
-				parentEl.appendChild(fileItem);
-			}
-		});
-	}
-
-	var entries = (data && data.entries) || [];
-	renderEntries(rootChildren, entries, currentDir);
+	ui.addNotification(null, E('p', {}, _('System virtual directories cannot be modified')), 'error');
+	return true;
 }
 
-function loadFileContent(path) {
-	currentPath = path;
-	var textarea = document.getElementById('nm-file-editor-textarea');
-	var overlay = document.getElementById('nm-file-editor-overlay');
-	var pathLabel = document.getElementById('nm-file-path-label');
+function formatSize(bytes) {
+	bytes = Number(bytes || 0);
+	if (bytes < 1024) return bytes + ' B';
+	var units = ['KB', 'MB', 'GB', 'TB'];
+	var size = bytes / 1024;
+	var unit = 0;
+	while (size >= 1024 && unit < units.length - 1) {
+		size = size / 1024;
+		unit++;
+	}
+	return size.toFixed(size >= 10 ? 0 : 1) + ' ' + units[unit];
+}
 
-	if (pathLabel) pathLabel.textContent = path;
+function modeToPerms(mode) {
+	var value = Number(mode || 0) & 511;
+	var text = value.toString(8);
+	while (text.length < 3) text = '0' + text;
+	return text;
+}
 
-	if (textarea) textarea.value = '';
-	if (overlay) overlay.innerHTML = '';
+function formatTime(ts) {
+	if (!ts) return '-';
+	return new Date(ts * 1000).toLocaleString();
+}
 
-	callGetFileReadonly(path).then(function(result) {
-		if (result && result.error) {
-			ui.addNotification(null, E('p', {}, result.error), 'error');
-			return;
+function showError(prefix, err) {
+	ui.addNotification(null, E('p', {}, prefix + ': ' + (err && err.message ? err.message : err)), 'error');
+}
+
+function showPathConfirmModal(title, message, path, actionLabel, buttonClass, callback) {
+	var input = E('input', {
+		'type': 'text',
+		'class': 'cbi-input-text',
+		'placeholder': path
+	});
+
+	ui.showModal(title, [
+		E('p', {}, message),
+		E('pre', { 'class': 'nm-file-confirm-path' }, path),
+		E('div', { 'class': 'cbi-value' }, [
+			E('label', { 'class': 'cbi-value-title' }, _('Confirm Path')),
+			E('div', { 'class': 'cbi-value-field' }, [input])
+		]),
+		E('div', { 'class': 'right' }, [
+			E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+			E('button', {
+				'class': buttonClass,
+				'click': function() {
+					if (input.value.trim() !== path) {
+						ui.addNotification(null, E('p', {}, _('Path confirmation does not match')), 'error');
+						return;
+					}
+					callback();
+				}
+			}, actionLabel)
+		])
+	]);
+}
+
+function validateEntryName(name) {
+	if (!name) return _('Name is required');
+	if (name === '.' || name === '..' || name.indexOf('/') !== -1) {
+		return _('Name cannot contain slashes or parent directory references');
+	}
+	return '';
+}
+
+function setStatus(text) {
+	var el = document.getElementById('nm-file-status');
+	if (el) el.textContent = text || '';
+}
+
+function sortEntries(entries) {
+	return (entries || []).slice().sort(function(a, b) {
+		if (a.type !== b.type) {
+			if (a.type === 'directory') return -1;
+			if (b.type === 'directory') return 1;
 		}
-		var content = (result && result.content) || '';
-		if (textarea) {
-			textarea.value = content;
-			textarea.dispatchEvent(new Event('input'));
-			textarea.dispatchEvent(new Event('scroll'));
-		}
-	}).catch(function(err) {
-		ui.addNotification(null, E('p', {}, _('Failed to load file') + ': ' + (err.message || err)), 'error');
+		return String(a.name || '').localeCompare(String(b.name || ''));
 	});
 }
 
-function syncScroll() {
-	var textarea = document.getElementById('nm-file-editor-textarea');
-	var overlay = document.getElementById('nm-file-editor-overlay');
-	if (textarea && overlay) {
-		overlay.scrollTop = textarea.scrollTop;
-		overlay.scrollLeft = textarea.scrollLeft;
-	}
+function uploadFile(path, file) {
+	return new Promise(function(resolve, reject) {
+		var formData = new FormData();
+		formData.append('sessionid', rpc.getSessionID());
+		formData.append('filename', path);
+		formData.append('filedata', file);
+
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST', L.env.cgi_base + '/cgi-upload', true);
+		xhr.onload = function() {
+			if (xhr.status === 200) resolve(xhr.responseText);
+			else reject(new Error(xhr.statusText || xhr.responseText || xhr.status));
+		};
+		xhr.onerror = function() {
+			reject(new Error(_('Network error')));
+		};
+		xhr.send(formData);
+	});
 }
 
-function updateHighlight() {
-	var textarea = document.getElementById('nm-file-editor-textarea');
-	var overlay = document.getElementById('nm-file-editor-overlay');
-	if (textarea && overlay) {
-		overlay.innerHTML = highlightNginx(textarea.value);
-	}
+function downloadFile(path) {
+	fs.read_direct(path, 'blob').then(function(blob) {
+		var url = URL.createObjectURL(blob);
+		var a = document.createElement('a');
+		a.href = url;
+		a.download = path.split('/').pop() || 'download';
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	}).catch(function(err) {
+		showError(_('Failed to download'), err);
+	});
 }
 
-function saveCurrentFile() {
-	if (!currentPath) {
-		ui.addNotification(null, E('p', {}, _('No file selected')), 'error');
+function renderRows(tbody) {
+	tbody.innerHTML = '';
+
+	if (currentPath !== '/') {
+		tbody.appendChild(E('tr', {
+			'class': 'tr',
+			'click': function() { loadDirectory(parentPath(currentPath)); }
+		}, [
+			E('td', { 'class': 'td nm-file-name' }, '..'),
+			E('td', { 'class': 'td' }, _('Directory')),
+			E('td', { 'class': 'td' }, '-'),
+			E('td', { 'class': 'td' }, '-'),
+			E('td', { 'class': 'td' }, '-'),
+			E('td', { 'class': 'td' }, '')
+		]));
+	}
+
+	if (!currentEntries.length) {
+		tbody.appendChild(E('tr', {}, [
+			E('td', { 'class': 'td center', 'colspan': '6' }, _('No files'))
+		]));
 		return;
 	}
-	var textarea = document.getElementById('nm-file-editor-textarea');
-	if (!textarea) return;
 
-	var content = textarea.value;
-	ui.showModal(_('Saving...'), [E('p', {}, _('Please wait...'))]);
-	callSaveFile(currentPath.replace(ROOT_DIR + '/', ''), content).then(function(result) {
-		ui.hideModal();
-		if (result && result.error) {
-			ui.addNotification(null, E('p', {}, result.error), 'error');
-		} else {
-			ui.addNotification(null, E('p', {}, _('File saved successfully')), 'info');
-		}
-	}).catch(function(err) {
-		ui.hideModal();
-		ui.addNotification(null, E('p', {}, _('Failed to save file') + ': ' + (err.message || err)), 'error');
+	currentEntries.forEach(function(entry) {
+		var path = joinPath(currentPath, entry.name);
+		var isDir = entry.type === 'directory';
+		var row = E('tr', {
+			'class': selectedPath === path ? 'tr active' : 'tr',
+			'click': function() {
+				selectedPath = path;
+				renderRows(tbody);
+			},
+			'dblclick': function() {
+				if (isDir) loadDirectory(path);
+				else openEditor(path, entry);
+			}
+		}, [
+			E('td', { 'class': 'td nm-file-name' }, [
+				E('span', { 'class': isDir ? 'nm-file-icon dir' : 'nm-file-icon file' }, isDir ? '[D]' : '[F]'),
+				' ',
+				E('span', {}, entry.name)
+			]),
+			E('td', { 'class': 'td' }, entry.type || '-'),
+			E('td', { 'class': 'td nowrap' }, isDir ? '-' : formatSize(entry.size)),
+			E('td', { 'class': 'td nowrap' }, modeToPerms(entry.mode)),
+			E('td', { 'class': 'td nowrap' }, formatTime(entry.mtime)),
+			E('td', { 'class': 'td nowrap' }, [
+				isDir ? E('button', {
+					'class': 'cbi-button cbi-button-neutral',
+					'click': function(ev) {
+						ev.stopPropagation();
+						loadDirectory(path);
+					}
+				}, _('Open')) : E('button', {
+					'class': 'cbi-button cbi-button-neutral',
+					'click': function(ev) {
+						ev.stopPropagation();
+						openEditor(path, entry);
+					}
+				}, _('Edit')),
+				' ',
+				!isDir ? E('button', {
+					'class': 'cbi-button',
+					'click': function(ev) {
+						ev.stopPropagation();
+						downloadFile(path);
+					}
+				}, _('Download')) : '',
+				' ',
+				E('button', {
+					'class': 'cbi-button',
+					'click': function(ev) {
+						ev.stopPropagation();
+						showRenameModal(path, entry.name);
+					}
+				}, _('Rename')),
+				' ',
+				E('button', {
+					'class': 'cbi-button cbi-button-remove',
+					'click': function(ev) {
+						ev.stopPropagation();
+						showDeleteModal(path, entry);
+					}
+				}, _('Delete'))
+			])
+		]);
+		tbody.appendChild(row);
 	});
+}
+
+function loadDirectory(path) {
+	path = normalizePath(path);
+	if (isBlockedPath(path)) {
+		setStatus('');
+		ui.addNotification(null, E('p', {}, _('System virtual directories cannot be opened')), 'error');
+		return Promise.resolve();
+	}
+
+	var input = document.getElementById('nm-file-path-input');
+	var tbody = document.getElementById('nm-file-list-body');
+
+	if (input) input.value = path;
+	setStatus(_('Loading...'));
+
+	return fs.list(path).then(function(entries) {
+		currentPath = path;
+		currentEntries = sortEntries(entries);
+		selectedPath = '';
+		if (input) input.value = currentPath;
+		if (tbody) renderRows(tbody);
+		setStatus(currentEntries.length + ' ' + _('items'));
+	}).catch(function(err) {
+		setStatus('');
+		showError(_('Failed to load directory'), err);
+	});
+}
+
+function openEditor(path, entry) {
+	if (entry && entry.type !== 'file') return;
+	if (blockIfUnsafe(path)) return;
+
+	setStatus(_('Loading...'));
+	fs.read(path).then(function(content) {
+		setStatus('');
+		var textarea = E('textarea', {
+			'id': 'nm-file-editor-textarea',
+			'class': 'cbi-input-textarea',
+			'spellcheck': 'false'
+		});
+		textarea.value = content || '';
+
+		ui.showModal(_('Edit') + ' - ' + path, [
+			E('div', { 'class': 'nm-file-editor-modal' }, [textarea]),
+			E('div', { 'class': 'right' }, [
+				E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+				E('button', {
+					'class': 'cbi-button cbi-button-apply',
+					'click': function() {
+						if (blockIfUnsafe(path)) return;
+						fs.write(path, textarea.value).then(function() {
+							ui.hideModal();
+							ui.addNotification(null, E('p', {}, _('File saved successfully')), 'info');
+							loadDirectory(currentPath);
+						}).catch(function(err) {
+							showError(_('Save failed'), err);
+						});
+					}
+				}, _('Save'))
+			])
+		]);
+	}).catch(function(err) {
+		setStatus('');
+		showError(_('Failed to load file'), err);
+	});
+}
+
+function showNewFileModal() {
+	var input = E('input', {
+		'type': 'text',
+		'class': 'cbi-input-text',
+		'placeholder': 'example.conf'
+	});
+
+	ui.showModal(_('New File'), [
+		E('p', {}, _('Create a new file in') + ' ' + currentPath),
+		E('div', { 'class': 'cbi-value' }, [
+			E('label', { 'class': 'cbi-value-title' }, _('File Name')),
+			E('div', { 'class': 'cbi-value-field' }, [input])
+		]),
+		E('div', { 'class': 'right' }, [
+			E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+			E('button', {
+				'class': 'cbi-button cbi-button-apply',
+				'click': function() {
+					var name = input.value.trim();
+					var validationError = validateEntryName(name);
+					if (validationError) {
+						ui.addNotification(null, E('p', {}, !name ? _('File name is required') : validationError), 'error');
+						return;
+					}
+					var path = joinPath(currentPath, name);
+					if (blockIfUnsafe(path)) return;
+
+					fs.write(path, '').then(function() {
+						ui.hideModal();
+						ui.addNotification(null, E('p', {}, _('File created')), 'info');
+						loadDirectory(currentPath);
+					}).catch(function(err) {
+						showError(_('Failed to create file'), err);
+					});
+				}
+			}, _('Create'))
+		])
+	]);
+}
+
+function showNewDirModal() {
+	var input = E('input', {
+		'type': 'text',
+		'class': 'cbi-input-text',
+		'placeholder': 'sites'
+	});
+
+	ui.showModal(_('New Directory'), [
+		E('p', {}, _('Create a new directory in') + ' ' + currentPath),
+		E('div', { 'class': 'cbi-value' }, [
+			E('label', { 'class': 'cbi-value-title' }, _('Directory Name')),
+			E('div', { 'class': 'cbi-value-field' }, [input])
+		]),
+		E('div', { 'class': 'right' }, [
+			E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+			E('button', {
+				'class': 'cbi-button cbi-button-apply',
+				'click': function() {
+					var name = input.value.trim();
+					var validationError = validateEntryName(name);
+					if (validationError) {
+						ui.addNotification(null, E('p', {}, !name ? _('Directory name is required') : validationError), 'error');
+						return;
+					}
+					var path = joinPath(currentPath, name);
+					if (blockIfUnsafe(path)) return;
+
+					fs.exec('mkdir', [path]).then(function(res) {
+						if (res.code !== 0) throw new Error(res.stderr || res.stdout || res.code);
+						ui.hideModal();
+						ui.addNotification(null, E('p', {}, _('Directory created')), 'info');
+						loadDirectory(currentPath);
+					}).catch(function(err) {
+						showError(_('Failed to create directory'), err);
+					});
+				}
+			}, _('Create'))
+		])
+	]);
+}
+
+function showRenameModal(path, oldName) {
+	var input = E('input', {
+		'type': 'text',
+		'class': 'cbi-input-text',
+		'value': oldName
+	});
+
+	ui.showModal(_('Rename'), [
+		E('div', { 'class': 'cbi-value' }, [
+			E('label', { 'class': 'cbi-value-title' }, _('New Name')),
+			E('div', { 'class': 'cbi-value-field' }, [input])
+		]),
+		E('div', { 'class': 'right' }, [
+			E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+			E('button', {
+				'class': 'cbi-button cbi-button-apply',
+				'click': function() {
+					var name = input.value.trim();
+					var validationError = validateEntryName(name);
+					if (validationError) {
+						ui.addNotification(null, E('p', {}, validationError), 'error');
+						return;
+					}
+					var target = joinPath(parentPath(path), name);
+					if (blockIfUnsafe(path) || blockIfUnsafe(target)) return;
+
+					fs.exec('mv', [path, target]).then(function(res) {
+						if (res.code !== 0) throw new Error(res.stderr || res.stdout || res.code);
+						ui.hideModal();
+						ui.addNotification(null, E('p', {}, _('Renamed successfully')), 'info');
+						loadDirectory(currentPath);
+					}).catch(function(err) {
+						showError(_('Failed to rename'), err);
+					});
+				}
+			}, _('Rename'))
+		])
+	]);
+}
+
+function showDeleteModal(path, entry) {
+	if (normalizePath(path) === '/') {
+		ui.addNotification(null, E('p', {}, _('Cannot delete root directory')), 'error');
+		return;
+	}
+	if (blockIfUnsafe(path)) return;
+
+	showPathConfirmModal(_('Confirm Delete'),
+		_('Type the full path to confirm deletion. This operation cannot be undone.'),
+		path,
+		_('Delete'),
+		'cbi-button cbi-button-remove',
+		function() {
+			var task = entry && entry.type === 'directory'
+				? fs.exec('rm', ['-rf', path]).then(function(res) {
+					if (res.code !== 0) throw new Error(res.stderr || res.stdout || res.code);
+				})
+				: fs.remove(path);
+
+			task.then(function() {
+				ui.hideModal();
+				ui.addNotification(null, E('p', {}, _('Deleted successfully')), 'info');
+				loadDirectory(currentPath);
+			}).catch(function(err) {
+				showError(_('Failed to delete'), err);
+			});
+		});
+}
+
+function triggerUpload() {
+	var input = E('input', {
+		'type': 'file',
+		'style': 'display:none',
+		'change': function() {
+			if (!input.files || !input.files.length) return;
+			var file = input.files[0];
+			var target = joinPath(currentPath, file.name);
+			if (input.parentNode) input.parentNode.removeChild(input);
+			if (blockIfUnsafe(target)) return;
+
+			var performUpload = function() {
+				setStatus(_('Uploading...'));
+				uploadFile(target, file).then(function() {
+					setStatus('');
+					ui.addNotification(null, E('p', {}, _('File uploaded successfully')), 'info');
+					loadDirectory(currentPath);
+				}).catch(function(err) {
+					setStatus('');
+					showError(_('Upload failed'), err);
+				});
+			};
+
+			fs.stat(target).then(function() {
+				showPathConfirmModal(_('Confirm Overwrite'),
+					_('Type the full path to confirm overwriting the existing file.'),
+					target,
+					_('Upload'),
+					'cbi-button cbi-button-apply',
+					performUpload);
+			}).catch(performUpload);
+		}
+	});
+	document.body.appendChild(input);
+	input.click();
 }
 
 return view.extend({
 	load: function() {
-		return callListFiles(currentDir);
+		return fs.list(DEFAULT_DIR).then(function(entries) {
+			return { path: DEFAULT_DIR, entries: entries };
+		}).catch(function() {
+			return fs.list('/').then(function(entries) {
+				return { path: '/', entries: entries };
+			});
+		});
 	},
 
 	render: function(data) {
 		var container = E('div', { 'class': 'cbi-map' });
 		utils.loadSharedCSS();
 
+		if (data && Array.isArray(data.entries)) {
+			currentPath = data.path || DEFAULT_DIR;
+			currentEntries = sortEntries(data.entries);
+		}
+
 		container.appendChild(E('h2', { 'class': 'cbi-map-title' }, _('Files')));
 
-		// Toolbar
-		var toolbar = E('div', { 'class': 'cbi-section' });
-
-		var pathLabel = E('span', {
-			'id': 'nm-file-path-label',
-			'class': 'nm-file-path-label'
-		}, '');
-		toolbar.appendChild(pathLabel);
-
-		var btnGroup = E('div', { 'class': 'nm-btn-group', 'style': 'float:right' });
-
-		var saveBtn = E('button', {
-			'class': 'cbi-button cbi-button-apply',
-			'click': saveCurrentFile
-		}, _('Save'));
-
-		var refreshBtn = E('button', {
-			'class': 'cbi-button',
-			'click': function() {
-				loadFileTree(document.getElementById('nm-file-tree'), currentDir);
+		var pathInput = E('input', {
+			'id': 'nm-file-path-input',
+			'type': 'text',
+			'class': 'cbi-input-text',
+			'value': currentPath,
+			'keydown': function(ev) {
+				if (ev.key === 'Enter') loadDirectory(pathInput.value);
 			}
-		}, _('Refresh'));
+		});
 
-		var newFileBtn = E('button', {
-			'class': 'cbi-button cbi-button-add',
-			'click': function() {
-				var nameInput = E('input', {
-					'type': 'text',
-					'class': 'cbi-input-text',
-					'placeholder': 'new-file.conf'
-				});
-				ui.showModal(_('New File'), [
-					E('p', {}, _('Create a new file in') + ' ' + ROOT_DIR + '/' + currentDir + '/'),
-					E('div', { 'class': 'cbi-value' }, [
-						E('label', { 'class': 'cbi-value-title' }, _('File Name')),
-						nameInput
-					]),
-					E('div', { 'class': 'right' }, [
-						E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
-						E('button', {
-							'class': 'cbi-button cbi-button-apply',
-							'click': function() {
-								var name = nameInput.value.trim();
-								if (!name) {
-									ui.addNotification(null, E('p', {}, _('File name is required')), 'error');
-									return;
-								}
-								ui.hideModal();
-								var newPath = currentDir + '/' + name;
-								ui.showModal(_('Creating...'), [E('p', {}, _('Please wait...'))]);
-								callSaveFile(newPath, '').then(function(result) {
-									ui.hideModal();
-									if (result && result.error) {
-										ui.addNotification(null, E('p', {}, result.error), 'error');
-									} else {
-										ui.addNotification(null, E('p', {}, _('File created')), 'info');
-										loadFileTree(document.getElementById('nm-file-tree'), currentDir);
-									}
-								}).catch(function(err) {
-									ui.hideModal();
-									ui.addNotification(null, E('p', {}, _('Failed to create file') + ': ' + (err.message || err)), 'error');
-								});
-							}
-						}, _('Create'))
+		var tbody = E('tbody', { 'id': 'nm-file-list-body' });
+
+		container.appendChild(E('div', { 'class': 'cbi-section nm-file-toolbar' }, [
+			E('div', { 'class': 'nm-file-path-row' }, [
+				E('button', {
+					'class': 'cbi-button',
+					'click': function() { loadDirectory(parentPath(currentPath)); }
+				}, _('Back')),
+				pathInput,
+				E('button', {
+					'class': 'cbi-button cbi-button-apply',
+					'click': function() { loadDirectory(pathInput.value); }
+				}, _('Go'))
+			]),
+			E('div', { 'class': 'nm-btn-group' }, [
+				E('button', { 'class': 'cbi-button', 'click': function() { loadDirectory(currentPath); } }, _('Refresh')),
+				E('button', { 'class': 'cbi-button cbi-button-add', 'click': showNewFileModal }, _('New File')),
+				E('button', { 'class': 'cbi-button cbi-button-add', 'click': showNewDirModal }, _('New Directory')),
+				E('button', { 'class': 'cbi-button', 'click': triggerUpload }, _('Upload'))
+			]),
+			E('div', { 'id': 'nm-file-status', 'class': 'nm-file-status' }, '')
+		]));
+
+		container.appendChild(E('div', { 'class': 'cbi-section nm-file-table-wrap' }, [
+			E('table', { 'class': 'table cbi-section-table nm-file-table' }, [
+				E('thead', {}, [
+					E('tr', { 'class': 'tr cbi-section-table-titles' }, [
+						E('th', { 'class': 'th' }, _('Name')),
+						E('th', { 'class': 'th' }, _('Type')),
+						E('th', { 'class': 'th' }, _('Size')),
+						E('th', { 'class': 'th' }, _('Perms')),
+						E('th', { 'class': 'th' }, _('Modified')),
+						E('th', { 'class': 'th' }, _('Actions'))
 					])
-				]);
-			}
-		}, '\u271A ' + _('New File'));
+				]),
+				tbody
+			])
+		]));
 
-		btnGroup.appendChild(newFileBtn);
-		btnGroup.appendChild(refreshBtn);
-		btnGroup.appendChild(saveBtn);
-		toolbar.appendChild(btnGroup);
-		container.appendChild(toolbar);
-
-		// File manager layout
-		var fmContainer = E('div', { 'class': 'nm-file-manager' });
-
-		// File tree
-		var fileTree = E('div', {
-			'id': 'nm-file-tree',
-			'class': 'nm-file-tree'
-		});
-		fmContainer.appendChild(fileTree);
-
-		// Editor
-		var editorContainer = E('div', { 'class': 'nm-file-editor' });
-
-		var textarea = E('textarea', {
-			'id': 'nm-file-editor-textarea',
-			'spellcheck': 'false',
-			'input': function() { updateHighlight(); },
-			'scroll': function() { syncScroll(); }
-		});
-
-		var overlay = E('pre', {
-			'id': 'nm-file-editor-overlay',
-			'class': 'nm-highlight-layer',
-			'aria-hidden': 'true'
-		});
-
-		editorContainer.appendChild(textarea);
-		editorContainer.appendChild(overlay);
-		fmContainer.appendChild(editorContainer);
-		container.appendChild(E('div', { 'class': 'cbi-section' }, [fmContainer]));
-
-		// Render file tree
 		setTimeout(function() {
-			renderFileTree(fileTree, data);
-		}, 50);
+			renderRows(tbody);
+			setStatus(currentEntries.length + ' ' + _('items'));
+		}, 0);
 
 		return utils.appendFooter(container, {
 			project: 'Nginx Manager',

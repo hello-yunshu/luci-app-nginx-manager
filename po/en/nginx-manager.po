@@ -162,9 +162,6 @@ msgstr "Client Max Body Size"
 msgid "Close"
 msgstr "Close"
 
-msgid "Copy"
-msgstr "Copy"
-
 msgid "Common Proxy Headers"
 msgstr "Common Proxy Headers"
 
@@ -203,9 +200,6 @@ msgstr "Create Backup"
 
 msgid "Creating site..."
 msgstr "Creating site..."
-
-msgid "Create a copy of this site with a new name? The copy will be disabled by default."
-msgstr "Create a copy of this site with a new name? The copy will be disabled by default."
 
 msgid "Custom Proxy Headers"
 msgstr "Custom Proxy Headers"
@@ -278,12 +272,6 @@ msgstr "Disabled"
 
 msgid "Domain"
 msgstr "Domain"
-
-msgid "Duplicating..."
-msgstr "Duplicating..."
-
-msgid "Duplicate Site"
-msgstr "Duplicate Site"
 
 msgid "Domain is required for ACME certificates"
 msgstr "Domain is required for ACME certificates"
@@ -695,9 +683,6 @@ msgstr "Site deleted successfully"
 
 msgid "Site disabled"
 msgstr "Site disabled"
-
-msgid "Site duplicated, redirecting to edit page..."
-msgstr "Site duplicated, redirecting to edit page..."
 
 msgid "Site enabled"
 msgstr "Site enabled"
@@ -1113,5 +1098,122 @@ msgstr "is managed by Security Headers. Disable Security Headers to customize it
 msgid "SSL Session Tickets"
 msgstr "SSL Session Tickets"
 
+msgid "Files"
+msgstr "Files"
+
+msgid "New File"
+msgstr "New File"
+
+msgid "Create a new file in"
+msgstr "Create a new file in"
+
+msgid "File Name"
+msgstr "File Name"
+
+msgid "Creating..."
+msgstr "Creating..."
+
+msgid "File created"
+msgstr "File created"
+
+msgid "Failed to create file"
+msgstr "Failed to create file"
+
+msgid "Failed to load directory"
+msgstr "Failed to load directory"
+
+msgid "Failed to load file"
+msgstr "Failed to load file"
+
+msgid "Failed to save file"
+msgstr "Failed to save file"
+
+msgid "File name is required"
+msgstr "File name is required"
+
+msgid "No file selected"
+msgstr "No file selected"
+
+msgid "Saving..."
+msgstr "Saving..."
+
+msgid "Clear All"
+msgstr "Clear All"
+
+msgid "Clear All Logs"
+msgstr "Clear All Logs"
+
+msgid "Are you sure you want to clear ALL access and error logs for all sites? This cannot be undone."
+msgstr "Are you sure you want to clear ALL access and error logs for all sites? This cannot be undone."
+
+msgid "Cleared"
+msgstr "Cleared"
+
+msgid "log file(s)"
+msgstr "log file(s)"
+
+msgid "Clone Site"
+msgstr "Clone Site"
+
+msgid "Clone this site with a new name? The clone will be disabled by default."
+msgstr "Clone this site with a new name? The clone will be disabled by default."
+
+msgid "Cloning..."
+msgstr "Cloning..."
+
+msgid "Clone"
+msgstr "Clone"
+
+msgid "Site cloned, redirecting to edit page..."
+msgstr "Site cloned, redirecting to edit page..."
+
+msgid "e.g. my-cert"
+msgstr "e.g. my-cert"
+
+msgid "Invalid certificate name"
+msgstr "Invalid certificate name"
+
+msgid "Letters, digits, underscore to start; dots and hyphens are also allowed after that."
+msgstr "Letters, digits, underscore to start; dots and hyphens are also allowed after that."
+
+msgid "e.g. my-site, my_site_01"
+msgstr "e.g. my-site, my_site_01"
+
 msgid "Enable to improve TLS resumption performance, or disable for stricter forward secrecy."
 msgstr "Enable to improve TLS resumption performance, or disable for stricter forward secrecy."
+
+msgid "Change Permissions"
+msgstr "Change Permissions"
+
+msgid "Octal"
+msgstr "Octal"
+
+msgid "Owner"
+msgstr "Owner"
+
+msgid "Group"
+msgstr "Group"
+
+msgid "Other"
+msgstr "Other"
+
+msgid "Read"
+msgstr "Read"
+
+msgid "Write"
+msgstr "Write"
+
+msgid "Execute"
+msgstr "Execute"
+
+msgid "Permissions updated"
+msgstr "Permissions updated"
+
+msgid "Failed to change permissions"
+msgstr "Failed to change permissions"
+
+msgid "Invalid permissions"
+msgstr "Invalid permissions"
+
+msgid "Apply"
+msgstr "Apply"

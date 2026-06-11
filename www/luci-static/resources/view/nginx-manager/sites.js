@@ -225,7 +225,7 @@ return view.extend({
 						])
 					]);
 				}
-			}, '\u2B5F ' + _('Clone')));
+			}, '\u29C9 ' + _('Clone')));
 
 			actionsCell.appendChild(E('button', {
 				'class': 'cbi-button',

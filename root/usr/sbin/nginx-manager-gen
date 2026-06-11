@@ -1149,6 +1149,8 @@ render_single_site() {
 
 	if [ -f "${BUILD_DIR}/${name}.conf" ]; then
 		cat "${BUILD_DIR}/${name}.conf"
+	elif [ -f "${BUILD_DIR}/disabled/${name}.conf.disabled" ]; then
+		cat "${BUILD_DIR}/disabled/${name}.conf.disabled"
 	fi
 
 	rm -rf "${BUILD_DIR}"
