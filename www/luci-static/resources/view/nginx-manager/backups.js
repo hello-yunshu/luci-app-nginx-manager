@@ -97,7 +97,6 @@ return view.extend({
 								ui.addNotification(null, E('p', {}, result.error), 'error');
 							} else {
 								ui.addNotification(null, E('p', {}, _('Backup settings saved')), 'info');
-								setTimeout(function() { location.reload(); }, 500);
 							}
 						});
 					}
