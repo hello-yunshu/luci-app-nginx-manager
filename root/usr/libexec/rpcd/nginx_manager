@@ -743,6 +743,8 @@ _list_cert() {
 	fi
 
 	local status="valid"
+	local expiry_days=""
+	local expiry_date=""
 	if [ "${type}" = "acme" ] && [ "${acme_status}" = "running" ]; then
 		status="acme_running"
 	elif [ "${type}" = "acme" ] && [ "${acme_status}" = "failed" ]; then
@@ -752,6 +754,8 @@ _list_cert() {
 	elif [ -n "${cert_path}" ] && [ -f "${cert_path}" ]; then
 		local days
 		days="$(get_cert_expiry "${cert_path}")" || days="-1"
+		expiry_days="${days}"
+		expiry_date="$(openssl x509 -enddate -noout -in "${cert_path}" 2>/dev/null | cut -d= -f2)"
 		if [ "${days}" -lt 0 ]; then
 			status="expired"
 		elif [ "${days}" -lt 30 ]; then
@@ -759,6 +763,8 @@ _list_cert() {
 		fi
 	fi
 	json_add_string "status" "${status}"
+	[ -n "${expiry_days}" ] && json_add_string "expiry_days" "${expiry_days}"
+	[ -n "${expiry_date}" ] && json_add_string "expiry_date" "${expiry_date}"
 
 	json_close_object
 }
@@ -1228,28 +1234,40 @@ handle_get_log_size() {
 }
 
 handle_list_files() {
-	local dir="/etc/nginx"
-	local subdir
-	json_get_var subdir "dir"
-	[ -n "${subdir}" ] && dir="${dir}/${subdir}"
+	local dir
+	json_get_var dir "dir"
+	[ -n "${dir}" ] || dir="/etc/nginx"
 
-	case "$(readlink -f "${dir}" 2>/dev/null || realpath "${dir}" 2>/dev/null)" in
-		/etc/nginx|/etc/nginx/*) ;;
-		*) json_init; json_add_string "error" "access denied"; json_dump; return ;;
+	# Resolve and validate: block /proc /sys /dev for safety
+	local resolved
+	resolved=$(readlink -f "${dir}" 2>/dev/null || realpath "${dir}" 2>/dev/null)
+	case "${resolved}" in
+		/proc|/proc/*|/sys|/sys/*|/dev|/dev/*)
+			json_init; json_add_string "error" "access denied: system directory"; json_dump; return ;;
 	esac
 
 	[ -d "${dir}" ] || { json_init; json_add_string "error" "not a directory"; json_dump; return; }
 
 	json_init
+	json_add_string "path" "${resolved}"
 	json_add_array "entries"
 	for entry in "${dir}"/*; do
 		[ -e "${entry}" ] || continue
 		local basename="${entry##*/}"
 		local type="file"
 		[ -d "${entry}" ] && type="dir"
+		local perms owner group size
+		perms=$(stat -c '%a' "${entry}" 2>/dev/null) || perms="???"
+		owner=$(stat -c '%U' "${entry}" 2>/dev/null) || owner="?"
+		group=$(stat -c '%G' "${entry}" 2>/dev/null) || group="?"
+		size=$(stat -c '%s' "${entry}" 2>/dev/null) || size="0"
 		json_add_object
 		json_add_string "name" "${basename}"
 		json_add_string "type" "${type}"
+		json_add_string "perms" "${perms}"
+		json_add_string "owner" "${owner}"
+		json_add_string "group" "${group}"
+		json_add_int "size" "${size}"
 		json_close_object
 	done
 	json_close_array
@@ -1261,29 +1279,37 @@ handle_save_file() {
 	json_get_var path "path"
 	json_get_var content "content"
 
-	local full_path="/etc/nginx/${path}"
+	[ -n "${path}" ] || { json_init; json_add_string "error" "path is required"; json_dump; return; }
+
+	# Block system directories
 	local resolved
-	resolved=$(readlink -f "${full_path}" 2>/dev/null || realpath "${full_path}" 2>/dev/null)
+	resolved=$(readlink -f "${path}" 2>/dev/null || realpath "${path}" 2>/dev/null)
 	if [ -z "${resolved}" ]; then
 		local parent_resolved
-		parent_resolved=$(readlink -f "$(dirname "${full_path}")" 2>/dev/null || realpath "$(dirname "${full_path}")" 2>/dev/null)
+		parent_resolved=$(readlink -f "$(dirname "${path}")" 2>/dev/null || realpath "$(dirname "${path}")" 2>/dev/null)
 		[ -z "${parent_resolved}" ] && {
-			json_init; json_add_string "error" "access denied: path outside /etc/nginx/"; json_dump; return
+			json_init; json_add_string "error" "access denied: invalid path"; json_dump; return
 		}
-		resolved="${parent_resolved}/$(basename "${full_path}")"
+		resolved="${parent_resolved}/$(basename "${path}")"
 	fi
 	case "${resolved}" in
-		/etc/nginx|/etc/nginx/*) ;;
-		*) json_init; json_add_string "error" "access denied: path outside /etc/nginx/"; json_dump; return ;;
+		/proc|/proc/*|/sys|/sys/*|/dev|/dev/*)
+			json_init; json_add_string "error" "access denied: system directory"; json_dump; return ;;
 	esac
 
-	local dangerous
-	dangerous="$(uci -q get nginx_manager.global.dangerous_core_edit)" || dangerous="0"
-	[ "${dangerous}" = "1" ] || {
-		json_init; json_add_string "error" "Dangerous core edit is disabled"; json_dump; return
-	}
+	# For paths outside /etc/nginx, require dangerous_core_edit
+	case "${resolved}" in
+		/etc/nginx|/etc/nginx/*) ;;
+		*)
+			local dangerous
+			dangerous="$(uci -q get nginx_manager.global.dangerous_core_edit)" || dangerous="0"
+			[ "${dangerous}" = "1" ] || {
+				json_init; json_add_string "error" "Dangerous core edit is disabled"; json_dump; return
+			}
+			;;
+	esac
 
-	printf '%s\n' "${content}" > "/etc/nginx/${path}" || {
+	printf '%s\n' "${content}" > "${path}" || {
 		json_init; json_add_string "error" "failed to write file"; json_dump; return
 	}
 
@@ -1294,8 +1320,60 @@ handle_save_file() {
 	json_dump
 }
 
+handle_chmod_file() {
+	local path perms
+	json_get_var path "path"
+	json_get_var perms "perms"
+
+	[ -n "${path}" ] || { json_init; json_add_string "error" "path is required"; json_dump; return; }
+
+	local resolved
+	resolved=$(readlink -f "${path}" 2>/dev/null || realpath "${path}" 2>/dev/null)
+	if [ -z "${resolved}" ]; then
+		local parent_resolved
+		parent_resolved=$(readlink -f "$(dirname "${path}")" 2>/dev/null || realpath "$(dirname "${path}")" 2>/dev/null)
+		[ -z "${parent_resolved}" ] && {
+			json_init; json_add_string "error" "access denied: invalid path"; json_dump; return
+		}
+		resolved="${parent_resolved}/$(basename "${path}")"
+	fi
+	case "${resolved}" in
+		/proc|/proc/*|/sys|/sys/*|/dev|/dev/*)
+			json_init; json_add_string "error" "access denied: system directory"; json_dump; return ;;
+	esac
+
+	# For paths outside /etc/nginx, require dangerous_core_edit
+	case "${resolved}" in
+		/etc/nginx|/etc/nginx/*) ;;
+		*)
+			local dangerous
+			dangerous="$(uci -q get nginx_manager.global.dangerous_core_edit)" || dangerous="0"
+			[ "${dangerous}" = "1" ] || {
+				json_init; json_add_string "error" "Dangerous core edit is disabled"; json_dump; return
+			}
+			;;
+	esac
+
+	# Validate perms is a 3-4 digit octal
+	case "${perms}" in
+		[0-7][0-7][0-7]|[0-7][0-7][0-7][0-7]) ;;
+		*) json_init; json_add_string "error" "invalid permissions"; json_dump; return ;;
+	esac
+
+	[ -e "${path}" ] || {
+		json_init; json_add_string "error" "file not found"; json_dump; return
+	}
+
+	chmod "${perms}" "${path}" || {
+		json_init; json_add_string "error" "failed to change permissions"; json_dump; return
+	}
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
 # Read a directive value from the effective nginx configuration (nginx -T)
-# This covers all included files, not just the main config
 _NGINX_T_CACHE=""
 _read_nginx_directive() {
 	local directive="$1"
@@ -2828,6 +2906,11 @@ case "$1" in
 		json_add_string "content" ""
 		json_close_object
 
+		json_add_object "chmod_file"
+		json_add_string "path" ""
+		json_add_string "perms" ""
+		json_close_object
+
 		json_add_object "check_cert_expiry"
 		json_close_object
 
@@ -2929,6 +3012,7 @@ case "$1" in
 			acme_status)        handle_acme_status ;;
 			list_files)        handle_list_files ;;
 			save_file)         handle_save_file ;;
+			chmod_file)        handle_chmod_file ;;
 			check_cert_expiry)  handle_check_cert_expiry ;;
 			get_logs)           handle_get_logs ;;
 			clear_logs)         handle_clear_logs ;;

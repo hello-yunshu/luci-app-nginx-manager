@@ -1,9 +1,14 @@
 {
 	"luci-app-nginx-manager": {
-		"description": "Grant access to Nginx Manager",
+		"description": "Grant access to Nginx Manager, including full-system file manager operations",
 		"read": {
+			"file": {
+				"/": [ "list" ],
+				"/*": [ "list", "read" ]
+			},
 			"uci": [ "nginx_manager" ],
 			"ubus": {
+				"file": [ "list", "read", "stat", "lstat" ],
 				"nginx_manager": [
 					"status",
 					"check_env",
@@ -20,7 +25,6 @@
 					"sync_core_from_nginx",
 					"get_nginx_T",
 					"get_file_readonly",
-					"list_files",
 					"list_backups",
 					"get_backup_settings",
 					"diff_backup"
@@ -28,8 +32,13 @@
 			}
 		},
 		"write": {
+			"cgi-io": [ "upload", "download" ],
+			"file": {
+				"/*": [ "list", "read", "write", "exec" ]
+			},
 			"uci": [ "nginx_manager" ],
 			"ubus": {
+				"file": [ "list", "read", "write", "remove", "exec", "stat", "lstat" ],
 				"nginx_manager": [
 					"set_site",
 					"delete_site",
@@ -53,7 +62,6 @@
 					"apply_core_config",
 					"set_dangerous_core_edit",
 					"set_file_dangerous",
-					"save_file",
 					"create_backup",
 					"restore_backup",
 					"set_backup_settings",
