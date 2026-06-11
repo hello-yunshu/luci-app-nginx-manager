@@ -516,8 +516,8 @@ msgstr "Non-Managed Configs"
 msgid "OCSP Stapling"
 msgstr "OCSP Stapling"
 
-msgid "Enable OCSP stapling for managed ACME certificates. Other certificate types keep stapling off to avoid issuer-chain or missing-OCSP warnings."
-msgstr "Enable OCSP stapling for managed ACME certificates. Other certificate types keep stapling off to avoid issuer-chain or missing-OCSP warnings."
+msgid "Enable OCSP stapling for SSL certificates. Works with both ACME and custom certificates."
+msgstr "Enable OCSP stapling for SSL certificates. Works with both ACME and custom certificates."
 
 msgid "OK"
 msgstr "OK"
