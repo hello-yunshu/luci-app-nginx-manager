@@ -121,8 +121,8 @@ function certStatusClass(status) {
 		case 'expiring': return 'nm-badge warning';
 		case 'expired': return 'nm-badge error';
 		case 'missing': return 'nm-badge error';
-		case 'acme_running': return 'cbi-button cbi-button-apply';
-		case 'acme_failed': return 'cbi-button cbi-button-reset';
+		case 'acme_running': return 'nm-badge warning';
+		case 'acme_failed': return 'nm-badge error';
 		default: return 'nm-badge disabled';
 	}
 }
