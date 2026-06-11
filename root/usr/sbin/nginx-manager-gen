@@ -318,9 +318,7 @@ EOF
 	local ssl_stapling
 	ssl_stapling="$(uci -q get nginx_manager.global.ssl_stapling)" || \
 		ssl_stapling="1"
-	local cert_type
-	cert_type="$(uci -q get "nginx_manager.${cert_name}.type")" || cert_type=""
-	if [ "${ssl_stapling}" = "1" ] && [ "${cert_type}" = "acme" ]; then
+	if [ "${ssl_stapling}" = "1" ]; then
 		echo "    ssl_stapling on;"
 		echo "    ssl_stapling_verify on;"
 		echo "    ssl_trusted_certificate ${cert_path};"

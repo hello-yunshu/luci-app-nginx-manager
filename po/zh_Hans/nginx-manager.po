@@ -522,8 +522,8 @@ msgstr "非管理配置数"
 msgid "OCSP Stapling"
 msgstr "OCSP 装订"
 
-msgid "Enable OCSP stapling for managed ACME certificates. Other certificate types keep stapling off to avoid issuer-chain or missing-OCSP warnings."
-msgstr "为托管的 ACME 证书启用 OCSP 装订。其他证书类型会保持关闭，以避免 issuer 链或缺少 OCSP 信息导致的警告。"
+msgid "Enable OCSP stapling for SSL certificates. Works with both ACME and custom certificates."
+msgstr "为 SSL 证书启用 OCSP 装订，ACME 和自定义证书均支持。"
 
 msgid "OK"
 msgstr "正常"
