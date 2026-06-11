@@ -135,11 +135,34 @@ function safeApply() {
 	});
 }
 
+var NAME_PATTERN = /^[a-zA-Z0-9_][a-zA-Z0-9._-]*$/;
+var NAME_TIP = _('Letters, digits, underscore to start; dots and hyphens are also allowed after that.');
+
+function validateNameInput(inputEl, descEl) {
+	var tip = descEl || inputEl.parentNode.querySelector('.cbi-value-description');
+	function check() {
+		var val = inputEl.value;
+		var valid = !val || NAME_PATTERN.test(val);
+		inputEl.style.borderColor = valid ? '' : 'var(--danger-color, #d94b4b)';
+		inputEl.style.backgroundColor = valid ? '' : 'rgba(217,75,75,0.05)';
+		if (tip) {
+			tip.style.color = valid ? '' : 'var(--danger-color, #d94b4b)';
+			tip.style.fontWeight = valid ? '' : 'bold';
+		}
+	}
+	inputEl.addEventListener('input', check);
+	check();
+	return check;
+}
+
 return baseclass.extend({
 	loadSharedCSS: loadSharedCSS,
 	renderFooter: renderFooter,
 	appendFooter: appendFooter,
 	renderWithFooter: renderWithFooter,
 	safeApply: safeApply,
-	isApplyNoDataError: isApplyNoDataError
+	isApplyNoDataError: isApplyNoDataError,
+	validateNameInput: validateNameInput,
+	NAME_PATTERN: NAME_PATTERN,
+	NAME_TIP: NAME_TIP
 });

@@ -93,6 +93,8 @@ return view.extend({
 					'placeholder': 'my-site',
 					'class': 'cbi-input-text'
 				});
+				var nameDesc = E('div', { 'class': 'cbi-value-description' }, utils.NAME_TIP + ' ' + _('e.g. my-site, my_site_01'));
+				utils.validateNameInput(nameInput, nameDesc);
 				var modeSelect = E('select', { 'id': 'new-site-mode', 'class': 'cbi-input-select' }, [
 					E('option', { 'value': 'reverse_proxy' }, _('Reverse Proxy')),
 					E('option', { 'value': 'static' }, _('Static Website')),
@@ -102,7 +104,7 @@ return view.extend({
 				ui.showModal(_('Add Site'), [
 					E('div', { 'class': 'cbi-value' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('Site Name')),
-						nameInput
+						E('div', { 'class': 'cbi-value-field' }, [nameInput, nameDesc])
 					]),
 					E('div', { 'class': 'cbi-value' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('Type')),
@@ -119,7 +121,7 @@ return view.extend({
 									ui.addNotification(null, E('p', {}, _('Site name is required')), 'error');
 									return;
 								}
-								if (!/^[a-zA-Z0-9._-]+$/.test(name)) {
+								if (!utils.NAME_PATTERN.test(name)) {
 									ui.addNotification(null, E('p', {}, _('Invalid site name')), 'error');
 									return;
 								}
@@ -167,7 +169,7 @@ return view.extend({
 		table.appendChild(thead);
 
 		sites.forEach(function(site) {
-			var row = E('tr');
+			var row = E('tr', site.enabled !== '1' ? { 'class': 'nm-row-disabled' } : {});
 
 			var enabledCell = E('td', { 'data-label': _('Enabled') });
 			enabledCell.appendChild(E('span', { 'class': 'nm-badge ' + (site.enabled === '1' ? 'success' : 'disabled') },
@@ -197,21 +199,21 @@ return view.extend({
 			actionsCell.appendChild(E('button', {
 				'class': 'cbi-button',
 				'click': function() {
-					ui.showModal(_('Duplicate Site'), [
-						E('p', {}, _('Create a copy of this site with a new name? The copy will be disabled by default.')),
+					ui.showModal(_('Clone Site'), [
+						E('p', {}, _('Clone this site with a new name? The clone will be disabled by default.')),
 						E('div', { 'class': 'right' }, [
 							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 							E('button', {
 								'class': 'cbi-button cbi-button-apply',
 								'click': function() {
 									ui.hideModal();
-									ui.showModal(_('Duplicating...'), [E('p', {}, _('Please wait...'))]);
+									ui.showModal(_('Cloning...'), [E('p', {}, _('Please wait...'))]);
 									callDuplicateSite(site.id).then(function(result) {
 										ui.hideModal();
 										if (result && result.error) {
 											ui.addNotification(null, E('p', {}, result.error), 'error');
 										} else {
-											ui.showModal(_('Redirecting'), [E('p', {}, _('Site duplicated, redirecting to edit page...'))]);
+											ui.showModal(_('Redirecting'), [E('p', {}, _('Site cloned, redirecting to edit page...'))]);
 											setTimeout(function() {
 												ui.hideModal();
 												location.href = L.url('admin/services/nginx-manager/sites/edit', result.new_id);
@@ -219,11 +221,11 @@ return view.extend({
 										}
 									});
 								}
-							}, _('Copy'))
+							}, _('Clone'))
 						])
 					]);
 				}
-			}, '\u2398 ' + _('Copy')));
+			}, '\u2B5F ' + _('Clone')));
 
 			actionsCell.appendChild(E('button', {
 				'class': 'cbi-button',

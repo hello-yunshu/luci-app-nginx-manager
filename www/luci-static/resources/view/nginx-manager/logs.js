@@ -20,6 +20,19 @@ var callClearLogs = rpc.declare({
 	expect: {}
 });
 
+var callClearAllLogs = rpc.declare({
+	object: 'nginx_manager',
+	method: 'clear_all_logs',
+	expect: {}
+});
+
+var callGetLogSize = rpc.declare({
+	object: 'nginx_manager',
+	method: 'get_log_size',
+	params: ['type', 'site'],
+	expect: {}
+});
+
 var callListSites = rpc.declare({
 	object: 'nginx_manager',
 	method: 'list_sites',
@@ -96,8 +109,16 @@ return view.extend({
 			'class': 'cbi-button cbi-button-reset'
 		}, '\u2716 ' + _('Clear'));
 
+		var clearAllBtn = E('button', {
+			'class': 'cbi-button cbi-button-reset'
+		}, '\u2716\u2716 ' + _('Clear All'));
+
+		var sizeLabel = E('span', { 'class': 'nm-log-size' }, '');
+
 		btnGroup.appendChild(refreshBtn);
 		btnGroup.appendChild(clearBtn);
+		btnGroup.appendChild(clearAllBtn);
+		btnGroup.appendChild(sizeLabel);
 
 		controlSection.appendChild(btnGroup);
 		page.appendChild(controlSection);
@@ -127,11 +148,28 @@ return view.extend({
 			logOutput.className = 'cbi-input-textarea nm-log-area is-loading';
 			refreshBtn.disabled = true;
 			clearBtn.disabled = true;
+			clearAllBtn.disabled = true;
 		}
 
 		function setReady() {
 			refreshBtn.disabled = false;
 			clearBtn.disabled = false;
+			clearAllBtn.disabled = false;
+		}
+
+		function bytesToSize(bytes) {
+			if (bytes === 0 || !bytes) return '0 B';
+			var units = ['B', 'KB', 'MB', 'GB'];
+			var i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+			return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + units[i];
+		}
+
+		function updateLogSize() {
+			callGetLogSize(typeSelect.value, siteSelect.value).then(function(result) {
+				sizeLabel.textContent = bytesToSize((result && result.size) || 0);
+			}).catch(function() {
+				sizeLabel.textContent = '';
+			});
 		}
 
 		function loadLogs() {
@@ -161,6 +199,7 @@ return view.extend({
 				logOutput.className = 'cbi-input-textarea nm-log-area is-error';
 			}).finally(function() {
 				setReady();
+				updateLogSize();
 			});
 		}
 
@@ -200,6 +239,31 @@ return view.extend({
 			}).finally(function() {
 				setReady();
 			});
+		});
+
+		clearAllBtn.addEventListener('click', function() {
+			ui.showModal(_('Clear All Logs'), [
+				E('p', {}, _('Are you sure you want to clear ALL access and error logs for all sites? This cannot be undone.')),
+				E('div', { 'class': 'right' }, [
+					E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+					E('button', {
+						'class': 'cbi-button cbi-button-reset',
+						'click': function() {
+							ui.hideModal();
+							setLoading();
+							callClearAllLogs().then(function(result) {
+								setReady();
+								var count = (result && result.cleared) || 0;
+								ui.addNotification(null, E('p', {}, _('Cleared') + ' ' + count + ' ' + _('log file(s)')), 'info');
+								loadLogs();
+							}).catch(function(err) {
+								setReady();
+								ui.addNotification(null, E('p', {}, _('Failed to clear logs') + ': ' + err), 'error');
+							});
+						}
+					}, _('Clear All'))
+				])
+			]);
 		});
 
 		window.setTimeout(loadLogs, 0);

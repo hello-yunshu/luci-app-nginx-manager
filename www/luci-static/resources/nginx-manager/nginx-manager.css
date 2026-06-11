@@ -1,5 +1,9 @@
 /* === Nginx Manager - Aligned with LuCI native theme === */
 
+/* === Disabled Row === */
+.nm-row-disabled { opacity: 0.55; }
+.nm-row-disabled:hover { opacity: 1; }
+
 /* === Status Badges === */
 .nm-badge {
 	display: inline-block;
@@ -417,3 +421,34 @@ button.nm-badge {
 		display: none;
 	}
 }
+
+/* === File Manager === */
+.nm-file-manager { display: flex; gap: 1em; min-height: 400px; }
+.nm-file-tree { flex: 0 0 220px; border-right: 1px solid var(--border-color); overflow-y: auto; padding-right: 0.5em; }
+.nm-file-editor { flex: 1; position: relative; display: flex; flex-direction: column; }
+.nm-file-editor textarea,
+.nm-file-editor .nm-highlight-layer {
+	width: 100%; min-height: 400px; font-family: monospace; font-size: 13px; line-height: 1.5;
+	tab-size: 4; padding: 10px; box-sizing: border-box; white-space: pre; overflow: auto;
+	margin: 0; border: 1px solid var(--border-color); border-radius: 4px; resize: vertical;
+	background: var(--cbi-background, #fff); color: var(--cbi-color, #333);
+}
+.nm-file-editor .nm-highlight-layer {
+	position: absolute; top: 0; left: 0; pointer-events: none; color: transparent;
+	background: transparent; border-color: transparent; z-index: 1;
+}
+.nm-file-editor textarea {
+	position: relative; z-index: 2; background: transparent; color: transparent; caret-color: var(--cbi-color, #333);
+}
+.nm-highlight-layer .kw { color: var(--main-color, #0069d9); font-weight: bold; }
+.nm-highlight-layer .cm { color: var(--subtext-color, #888); font-style: italic; }
+.nm-highlight-layer .str { color: var(--success-color, #3aa657); }
+.nm-highlight-layer .var { color: var(--warning-color, #c68014); }
+.nm-file-tree-item { padding: 3px 8px; cursor: pointer; border-radius: 3px; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nm-file-tree-item:hover { background: color-mix(in srgb, var(--main-color) 10%, transparent); }
+.nm-file-tree-item.active { background: color-mix(in srgb, var(--main-color) 20%, transparent); font-weight: bold; }
+.nm-file-tree-dir::before { content: '\25B6 '; display: inline-block; width: 1em; font-size: 0.7em; transition: transform 0.15s; }
+.nm-file-tree-dir.expanded::before { transform: rotate(90deg); }
+.nm-file-tree-children { padding-left: 1em; }
+.nm-file-path-label { font-size: 0.85em; color: var(--subtext-color, #888); font-family: monospace; }
+.nm-log-size { font-size: 0.85em; color: var(--subtext-color); margin-left: 0.5em; }

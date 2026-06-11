@@ -1155,6 +1155,20 @@ render_single_site() {
 }
 
 do_status() {
+	local cache_file="/tmp/nginx-manager-status.json"
+	local cache_ttl=5
+
+	if [ -f "${cache_file}" ]; then
+		local cache_mtime
+		cache_mtime=$(stat -c%Y "${cache_file}" 2>/dev/null || echo 0)
+		local now
+		now=$(date +%s)
+		if [ $((now - cache_mtime)) -lt "${cache_ttl}" ]; then
+			cat "${cache_file}"
+			return
+		fi
+	fi
+
 	local running="0"
 	is_nginx_running && running="1"
 
@@ -1188,7 +1202,8 @@ do_status() {
 		last_reload="$(cat /tmp/nginx-manager-last-reload)"
 	fi
 
-	printf '{"running":"%s","version":"%s","ssl_module":"%s","listening_ports":"%s","managed_sites":"%s","non_managed_configs":"%s","non_managed_names":"%s","last_test_result":"%s","last_reload":"%s"}\n' \
+	local result
+	result=$(printf '{"running":"%s","version":"%s","ssl_module":"%s","listening_ports":"%s","managed_sites":"%s","non_managed_configs":"%s","non_managed_names":"%s","last_test_result":"%s","last_reload":"%s"}\n' \
 		"${running}" \
 		"$(json_escape "${version}")" \
 		"${ssl_mod}" \
@@ -1197,7 +1212,8 @@ do_status() {
 		"${non_managed}" \
 		"$(json_escape "${non_managed_names}")" \
 		"$(json_escape "${last_test}")" \
-		"$(json_escape "${last_reload}")"
+		"$(json_escape "${last_reload}")")
+	printf '%s\n' "${result}" | tee "${cache_file}"
 }
 
 package_installed() {
@@ -1215,23 +1231,36 @@ package_installed() {
 }
 
 do_check_env() {
+	local cache_file="/tmp/nginx-manager-env.json"
+	local cache_ttl=300
+
+	if [ -f "${cache_file}" ]; then
+		local cache_mtime
+		cache_mtime=$(stat -c%Y "${cache_file}" 2>/dev/null || echo 0)
+		local now
+		now=$(date +%s)
+		if [ $((now - cache_mtime)) -lt "${cache_ttl}" ]; then
+			cat "${cache_file}"
+			return
+		fi
+	fi
+
 	local _nginx_ssl=0
-	local _nginx_util=0
 	local _openssl_util=0
 	local _acme=0
 	local _acme_dnsapi=0
-	local _diffutils=0
-	local _flock=0
-	local _rpcd_bin=0
 	local _initd_nginx=0
 	local _uci_template=0
+	local _nginx_quic=0
 
-	if command -v nginx >/dev/null 2>&1 && nginx -V 2>&1 | grep -q "http_ssl_module"; then
-		_nginx_ssl=1
+	# Cache nginx -V output to avoid running it twice
+	local _nginx_v_output=""
+	if command -v nginx >/dev/null 2>&1; then
+		_nginx_v_output="$(nginx -V 2>&1)"
 	fi
-
-	if command -v nginx-util >/dev/null 2>&1; then
-		_nginx_util=1
+	if [ -n "${_nginx_v_output}" ]; then
+		echo "${_nginx_v_output}" | grep -q "http_ssl_module" && _nginx_ssl=1
+		echo "${_nginx_v_output}" | grep -q "http_v3_module" && _nginx_quic=1
 	fi
 
 	if command -v openssl >/dev/null 2>&1; then
@@ -1244,18 +1273,6 @@ do_check_env() {
 
 	if [ -d /usr/lib/acme/dnsapi ] || [ -d /usr/lib/acme/client/dnsapi ]; then
 		_acme_dnsapi=1
-	fi
-
-	if package_installed diffutils || command -v diff >/dev/null 2>&1; then
-		_diffutils=1
-	fi
-
-	if package_installed flock || command -v flock >/dev/null 2>&1; then
-		_flock=1
-	fi
-
-	if command -v rpcd >/dev/null 2>&1 || [ -x /sbin/rpcd ]; then
-		_rpcd_bin=1
 	fi
 
 	if [ -x /etc/init.d/nginx ]; then
@@ -1289,20 +1306,19 @@ do_check_env() {
 	_version="$(get_script_version)"
 	[ -z "${_version}" ] && _version="unknown"
 
-	printf '{"nginx_ssl":%d,"nginx_util":%d,"openssl_util":%d,"acme":%d,"acme_dnsapi":%d,"diffutils":%d,"flock":%d,"rpcd":%d,"initd_nginx":%d,"uci_template":%d,"openwrt_version":"%s","package_manager":"%s","version":"%s"}\n' \
+	local result
+	result=$(printf '{"nginx_ssl":%d,"openssl_util":%d,"acme":%d,"acme_dnsapi":%d,"initd_nginx":%d,"uci_template":%d,"nginx_quic":%d,"openwrt_version":"%s","package_manager":"%s","version":"%s"}\n' \
 		"${_nginx_ssl}" \
-		"${_nginx_util}" \
 		"${_openssl_util}" \
 		"${_acme}" \
 		"${_acme_dnsapi}" \
-		"${_diffutils}" \
-		"${_flock}" \
-		"${_rpcd_bin}" \
 		"${_initd_nginx}" \
 		"${_uci_template}" \
+		"${_nginx_quic}" \
 		"$(json_escape "${_openwrt_version}")" \
 		"$(json_escape "${_pkg_manager}")" \
-		"$(json_escape "${_version}")"
+		"$(json_escape "${_version}")")
+	printf '%s\n' "${result}" | tee "${cache_file}"
 }
 
 do_test_config() {

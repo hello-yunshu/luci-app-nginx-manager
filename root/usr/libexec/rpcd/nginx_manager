@@ -1194,6 +1194,106 @@ handle_clear_logs() {
 	json_dump
 }
 
+handle_clear_all_logs() {
+	local cleared=0
+	local paths=""
+	for log_path in /var/log/nginx/access.log /var/log/nginx/*.access.log \
+	                /var/log/nginx/error.log /var/log/nginx/*.error.log; do
+		[ -f "${log_path}" ] || continue
+		printf '' > "${log_path}" || continue
+		paths="${paths:+${paths},}${log_path}"
+		cleared=$((cleared + 1))
+	done
+	json_init
+	json_add_int "cleared" "${cleared}"
+	json_add_string "paths" "${paths}"
+	json_dump
+}
+
+handle_get_log_size() {
+	local log_type site log_paths log_path
+	json_get_var log_type "type"
+	json_get_var site "site"
+	log_paths="$(resolve_log_paths "${log_type}" "${site}")" || {
+		json_init; json_add_int "size" 0; json_dump; return
+	}
+	local total_size=0
+	for log_path in ${log_paths}; do
+		[ -f "${log_path}" ] || continue
+		total_size=$((total_size + $(stat -c%s "${log_path}" 2>/dev/null || echo 0)))
+	done
+	json_init
+	json_add_int "size" "${total_size}"
+	json_dump
+}
+
+handle_list_files() {
+	local dir="/etc/nginx"
+	local subdir
+	json_get_var subdir "dir"
+	[ -n "${subdir}" ] && dir="${dir}/${subdir}"
+
+	case "$(readlink -f "${dir}" 2>/dev/null || realpath "${dir}" 2>/dev/null)" in
+		/etc/nginx|/etc/nginx/*) ;;
+		*) json_init; json_add_string "error" "access denied"; json_dump; return ;;
+	esac
+
+	[ -d "${dir}" ] || { json_init; json_add_string "error" "not a directory"; json_dump; return; }
+
+	json_init
+	json_add_array "entries"
+	for entry in "${dir}"/*; do
+		[ -e "${entry}" ] || continue
+		local basename="${entry##*/}"
+		local type="file"
+		[ -d "${entry}" ] && type="dir"
+		json_add_object
+		json_add_string "name" "${basename}"
+		json_add_string "type" "${type}"
+		json_close_object
+	done
+	json_close_array
+	json_dump
+}
+
+handle_save_file() {
+	local path content
+	json_get_var path "path"
+	json_get_var content "content"
+
+	local full_path="/etc/nginx/${path}"
+	local resolved
+	resolved=$(readlink -f "${full_path}" 2>/dev/null || realpath "${full_path}" 2>/dev/null)
+	if [ -z "${resolved}" ]; then
+		local parent_resolved
+		parent_resolved=$(readlink -f "$(dirname "${full_path}")" 2>/dev/null || realpath "$(dirname "${full_path}")" 2>/dev/null)
+		[ -z "${parent_resolved}" ] && {
+			json_init; json_add_string "error" "access denied: path outside /etc/nginx/"; json_dump; return
+		}
+		resolved="${parent_resolved}/$(basename "${full_path}")"
+	fi
+	case "${resolved}" in
+		/etc/nginx|/etc/nginx/*) ;;
+		*) json_init; json_add_string "error" "access denied: path outside /etc/nginx/"; json_dump; return ;;
+	esac
+
+	local dangerous
+	dangerous="$(uci -q get nginx_manager.global.dangerous_core_edit)" || dangerous="0"
+	[ "${dangerous}" = "1" ] || {
+		json_init; json_add_string "error" "Dangerous core edit is disabled"; json_dump; return
+	}
+
+	printf '%s\n' "${content}" > "/etc/nginx/${path}" || {
+		json_init; json_add_string "error" "failed to write file"; json_dump; return
+	}
+
+	nginx-manager-gen --backup-now 2>/dev/null || true
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
 # Read a directive value from the effective nginx configuration (nginx -T)
 # This covers all included files, not just the main config
 _NGINX_T_CACHE=""
@@ -2719,6 +2819,15 @@ case "$1" in
 		json_add_string "task_id" ""
 		json_close_object
 
+		json_add_object "list_files"
+		json_add_string "dir" ""
+		json_close_object
+
+		json_add_object "save_file"
+		json_add_string "path" ""
+		json_add_string "content" ""
+		json_close_object
+
 		json_add_object "check_cert_expiry"
 		json_close_object
 
@@ -2818,9 +2927,13 @@ case "$1" in
 			acme_update)        handle_acme_update ;;
 			acme_renew)         handle_acme_renew ;;
 			acme_status)        handle_acme_status ;;
+			list_files)        handle_list_files ;;
+			save_file)         handle_save_file ;;
 			check_cert_expiry)  handle_check_cert_expiry ;;
 			get_logs)           handle_get_logs ;;
 			clear_logs)         handle_clear_logs ;;
+			clear_all_logs)    handle_clear_all_logs ;;
+			get_log_size)      handle_get_log_size ;;
 			get_core_config)    handle_get_core_config ;;
 			sync_core_from_nginx) handle_sync_core_from_nginx ;;
 			apply_core_config)  handle_apply_core_config ;;
