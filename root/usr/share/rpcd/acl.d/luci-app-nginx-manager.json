@@ -54,6 +54,7 @@
 					"set_dangerous_core_edit",
 					"set_file_dangerous",
 					"save_file",
+					"chmod_file",
 					"create_backup",
 					"restore_backup",
 					"set_backup_settings",
