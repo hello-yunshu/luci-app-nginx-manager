@@ -80,7 +80,7 @@
 - `http2` — HTTP/2 开关（nginx 1.25.1+ 用 `http2 on;` 指令）
 - `http3` — HTTP/3 (QUIC) 开关，需 nginx 编译 QUIC 支持
 - `ssl_protocols` / `ssl_ciphers` — SSL 协议与加密套件
-- `ssl_stapling` — OCSP Stapling
+- `ssl_stapling` — OCSP Stapling（仅自定义证书，ACME 证书因 Let's Encrypt 官方停用 OCSP 不支持）
 - `ssl_buffer_size` — SSL 缓冲区大小
 
 ## 安装

@@ -522,8 +522,8 @@ msgstr "非管理配置数"
 msgid "OCSP Stapling"
 msgstr "OCSP 装订"
 
-msgid "Enable OCSP stapling for SSL certificates. Works with both ACME and custom certificates."
-msgstr "为 SSL 证书启用 OCSP 装订，ACME 和自定义证书均支持。"
+msgid "OCSP stapling for custom certificates only. ACME certs not supported — Let's Encrypt has discontinued OCSP."
+msgstr "仅为自定义证书启用 OCSP 装订。Let's Encrypt 已停止 OCSP，ACME 证书不支持。"
 
 msgid "OK"
 msgstr "正常"

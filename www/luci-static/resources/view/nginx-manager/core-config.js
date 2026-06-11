@@ -285,7 +285,7 @@ return view.extend({
 		o.default = '1';
 
 		o = s2.option(form.Flag, 'ssl_stapling', _('OCSP Stapling'),
-			_('Enable OCSP stapling for SSL certificates. Works with both ACME and custom certificates.'));
+			_('OCSP stapling for custom certificates only. ACME certs not supported — Let\'s Encrypt has discontinued OCSP.'));
 		o.rmempty = true;
 		o.default = '1';
 		this.customSslOptions.sslStapling = o;
