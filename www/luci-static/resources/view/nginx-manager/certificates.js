@@ -667,6 +667,8 @@ return view.extend({
 			'class': 'cbi-button cbi-button-apply',
 			'click': function() {
 				var certNameInput = E('input', { 'type': 'text', 'id': 'new-cert-name', 'class': 'cbi-input-text' });
+				var certNameDesc = E('div', { 'class': 'cbi-value-description' }, utils.NAME_TIP + ' ' + _('e.g. my-cert'));
+				utils.validateNameInput(certNameInput, certNameDesc);
 				var certTypeSelect = E('select', { 'id': 'new-cert-type', 'class': 'cbi-input-select' }, [
 					E('option', { 'value': 'manual' }, _('Manual')),
 					E('option', { 'value': 'self_signed' }, _('Self-Signed Certificate')),
@@ -795,7 +797,7 @@ return view.extend({
 				ui.showModal(_('Add Certificate'), [
 					E('div', { 'class': 'cbi-value' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('Certificate Name')),
-						E('div', { 'class': 'cbi-value-field' }, certNameInput)
+						E('div', { 'class': 'cbi-value-field' }, [certNameInput, certNameDesc])
 					]),
 					E('div', { 'class': 'cbi-value' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('Type')),
@@ -889,6 +891,10 @@ return view.extend({
 
 								if (!certName) {
 									ui.addNotification(null, E('p', {}, _('Certificate name is required')), 'error');
+									return;
+								}
+								if (!utils.NAME_PATTERN.test(certName)) {
+									ui.addNotification(null, E('p', {}, _('Invalid certificate name')), 'error');
 									return;
 								}
 

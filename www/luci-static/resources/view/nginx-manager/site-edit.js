@@ -157,7 +157,8 @@ return view.extend({
 		var nameInput = E('input', { 'type': 'text', 'class': 'cbi-input-text' });
 		if (isNew && siteId) nameInput.value = siteId;
 		if (!isNew && site && site.name) nameInput.value = site.name;
-		basicSection.appendChild(makeField('opt-name', _('Site Name'), nameInput));
+		basicSection.appendChild(makeField('opt-name', _('Site Name'), nameInput, utils.NAME_TIP));
+		utils.validateNameInput(nameInput);
 
 		var modeSelect = E('select', { 'class': 'cbi-input-select' }, [
 			E('option', { 'value': 'reverse_proxy' }, _('Reverse Proxy')),
@@ -489,6 +490,15 @@ return view.extend({
 
 			data.enabled             = document.getElementById('opt-enabled').checked ? '1' : '0';
 			data.name                = document.getElementById('opt-name').value.trim();
+
+			if (!data.name) {
+				ui.addNotification(null, E('p', {}, _('Site name is required')), 'error');
+				return;
+			}
+			if (!utils.NAME_PATTERN.test(data.name)) {
+				ui.addNotification(null, E('p', {}, _('Invalid site name')), 'error');
+				return;
+			}
 			data.mode                = document.getElementById('opt-mode').value;
 			data.server_name         = document.getElementById('opt-server_name').value.trim();
 

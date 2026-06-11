@@ -3,7 +3,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-nginx-manager
-PKG_VERSION:=1.2.5
+PKG_VERSION:=1.5.0
 PKG_RELEASE:=3
 
 PKG_LICENSE:=AGPL-3.0-only
@@ -81,6 +81,7 @@ define Package/luci-app-nginx-manager/install
 	$(INSTALL_DATA) ./www/luci-static/resources/view/nginx-manager/logs.js $(1)/www/luci-static/resources/view/nginx-manager/logs.js
 	$(INSTALL_DATA) ./www/luci-static/resources/view/nginx-manager/core-config.js $(1)/www/luci-static/resources/view/nginx-manager/core-config.js
 	$(INSTALL_DATA) ./www/luci-static/resources/view/nginx-manager/backups.js $(1)/www/luci-static/resources/view/nginx-manager/backups.js
+	$(INSTALL_DATA) ./www/luci-static/resources/view/nginx-manager/files.js $(1)/www/luci-static/resources/view/nginx-manager/files.js
 
 	if [ -n "$$$$(ls $(PKG_BUILD_DIR)/lmo/*.lmo 2>/dev/null)" ]; then \
 		$(INSTALL_DIR) $(1)/usr/lib/lua/luci/i18n; \

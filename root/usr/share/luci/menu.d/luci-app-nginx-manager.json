@@ -44,6 +44,14 @@
 			"path": "nginx-manager/certificates"
 		}
 	},
+	"admin/services/nginx-manager/files": {
+		"title": "文件",
+		"order": 25,
+		"action": {
+			"type": "view",
+			"path": "nginx-manager/files"
+		}
+	},
 	"admin/services/nginx-manager/core-config": {
 		"title": "Core Config",
 		"order": 30,
