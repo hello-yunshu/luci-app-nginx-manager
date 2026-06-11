@@ -27,6 +27,13 @@ var callSaveFile = rpc.declare({
 	expect: {}
 });
 
+var callChmodFile = rpc.declare({
+	object: 'nginx_manager',
+	method: 'chmod_file',
+	params: ['path', 'perms'],
+	expect: {}
+});
+
 function highlightNginx(text) {
 	if (!text) return '';
 	return text
@@ -73,7 +80,7 @@ function renderFileTree(container, data) {
 	container.appendChild(rootChildren);
 
 	function loadSubDir(childrenEl, subDirPath) {
-		childrenEl.innerHTML = E('div', { 'class': 'nm-file-tree-item' }, _('Loading...'));
+		childrenEl.textContent = _('Loading...');
 		callListFiles(subDirPath).then(function(subData) {
 			childrenEl.innerHTML = '';
 			var subEntries = (subData && subData.entries) || [];
@@ -83,6 +90,97 @@ function renderFileTree(container, data) {
 		});
 	}
 
+	function showChmodModal(path, currentPerms) {
+		// Handle 4-digit octal (e.g. 4755) by stripping the leading special-bits digit
+		var permStr = currentPerms;
+		if (permStr.length === 4) permStr = permStr.substring(1);
+
+		var u = parseInt(permStr[0]) || 0, g = parseInt(permStr[1]) || 0, o = parseInt(permStr[2]) || 0;
+		var uR = !!(u & 4), uW = !!(u & 2), uX = !!(u & 1);
+		var gR = !!(g & 4), gW = !!(g & 2), gX = !!(g & 1);
+		var oR = !!(o & 4), oW = !!(o & 2), oX = !!(o & 1);
+
+		var octalInput = E('input', {
+			'type': 'text', 'class': 'cbi-input-text nm-perm-octal',
+			'value': permStr, 'maxlength': '3'
+		});
+
+		var cbU = { r: null, w: null, x: null };
+		var cbG = { r: null, w: null, x: null };
+		var cbO = { r: null, w: null, x: null };
+
+		function syncOctal() {
+			var uv = (cbU.r.checked ? 4 : 0) + (cbU.w.checked ? 2 : 0) + (cbU.x.checked ? 1 : 0);
+			var gv = (cbG.r.checked ? 4 : 0) + (cbG.w.checked ? 2 : 0) + (cbG.x.checked ? 1 : 0);
+			var ov = (cbO.r.checked ? 4 : 0) + (cbO.w.checked ? 2 : 0) + (cbO.x.checked ? 1 : 0);
+			octalInput.value = '' + uv + gv + ov;
+		}
+
+		function syncCheckboxes() {
+			var v = octalInput.value.replace(/[^0-7]/g, '').slice(0, 3);
+			if (v.length < 3) v = v.padEnd(3, '0');
+			octalInput.value = v;
+			var uv = parseInt(v[0]), gv = parseInt(v[1]), ov = parseInt(v[2]);
+			cbU.r.checked = !!(uv & 4); cbU.w.checked = !!(uv & 2); cbU.x.checked = !!(uv & 1);
+			cbG.r.checked = !!(gv & 4); cbG.w.checked = !!(gv & 2); cbG.x.checked = !!(gv & 1);
+			cbO.r.checked = !!(ov & 4); cbO.w.checked = !!(ov & 2); cbO.x.checked = !!(ov & 1);
+		}
+
+		octalInput.addEventListener('input', syncCheckboxes);
+
+		function makeCb(key, checked) {
+			return E('label', { 'class': 'nm-perm-check' }, [
+				E('input', { 'type': 'checkbox', 'checked': checked, 'change': syncOctal }),
+				' ' + key
+			]);
+		}
+
+		cbU.r = makeCb('r', uR); cbU.w = makeCb('w', uW); cbU.x = makeCb('x', uX);
+		cbG.r = makeCb('r', gR); cbG.w = makeCb('w', gW); cbG.x = makeCb('x', gX);
+		cbO.r = makeCb('r', oR); cbO.w = makeCb('w', oW); cbO.x = makeCb('x', oX);
+
+		var table = E('table', { 'class': 'nm-perm-table' }, [
+			E('tr', {}, [E('th', {}), E('th', {}, _('Owner')), E('th', {}, _('Group')), E('th', {}, _('Other'))]),
+			E('tr', {}, [E('td', {}, _('Read')),    E('td', {}, cbU.r), E('td', {}, cbG.r), E('td', {}, cbO.r)]),
+			E('tr', {}, [E('td', {}, _('Write')),   E('td', {}, cbU.w), E('td', {}, cbG.w), E('td', {}, cbO.w)]),
+			E('tr', {}, [E('td', {}, _('Execute')),  E('td', {}, cbU.x), E('td', {}, cbG.x), E('td', {}, cbO.x)])
+		]);
+
+		ui.showModal(_('Change Permissions') + ' - ' + path, [
+			E('div', { 'class': 'cbi-value' }, [
+				E('label', { 'class': 'cbi-value-title' }, _('Octal')),
+				E('div', { 'class': 'cbi-value-field' }, [octalInput])
+			]),
+			E('div', { 'class': 'cbi-value' }, [
+				E('div', { 'class': 'cbi-value-field' }, [table])
+			]),
+			E('div', { 'class': 'right' }, [
+				E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+				E('button', {
+					'class': 'cbi-button cbi-button-apply',
+					'click': function() {
+						var newPerms = octalInput.value.replace(/[^0-7]/g, '').slice(0, 3);
+						if (newPerms.length < 3) {
+							ui.addNotification(null, E('p', {}, _('Invalid permissions')), 'error');
+							return;
+						}
+						ui.hideModal();
+						callChmodFile(path.replace(ROOT_DIR + '/', ''), newPerms).then(function(result) {
+							if (result && result.error) {
+								ui.addNotification(null, E('p', {}, result.error), 'error');
+							} else {
+								ui.addNotification(null, E('p', {}, _('Permissions updated')), 'info');
+								loadFileTree(document.getElementById('nm-file-tree'), currentDir);
+							}
+						}).catch(function(err) {
+							ui.addNotification(null, E('p', {}, _('Failed to change permissions') + ': ' + (err.message || err)), 'error');
+						});
+					}
+				}, _('Apply'))
+			])
+		]);
+	}
+
 	function renderEntries(parentEl, entries, dirPath) {
 		var sorted = (entries || []).slice().sort(function(a, b) {
 			if (a.type !== b.type) return a.type === 'dir' ? -1 : 1;
@@ -90,6 +188,18 @@ function renderFileTree(container, data) {
 		});
 
 		sorted.forEach(function(entry) {
+			var entryPerms = (entry.perms || '???');
+			var hasPerms = /^[0-7]{3,4}$/.test(entryPerms);
+			var permBadge = E('span', {
+				'class': 'nm-perm-badge' + (hasPerms ? '' : ' nm-perm-badge-unknown'),
+				'title': (entry.owner || '?') + ':' + (entry.group || '?') + ' ' + entryPerms,
+				'click': hasPerms ? function(e) {
+					e.stopPropagation();
+					var filePath = dirPath ? ROOT_DIR + '/' + dirPath + '/' + entry.name : ROOT_DIR + '/' + entry.name;
+					showChmodModal(filePath, entryPerms);
+				} : null
+			}, entryPerms);
+
 			if (entry.type === 'dir') {
 				var subDirPath = dirPath ? dirPath + '/' + entry.name : entry.name;
 				var subItem = E('div', {
@@ -107,7 +217,7 @@ function renderFileTree(container, data) {
 							}
 						}
 					}
-				}, entry.name);
+				}, [E('span', {}, entry.name), permBadge]);
 				parentEl.appendChild(subItem);
 
 				var subChildren = E('div', { 'class': 'nm-file-tree-children', 'style': 'display:none' });
@@ -124,7 +234,7 @@ function renderFileTree(container, data) {
 						});
 						this.classList.add('active');
 					}
-				}, entry.name);
+				}, [E('span', {}, entry.name), permBadge]);
 				parentEl.appendChild(fileItem);
 			}
 		});
@@ -213,7 +323,7 @@ return view.extend({
 		container.appendChild(E('h2', { 'class': 'cbi-map-title' }, _('Files')));
 
 		// Toolbar
-		var toolbar = E('div', { 'class': 'cbi-section' });
+		var toolbar = E('div', { 'class': 'cbi-section nm-file-toolbar' });
 
 		var pathLabel = E('span', {
 			'id': 'nm-file-path-label',
@@ -221,7 +331,7 @@ return view.extend({
 		}, '');
 		toolbar.appendChild(pathLabel);
 
-		var btnGroup = E('div', { 'class': 'nm-btn-group', 'style': 'float:right' });
+		var btnGroup = E('div', { 'class': 'nm-btn-group' });
 
 		var saveBtn = E('button', {
 			'class': 'cbi-button cbi-button-apply',
@@ -247,7 +357,7 @@ return view.extend({
 					E('p', {}, _('Create a new file in') + ' ' + ROOT_DIR + '/' + currentDir + '/'),
 					E('div', { 'class': 'cbi-value' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('File Name')),
-						nameInput
+						E('div', { 'class': 'cbi-value-field' }, [nameInput])
 					]),
 					E('div', { 'class': 'right' }, [
 						E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),

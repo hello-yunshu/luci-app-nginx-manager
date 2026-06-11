@@ -168,9 +168,6 @@ msgstr "客户端最大请求体"
 msgid "Close"
 msgstr "关闭"
 
-msgid "Copy"
-msgstr "复制"
-
 msgid "Common Proxy Headers"
 msgstr "常用代理头"
 
@@ -209,9 +206,6 @@ msgstr "创建备份"
 
 msgid "Creating site..."
 msgstr "正在创建站点..."
-
-msgid "Create a copy of this site with a new name? The copy will be disabled by default."
-msgstr "创建一份此站点的副本吗？副本默认会被禁用。"
 
 msgid "Custom Proxy Headers"
 msgstr "自定义代理头"
@@ -284,12 +278,6 @@ msgstr "已禁用"
 
 msgid "Domain"
 msgstr "域名"
-
-msgid "Duplicating..."
-msgstr "正在复制..."
-
-msgid "Duplicate Site"
-msgstr "复制站点"
 
 msgid "Domain is required for ACME certificates"
 msgstr "ACME 证书需要填写域名"
@@ -436,7 +424,7 @@ msgid "Listen Port"
 msgstr "监听端口"
 
 msgid "Listening Ports"
-msgstr "监听端口"
+msgstr "监听端口列表"
 
 msgid "Loading..."
 msgstr "加载中..."
@@ -701,9 +689,6 @@ msgstr "站点已删除"
 
 msgid "Site disabled"
 msgstr "站点已禁用"
-
-msgid "Site duplicated, redirecting to edit page..."
-msgstr "站点已复制，正在跳转到编辑页面..."
 
 msgid "Site enabled"
 msgstr "站点已启用"
@@ -1121,3 +1106,120 @@ msgstr "SSL 会话票据"
 
 msgid "Enable to improve TLS resumption performance, or disable for stricter forward secrecy."
 msgstr "开启可提升 TLS 会话恢复性能，关闭可增强前向保密安全性。"
+
+msgid "Files"
+msgstr "文件"
+
+msgid "New File"
+msgstr "新建文件"
+
+msgid "Create a new file in"
+msgstr "在以下目录创建新文件"
+
+msgid "File Name"
+msgstr "文件名"
+
+msgid "Creating..."
+msgstr "正在创建..."
+
+msgid "File created"
+msgstr "文件已创建"
+
+msgid "Failed to create file"
+msgstr "文件创建失败"
+
+msgid "Failed to load directory"
+msgstr "目录加载失败"
+
+msgid "Failed to load file"
+msgstr "文件加载失败"
+
+msgid "Failed to save file"
+msgstr "文件保存失败"
+
+msgid "File name is required"
+msgstr "文件名为必填"
+
+msgid "No file selected"
+msgstr "未选择文件"
+
+msgid "Saving..."
+msgstr "正在保存..."
+
+msgid "Clear All"
+msgstr "全部清除"
+
+msgid "Clear All Logs"
+msgstr "清除所有日志"
+
+msgid "Are you sure you want to clear ALL access and error logs for all sites? This cannot be undone."
+msgstr "确定要清除所有站点的访问日志和错误日志吗？此操作不可撤销。"
+
+msgid "Cleared"
+msgstr "已清除"
+
+msgid "log file(s)"
+msgstr "个日志文件"
+
+msgid "Clone Site"
+msgstr "克隆站点"
+
+msgid "Clone this site with a new name? The clone will be disabled by default."
+msgstr "为站点创建一个新名称的副本？副本默认会被禁用。"
+
+msgid "Cloning..."
+msgstr "正在克隆..."
+
+msgid "Clone"
+msgstr "克隆"
+
+msgid "Site cloned, redirecting to edit page..."
+msgstr "站点已克隆，正在跳转到编辑页面..."
+
+msgid "e.g. my-cert"
+msgstr "例如 my-cert"
+
+msgid "Invalid certificate name"
+msgstr "证书名称无效"
+
+msgid "Letters, digits, underscore to start; dots and hyphens are also allowed after that."
+msgstr "须以字母、数字或下划线开头，后续可包含字母、数字、点号、连字符和下划线"
+
+msgid "e.g. my-site, my_site_01"
+msgstr "例如 my-site、my_site_01"
+
+msgid "Change Permissions"
+msgstr "修改权限"
+
+msgid "Octal"
+msgstr "八进制"
+
+msgid "Owner"
+msgstr "属主"
+
+msgid "Group"
+msgstr "属组"
+
+msgid "Other"
+msgstr "其他"
+
+msgid "Read"
+msgstr "读"
+
+msgid "Write"
+msgstr "写"
+
+msgid "Execute"
+msgstr "执行"
+
+msgid "Permissions updated"
+msgstr "权限已更新"
+
+msgid "Failed to change permissions"
+msgstr "修改权限失败"
+
+msgid "Invalid permissions"
+msgstr "无效的权限"
+
+msgid "Apply"
+msgstr "应用"

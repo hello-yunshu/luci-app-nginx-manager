@@ -423,6 +423,7 @@ button.nm-badge {
 }
 
 /* === File Manager === */
+.nm-file-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5em; }
 .nm-file-manager { display: flex; gap: 1em; min-height: 400px; }
 .nm-file-tree { flex: 0 0 220px; border-right: 1px solid var(--border-color); overflow-y: auto; padding-right: 0.5em; }
 .nm-file-editor { flex: 1; position: relative; display: flex; flex-direction: column; }
@@ -444,7 +445,8 @@ button.nm-badge {
 .nm-highlight-layer .cm { color: var(--subtext-color, #888); font-style: italic; }
 .nm-highlight-layer .str { color: var(--success-color, #3aa657); }
 .nm-highlight-layer .var { color: var(--warning-color, #c68014); }
-.nm-file-tree-item { padding: 3px 8px; cursor: pointer; border-radius: 3px; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nm-file-tree-item { padding: 3px 8px; cursor: pointer; border-radius: 3px; font-size: 0.9em; white-space: nowrap; display: flex; align-items: center; gap: 4px; overflow: hidden; }
+.nm-file-tree-item > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .nm-file-tree-item:hover { background: color-mix(in srgb, var(--main-color) 10%, transparent); }
 .nm-file-tree-item.active { background: color-mix(in srgb, var(--main-color) 20%, transparent); font-weight: bold; }
 .nm-file-tree-dir::before { content: '\25B6 '; display: inline-block; width: 1em; font-size: 0.7em; transition: transform 0.15s; }
@@ -452,3 +454,48 @@ button.nm-badge {
 .nm-file-tree-children { padding-left: 1em; }
 .nm-file-path-label { font-size: 0.85em; color: var(--subtext-color, #888); font-family: monospace; }
 .nm-log-size { font-size: 0.85em; color: var(--subtext-color); margin-left: 0.5em; }
+
+/* === Permission Badge === */
+.nm-perm-badge {
+	font-size: 0.75em;
+	font-family: monospace;
+	color: var(--subtext-color, #888);
+	background: color-mix(in srgb, var(--subtext-color, #888) 12%, transparent);
+	border-radius: 3px;
+	padding: 0 4px;
+	margin-left: auto;
+	cursor: pointer;
+	flex-shrink: 0;
+}
+.nm-perm-badge:hover {
+	background: color-mix(in srgb, var(--main-color, #337ab7) 20%, transparent);
+	color: var(--main-color, #337ab7);
+}
+.nm-perm-badge-unknown {
+	cursor: default;
+	opacity: 0.5;
+}
+.nm-perm-badge-unknown:hover {
+	background: color-mix(in srgb, var(--subtext-color, #888) 12%, transparent);
+	color: var(--subtext-color, #888);
+}
+
+/* === Permission Table === */
+.nm-perm-table { border-collapse: collapse; margin: 0 auto; }
+.nm-perm-table th, .nm-perm-table td { padding: 4px 10px; text-align: center; }
+.nm-perm-table th { font-weight: bold; border-bottom: 1px solid var(--border-color, #ccc); }
+.nm-perm-check { cursor: pointer; display: inline-flex; align-items: center; gap: 2px; }
+.nm-perm-check input { margin: 0; }
+.nm-perm-octal { font-family: monospace; width: 80px; text-align: center; font-size: 18px; }
+
+/* === File Manager Responsive === */
+@media (max-width: 1024px) {
+	.nm-file-manager { flex-direction: column; }
+	.nm-file-tree { flex: 0 0 auto; max-height: 200px; border-right: none; border-bottom: 1px solid var(--border-color); padding-right: 0; padding-bottom: 0.5em; }
+	.nm-file-editor textarea,
+	.nm-file-editor .nm-highlight-layer { min-height: 250px; }
+}
+
+@media (max-width: 600px) {
+	.nm-perm-table th, .nm-perm-table td { padding: 3px 5px; font-size: 0.9em; }
+}

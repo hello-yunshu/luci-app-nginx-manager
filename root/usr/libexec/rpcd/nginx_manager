@@ -1247,9 +1247,16 @@ handle_list_files() {
 		local basename="${entry##*/}"
 		local type="file"
 		[ -d "${entry}" ] && type="dir"
+		local perms owner group
+		perms=$(stat -c '%a' "${entry}" 2>/dev/null) || perms="???"
+		owner=$(stat -c '%U' "${entry}" 2>/dev/null) || owner="?"
+		group=$(stat -c '%G' "${entry}" 2>/dev/null) || group="?"
 		json_add_object
 		json_add_string "name" "${basename}"
 		json_add_string "type" "${type}"
+		json_add_string "perms" "${perms}"
+		json_add_string "owner" "${owner}"
+		json_add_string "group" "${group}"
 		json_close_object
 	done
 	json_close_array
@@ -1294,8 +1301,53 @@ handle_save_file() {
 	json_dump
 }
 
+handle_chmod_file() {
+	local path perms
+	json_get_var path "path"
+	json_get_var perms "perms"
+
+	local full_path="/etc/nginx/${path}"
+	local resolved
+	resolved=$(readlink -f "${full_path}" 2>/dev/null || realpath "${full_path}" 2>/dev/null)
+	if [ -z "${resolved}" ]; then
+		local parent_resolved
+		parent_resolved=$(readlink -f "$(dirname "${full_path}")" 2>/dev/null || realpath "$(dirname "${full_path}")" 2>/dev/null)
+		[ -z "${parent_resolved}" ] && {
+			json_init; json_add_string "error" "access denied: path outside /etc/nginx/"; json_dump; return
+		}
+		resolved="${parent_resolved}/$(basename "${full_path}")"
+	fi
+	case "${resolved}" in
+		/etc/nginx|/etc/nginx/*) ;;
+		*) json_init; json_add_string "error" "access denied: path outside /etc/nginx/"; json_dump; return ;;
+	esac
+
+	# Validate perms is a 3-4 digit octal
+	case "${perms}" in
+		[0-7][0-7][0-7]|[0-7][0-7][0-7][0-7]) ;;
+		*) json_init; json_add_string "error" "invalid permissions"; json_dump; return ;;
+	esac
+
+	local dangerous
+	dangerous="$(uci -q get nginx_manager.global.dangerous_core_edit)" || dangerous="0"
+	[ "${dangerous}" = "1" ] || {
+		json_init; json_add_string "error" "Dangerous core edit is disabled"; json_dump; return
+	}
+
+	[ -e "${full_path}" ] || {
+		json_init; json_add_string "error" "file not found"; json_dump; return
+	}
+
+	chmod "${perms}" "${full_path}" || {
+		json_init; json_add_string "error" "failed to change permissions"; json_dump; return
+	}
+
+	json_init
+	json_add_string "result" "ok"
+	json_dump
+}
+
 # Read a directive value from the effective nginx configuration (nginx -T)
-# This covers all included files, not just the main config
 _NGINX_T_CACHE=""
 _read_nginx_directive() {
 	local directive="$1"
@@ -2828,6 +2880,11 @@ case "$1" in
 		json_add_string "content" ""
 		json_close_object
 
+		json_add_object "chmod_file"
+		json_add_string "path" ""
+		json_add_string "perms" ""
+		json_close_object
+
 		json_add_object "check_cert_expiry"
 		json_close_object
 
@@ -2929,6 +2986,7 @@ case "$1" in
 			acme_status)        handle_acme_status ;;
 			list_files)        handle_list_files ;;
 			save_file)         handle_save_file ;;
+			chmod_file)        handle_chmod_file ;;
 			check_cert_expiry)  handle_check_cert_expiry ;;
 			get_logs)           handle_get_logs ;;
 			clear_logs)         handle_clear_logs ;;
