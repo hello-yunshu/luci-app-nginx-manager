@@ -1064,7 +1064,7 @@ return view.extend({
 
 			var statusCell = E('td', { 'data-label': _('Status') });
 			statusCell.appendChild(E('button', {
-				'class': certStatusClass(cert.status),
+				'class': certStatusClass(cert.status) + ' nm-cert-status-badge',
 				'click': function() { showCertStatusModal(cert); }
 			}, certStatusLabel(cert.status)));
 			row.appendChild(statusCell);
