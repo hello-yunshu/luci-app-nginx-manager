@@ -19,8 +19,17 @@ var CODE_EXTENSIONS = {
 	cpp: true, hpp: true, ts: true, tsx: true, jsx: true, yaml: true,
 	yml: true, toml: true, ini: true, service: true, log: true
 };
+var TEXT_EXTENSIONS = {
+	txt: true, text: true, md: true, markdown: true, crt: true, cer: true,
+	pem: true, key: true, csr: true, cert: true, chain: true, bundle: true,
+	pub: true, cnf: true, list: true, env: true, sample: true, example: true
+};
 var CODE_FILENAMES = {
 	Makefile: true, Dockerfile: true, nginx: true, uci: true
+};
+var TEXT_FILENAMES = {
+	hosts: true, hostname: true, passwd: true, group: true,
+	shadow: true, authorized_keys: true, known_hosts: true
 };
 
 function normalizePath(path) {
@@ -106,6 +115,18 @@ function isCodeFile(path) {
 	var dot = name.lastIndexOf('.');
 	if (dot < 0) return false;
 	return !!CODE_EXTENSIONS[name.substring(dot + 1).toLowerCase()];
+}
+
+function isEditableFile(path, entry) {
+	if (entry && entry.type !== 'file') return false;
+	if (isCodeFile(path)) return true;
+
+	var name = String(path || '').split('/').pop() || '';
+	if (TEXT_FILENAMES[name]) return true;
+
+	var dot = name.lastIndexOf('.');
+	if (dot < 0) return false;
+	return !!TEXT_EXTENSIONS[name.substring(dot + 1).toLowerCase()];
 }
 
 function codeSyntax(path) {
@@ -285,7 +306,7 @@ function showChmodModal(path, currentPerms) {
 			E('div', { 'class': 'cbi-value-field' }, [octalInput])
 		]),
 		E('div', { 'class': 'cbi-value' }, [
-			E('div', { 'class': 'cbi-value-field' }, [table])
+			E('div', { 'class': 'cbi-value-field nm-perm-table-wrap' }, [table])
 		]),
 		E('div', { 'class': 'right' }, [
 			E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
@@ -362,20 +383,37 @@ function downloadFile(path) {
 	});
 }
 
+function pushAction(actions, button) {
+	actions.push(button);
+}
+
 function renderRows(tbody) {
 	tbody.innerHTML = '';
 
 	if (currentPath !== '/') {
 		tbody.appendChild(E('tr', {
-			'class': 'tr nm-file-row nm-file-row-dir nm-file-openable',
+			'class': 'tr nm-file-row nm-file-row-parent nm-file-openable',
 			'click': function() { loadDirectory(parentPath(currentPath)); }
 		}, [
-			E('td', { 'class': 'td nm-file-name' }, '..'),
-			E('td', { 'class': 'td' }, _('Directory')),
-			E('td', { 'class': 'td' }, '-'),
-			E('td', { 'class': 'td' }, '-'),
-			E('td', { 'class': 'td' }, '-'),
-			E('td', { 'class': 'td' }, '')
+			E('td', { 'class': 'td nm-file-name', 'data-label': _('Name') }, [
+				E('span', { 'class': 'nm-file-name-main' }, [
+					E('span', { 'class': 'nm-file-icon parent', 'aria-hidden': 'true' }),
+					E('span', { 'class': 'nm-file-name-text' }, '..')
+				])
+			]),
+			E('td', { 'class': 'td', 'data-label': _('Type') }, _('Directory')),
+			E('td', { 'class': 'td', 'data-label': _('Size') }, '-'),
+			E('td', { 'class': 'td', 'data-label': _('Perms') }, '-'),
+			E('td', { 'class': 'td', 'data-label': _('Modified') }, '-'),
+			E('td', { 'class': 'td nowrap nm-file-actions', 'data-label': _('Actions') }, [
+				E('button', {
+					'class': 'cbi-button cbi-button-neutral',
+					'click': function(ev) {
+						ev.stopPropagation();
+						loadDirectory(parentPath(currentPath));
+					}
+				}, _('Open'))
+			])
 		]));
 	}
 
@@ -389,73 +427,83 @@ function renderRows(tbody) {
 	currentEntries.forEach(function(entry) {
 		var path = joinPath(currentPath, entry.name);
 		var isDir = entry.type === 'directory';
+		var editable = !isDir && isEditableFile(path, entry);
 		var perms = modeToPerms(entry.mode);
+		var actions = [];
+
+		if (isDir) {
+			pushAction(actions, E('button', {
+				'class': 'cbi-button cbi-button-neutral',
+				'click': function(ev) {
+					ev.stopPropagation();
+					loadDirectory(path);
+				}
+			}, _('Open')));
+		} else {
+			if (editable) {
+				pushAction(actions, E('button', {
+					'class': 'cbi-button cbi-button-neutral',
+					'click': function(ev) {
+						ev.stopPropagation();
+						openEditor(path, entry);
+					}
+				}, _('Edit')));
+			}
+			pushAction(actions, E('button', {
+				'class': 'cbi-button',
+				'click': function(ev) {
+					ev.stopPropagation();
+					downloadFile(path);
+				}
+			}, _('Download')));
+		}
+
+		pushAction(actions, E('button', {
+			'class': 'cbi-button',
+			'click': function(ev) {
+				ev.stopPropagation();
+				showRenameModal(path, entry.name);
+			}
+		}, _('Rename')));
+
+		pushAction(actions, E('button', {
+			'class': 'cbi-button cbi-button-remove',
+			'click': function(ev) {
+				ev.stopPropagation();
+				showDeleteModal(path, entry);
+			}
+		}, _('Delete')));
+
 		var row = E('tr', {
-			'class': 'tr nm-file-row ' + (isDir ? 'nm-file-row-dir ' : '') + 'nm-file-openable' + (selectedPath === path ? ' active' : ''),
+			'class': 'tr nm-file-row ' + (isDir ? 'nm-file-row-dir ' : '') + (isDir || editable ? 'nm-file-openable ' : '') + (editable ? 'nm-file-editable ' : '') + (selectedPath === path ? 'active' : ''),
 			'click': function() {
 				selectedPath = path;
 				renderRows(tbody);
 			},
 			'dblclick': function() {
 				if (isDir) loadDirectory(path);
-				else openEditor(path, entry);
+				else if (editable) openEditor(path, entry);
 			}
 		}, [
-			E('td', { 'class': 'td nm-file-name' }, [
-				E('span', { 'class': isDir ? 'nm-file-icon dir' : 'nm-file-icon file' }, isDir ? '[D]' : '[F]'),
-				' ',
-				E('span', {}, entry.name)
+			E('td', { 'class': 'td nm-file-name', 'data-label': _('Name') }, [
+				E('span', { 'class': 'nm-file-name-main' }, [
+					E('span', { 'class': isDir ? 'nm-file-icon dir' : editable ? 'nm-file-icon file editable' : 'nm-file-icon file', 'aria-hidden': 'true' }),
+					E('span', { 'class': 'nm-file-name-text' }, entry.name)
+				])
 			]),
-			E('td', { 'class': 'td' }, entry.type || '-'),
-			E('td', { 'class': 'td nowrap' }, isDir ? '-' : formatSize(entry.size)),
+			E('td', { 'class': 'td', 'data-label': _('Type') }, entry.type || '-'),
+			E('td', { 'class': 'td nowrap', 'data-label': _('Size') }, isDir ? '-' : formatSize(entry.size)),
 			E('td', {
 				'class': 'td nowrap nm-file-perms',
+				'data-label': _('Perms'),
 				'title': _('Change Permissions'),
 				'click': function(ev) {
 					ev.stopPropagation();
 					showChmodModal(path, perms);
 				}
 			}, perms),
-			E('td', { 'class': 'td nowrap' }, formatTime(entry.mtime)),
-			E('td', { 'class': 'td nowrap' }, [
-				isDir ? E('button', {
-					'class': 'cbi-button cbi-button-neutral',
-					'click': function(ev) {
-						ev.stopPropagation();
-						loadDirectory(path);
-					}
-				}, _('Open')) : E('button', {
-					'class': 'cbi-button cbi-button-neutral',
-					'click': function(ev) {
-						ev.stopPropagation();
-						openEditor(path, entry);
-					}
-				}, _('Edit')),
-				' ',
-				!isDir ? E('button', {
-					'class': 'cbi-button',
-					'click': function(ev) {
-						ev.stopPropagation();
-						downloadFile(path);
-					}
-				}, _('Download')) : '',
-				' ',
-				E('button', {
-					'class': 'cbi-button',
-					'click': function(ev) {
-						ev.stopPropagation();
-						showRenameModal(path, entry.name);
-					}
-				}, _('Rename')),
-				' ',
-				E('button', {
-					'class': 'cbi-button cbi-button-remove',
-					'click': function(ev) {
-						ev.stopPropagation();
-						showDeleteModal(path, entry);
-					}
-				}, _('Delete'))
-			])
+			E('td', { 'class': 'td nowrap', 'data-label': _('Modified') }, formatTime(entry.mtime)),
+			E('td', { 'class': 'td nowrap nm-file-actions', 'data-label': _('Actions') }, actions)
 		]);
 		tbody.appendChild(row);
 	});
@@ -490,6 +538,7 @@ function loadDirectory(path) {
 
 function openEditor(path, entry) {
 	if (entry && entry.type !== 'file') return;
+	if (!isEditableFile(path, entry)) return;
 	if (blockIfUnsafe(path)) return;
 
 	setStatus(_('Loading...'));
@@ -791,7 +840,7 @@ return view.extend({
 		]));
 
 		container.appendChild(E('div', { 'class': 'cbi-section nm-file-table-wrap' }, [
-			E('table', { 'class': 'table cbi-section-table nm-file-table' }, [
+			E('table', { 'class': 'table cbi-section-table nm-responsive-table nm-file-table' }, [
 				E('thead', {}, [
 					E('tr', { 'class': 'tr cbi-section-table-titles' }, [
 						E('th', { 'class': 'th' }, _('Name')),
