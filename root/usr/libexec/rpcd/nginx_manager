@@ -1223,10 +1223,11 @@ handle_get_log_size() {
 	log_paths="$(resolve_log_paths "${log_type}" "${site}")" || {
 		json_init; json_add_int "size" 0; json_dump; return
 	}
-	local total_size=0
+	local total_size=0 sz
 	for log_path in ${log_paths}; do
 		[ -f "${log_path}" ] || continue
-		total_size=$((total_size + $(stat -c%s "${log_path}" 2>/dev/null || echo 0)))
+		sz=$(stat -c '%s' "${log_path}" 2>/dev/null) || sz=$(wc -c < "${log_path}" 2>/dev/null) || sz=0
+		total_size=$((total_size + sz))
 	done
 	json_init
 	json_add_int "size" "${total_size}"
@@ -2922,6 +2923,14 @@ case "$1" in
 		json_close_object
 
 		json_add_object "clear_logs"
+		json_add_string "type" ""
+		json_add_string "site" ""
+		json_close_object
+
+		json_add_object "clear_all_logs"
+		json_close_object
+
+		json_add_object "get_log_size"
 		json_add_string "type" ""
 		json_add_string "site" ""
 		json_close_object

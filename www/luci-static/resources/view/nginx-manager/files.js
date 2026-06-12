@@ -12,6 +12,16 @@ var currentPath = DEFAULT_DIR;
 var currentEntries = [];
 var selectedPath = '';
 var BLOCKED_ROOTS = [ '/proc', '/sys', '/dev' ];
+var CODE_EXTENSIONS = {
+	conf: true, config: true, json: true, js: true, mjs: true, cjs: true,
+	css: true, html: true, htm: true, xml: true, sh: true, ash: true,
+	lua: true, py: true, php: true, rb: true, go: true, c: true, h: true,
+	cpp: true, hpp: true, ts: true, tsx: true, jsx: true, yaml: true,
+	yml: true, toml: true, ini: true, service: true, log: true
+};
+var CODE_FILENAMES = {
+	Makefile: true, Dockerfile: true, nginx: true, uci: true
+};
 
 function normalizePath(path) {
 	path = (path || '/').trim();
@@ -69,7 +79,7 @@ function formatSize(bytes) {
 }
 
 function modeToPerms(mode) {
-	var value = Number(mode || 0) & 511;
+	var value = Number(mode || 0) & 4095;
 	var text = value.toString(8);
 	while (text.length < 3) text = '0' + text;
 	return text;
@@ -78,6 +88,85 @@ function modeToPerms(mode) {
 function formatTime(ts) {
 	if (!ts) return '-';
 	return new Date(ts * 1000).toLocaleString();
+}
+
+function escapeHtml(text) {
+	return String(text || '')
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;');
+}
+
+function isCodeFile(path) {
+	path = String(path || '');
+	if (path.indexOf('/etc/config/') === 0 || path.indexOf('/etc/init.d/') === 0) return true;
+	var name = String(path || '').split('/').pop() || '';
+	if (CODE_FILENAMES[name]) return true;
+	var dot = name.lastIndexOf('.');
+	if (dot < 0) return false;
+	return !!CODE_EXTENSIONS[name.substring(dot + 1).toLowerCase()];
+}
+
+function codeSyntax(path) {
+	path = String(path || '');
+	var name = String(path || '').split('/').pop() || '';
+	var ext = name.indexOf('.') >= 0 ? name.substring(name.lastIndexOf('.') + 1).toLowerCase() : '';
+	if (name === 'nginx.conf' || ext === 'conf') return 'nginx';
+	if (ext === 'json') return 'json';
+	if (ext === 'css') return 'css';
+	if (ext === 'html' || ext === 'htm' || ext === 'xml') return 'html';
+	if (ext === 'sh' || ext === 'ash' || path.indexOf('/etc/init.d/') === 0) return 'shell';
+	return 'generic';
+}
+
+function splitComment(line, syntax) {
+	var markers = syntax === 'json' ? [] : syntax === 'css' || syntax === 'html' ? [ '<!--', '/*' ] : [ '#', '//' ];
+	var best = -1;
+	markers.forEach(function(marker) {
+		var idx = line.indexOf(marker);
+		if (idx >= 0 && (best < 0 || idx < best)) best = idx;
+	});
+	return best >= 0 ? [ line.substring(0, best), line.substring(best) ] : [ line, '' ];
+}
+
+function highlightCodePart(code, syntax) {
+	var strings = [];
+	code = code.replace(/(&quot;(?:\\.|[^&])*?&quot;|'(?:\\.|[^'])*')/g, function(match) {
+		var token = '\ue000' + String.fromCharCode(0xe001 + strings.length);
+		strings.push('<span class="tok-str">' + match + '</span>');
+		return token;
+	});
+
+	if (syntax === 'json') {
+		code = code.replace(/\b(true|false|null)\b/g, '<span class="tok-key">$1</span>');
+		code = code.replace(/([A-Za-z0-9_"\ue000-\uf8ff]+)(\s*:)/g, '<span class="tok-prop">$1</span>$2');
+	} else if (syntax === 'nginx') {
+		code = code.replace(/\b(server|location|listen|proxy_pass|upstream|return|if|set|include|root|index|ssl_certificate|ssl_certificate_key|ssl_protocols|ssl_ciphers|ssl_prefer_server_ciphers|ssl_session_cache|ssl_session_timeout|ssl_session_tickets|ssl_stapling|ssl_stapling_verify|ssl_trusted_certificate|ssl_buffer_size|add_header|error_page|access_log|error_log|http2|http3|quic|server_name|client_max_body_size|keepalive_timeout|sendfile|tcp_nopush|tcp_nodelay|gzip|server_tokens|resolver|resolver_timeout|proxy_set_header|proxy_redirect|proxy_buffering|proxy_connect_timeout|proxy_read_timeout|proxy_send_timeout|grpc_pass|try_files|autoindex|alias|rewrite)\b/g, '<span class="tok-key">$1</span>');
+	} else if (syntax === 'shell') {
+		code = code.replace(/\b(if|then|else|elif|fi|for|while|do|done|case|esac|function|local|return|export|readonly|in)\b/g, '<span class="tok-key">$1</span>');
+		code = code.replace(/(\$[{(]?[A-Za-z0-9_@#?*!-]+[})]?)/g, '<span class="tok-var">$1</span>');
+	} else if (syntax === 'css') {
+		code = code.replace(/([A-Za-z-]+)(\s*:)/g, '<span class="tok-prop">$1</span>$2');
+		code = code.replace(/(@[A-Za-z-]+)/g, '<span class="tok-key">$1</span>');
+	} else {
+		code = code.replace(/\b(function|return|var|let|const|if|else|for|while|switch|case|break|continue|class|new|try|catch|true|false|null|undefined)\b/g, '<span class="tok-key">$1</span>');
+	}
+
+	code = code.replace(/\b([0-9]+(?:\.[0-9]+)?)([a-zA-Z%]+)?\b/g, '<span class="tok-num">$1$2</span>');
+	code = code.replace(/\ue000([\ue001-\uf8ff])/g, function(_, idx) {
+		return strings[idx.charCodeAt(0) - 0xe001] || '';
+	});
+	return code;
+}
+
+function highlightCode(text, path) {
+	var syntax = codeSyntax(path);
+	return String(text || '').split('\n').map(function(line) {
+		var parts = splitComment(escapeHtml(line), syntax);
+		var code = highlightCodePart(parts[0], syntax);
+		return code + (parts[1] ? '<span class="tok-comment">' + parts[1] + '</span>' : '');
+	}).join('\n') + '\n';
 }
 
 function showError(prefix, err) {
@@ -120,6 +209,107 @@ function validateEntryName(name) {
 		return _('Name cannot contain slashes or parent directory references');
 	}
 	return '';
+}
+
+function showChmodModal(path, currentPerms) {
+	if (blockIfUnsafe(path)) return;
+
+	var octalInput = E('input', {
+		'type': 'text',
+		'class': 'cbi-input-text nm-perm-octal',
+		'value': /^[0-7]{3,4}$/.test(currentPerms || '') ? currentPerms : '644',
+		'maxlength': '4'
+	});
+	var boxes = { u: {}, g: {}, o: {} };
+
+	function lowerPerms(value) {
+		value = String(value || '').replace(/[^0-7]/g, '').slice(0, 4);
+		while (value.length < 3) value += '0';
+		return value;
+	}
+
+	function normalPerms(value) {
+		value = lowerPerms(value);
+		return value.length === 4 ? value.substring(1) : value;
+	}
+
+	function specialPerms(value) {
+		value = lowerPerms(value);
+		return value.length === 4 ? value.charAt(0) : '';
+	}
+
+	function syncCheckboxes() {
+		var value = lowerPerms(octalInput.value);
+		var normal = normalPerms(value);
+		octalInput.value = value;
+		[
+			[ boxes.u, Number(normal.charAt(0)) ],
+			[ boxes.g, Number(normal.charAt(1)) ],
+			[ boxes.o, Number(normal.charAt(2)) ]
+		].forEach(function(item) {
+			item[0].r.checked = !!(item[1] & 4);
+			item[0].w.checked = !!(item[1] & 2);
+			item[0].x.checked = !!(item[1] & 1);
+		});
+	}
+
+	function syncOctal() {
+		function value(group) {
+			return (group.r.checked ? 4 : 0) + (group.w.checked ? 2 : 0) + (group.x.checked ? 1 : 0);
+		}
+		octalInput.value = specialPerms(octalInput.value) + value(boxes.u) + value(boxes.g) + value(boxes.o);
+	}
+
+	function makeBox(group, key, label) {
+		var input = E('input', {
+			'type': 'checkbox',
+			'change': syncOctal
+		});
+		boxes[group][key] = input;
+		return E('label', { 'class': 'nm-perm-check' }, [ input, ' ' + label ]);
+	}
+
+	var table = E('table', { 'class': 'nm-perm-table' }, [
+		E('tr', {}, [ E('th', {}), E('th', {}, _('Owner')), E('th', {}, _('Group')), E('th', {}, _('Other')) ]),
+		E('tr', {}, [ E('td', {}, _('Read')), E('td', {}, makeBox('u', 'r', 'r')), E('td', {}, makeBox('g', 'r', 'r')), E('td', {}, makeBox('o', 'r', 'r')) ]),
+		E('tr', {}, [ E('td', {}, _('Write')), E('td', {}, makeBox('u', 'w', 'w')), E('td', {}, makeBox('g', 'w', 'w')), E('td', {}, makeBox('o', 'w', 'w')) ]),
+		E('tr', {}, [ E('td', {}, _('Execute')), E('td', {}, makeBox('u', 'x', 'x')), E('td', {}, makeBox('g', 'x', 'x')), E('td', {}, makeBox('o', 'x', 'x')) ])
+	]);
+
+	octalInput.addEventListener('input', syncCheckboxes);
+	syncCheckboxes();
+
+	ui.showModal(_('Change Permissions') + ' - ' + path, [
+		E('div', { 'class': 'cbi-value' }, [
+			E('label', { 'class': 'cbi-value-title' }, _('Octal')),
+			E('div', { 'class': 'cbi-value-field' }, [octalInput])
+		]),
+		E('div', { 'class': 'cbi-value' }, [
+			E('div', { 'class': 'cbi-value-field' }, [table])
+		]),
+		E('div', { 'class': 'right' }, [
+			E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+			E('button', {
+				'class': 'cbi-button cbi-button-apply',
+				'click': function() {
+					var newPerms = octalInput.value.replace(/[^0-7]/g, '');
+					if (!/^[0-7]{3,4}$/.test(newPerms)) {
+						ui.addNotification(null, E('p', {}, _('Invalid permissions')), 'error');
+						return;
+					}
+
+					fs.exec('chmod', [newPerms, path]).then(function(res) {
+						if (res.code !== 0) throw new Error(res.stderr || res.stdout || res.code);
+						ui.hideModal();
+						ui.addNotification(null, E('p', {}, _('Permissions updated')), 'info');
+						loadDirectory(currentPath);
+					}).catch(function(err) {
+						showError(_('Failed to change permissions'), err);
+					});
+				}
+			}, _('Apply'))
+		])
+	]);
 }
 
 function setStatus(text) {
@@ -177,7 +367,7 @@ function renderRows(tbody) {
 
 	if (currentPath !== '/') {
 		tbody.appendChild(E('tr', {
-			'class': 'tr',
+			'class': 'tr nm-file-row nm-file-row-dir nm-file-openable',
 			'click': function() { loadDirectory(parentPath(currentPath)); }
 		}, [
 			E('td', { 'class': 'td nm-file-name' }, '..'),
@@ -199,8 +389,9 @@ function renderRows(tbody) {
 	currentEntries.forEach(function(entry) {
 		var path = joinPath(currentPath, entry.name);
 		var isDir = entry.type === 'directory';
+		var perms = modeToPerms(entry.mode);
 		var row = E('tr', {
-			'class': selectedPath === path ? 'tr active' : 'tr',
+			'class': 'tr nm-file-row ' + (isDir ? 'nm-file-row-dir ' : '') + 'nm-file-openable' + (selectedPath === path ? ' active' : ''),
 			'click': function() {
 				selectedPath = path;
 				renderRows(tbody);
@@ -217,7 +408,14 @@ function renderRows(tbody) {
 			]),
 			E('td', { 'class': 'td' }, entry.type || '-'),
 			E('td', { 'class': 'td nowrap' }, isDir ? '-' : formatSize(entry.size)),
-			E('td', { 'class': 'td nowrap' }, modeToPerms(entry.mode)),
+			E('td', {
+				'class': 'td nowrap nm-file-perms',
+				'title': _('Change Permissions'),
+				'click': function(ev) {
+					ev.stopPropagation();
+					showChmodModal(path, perms);
+				}
+			}, perms),
 			E('td', { 'class': 'td nowrap' }, formatTime(entry.mtime)),
 			E('td', { 'class': 'td nowrap' }, [
 				isDir ? E('button', {
@@ -297,15 +495,36 @@ function openEditor(path, entry) {
 	setStatus(_('Loading...'));
 	fs.read(path).then(function(content) {
 		setStatus('');
+		var codeFile = isCodeFile(path);
+		var highlight = null;
 		var textarea = E('textarea', {
 			'id': 'nm-file-editor-textarea',
-			'class': 'cbi-input-textarea',
+			'class': 'cbi-input-textarea' + (codeFile ? ' nm-code-textarea' : ''),
 			'spellcheck': 'false'
 		});
 		textarea.value = content || '';
 
+		if (codeFile) {
+			highlight = E('pre', {
+				'class': 'nm-code-highlight',
+				'aria-hidden': 'true'
+			});
+
+			var updateHighlight = function() {
+				highlight.innerHTML = highlightCode(textarea.value, path);
+			};
+			var syncHighlightScroll = function() {
+				highlight.scrollTop = textarea.scrollTop;
+				highlight.scrollLeft = textarea.scrollLeft;
+			};
+
+			textarea.addEventListener('input', updateHighlight);
+			textarea.addEventListener('scroll', syncHighlightScroll);
+			updateHighlight();
+		}
+
 		ui.showModal(_('Edit') + ' - ' + path, [
-			E('div', { 'class': 'nm-file-editor-modal' }, [textarea]),
+			E('div', { 'class': 'nm-file-editor-modal' + (codeFile ? ' nm-code-editor' : '') }, codeFile ? [highlight, textarea] : [textarea]),
 			E('div', { 'class': 'right' }, [
 				E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 				E('button', {

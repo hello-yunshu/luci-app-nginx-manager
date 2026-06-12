@@ -39,6 +39,13 @@ button.nm-badge {
 	font: inherit;
 }
 
+button.nm-cert-status-badge {
+	font-size: 0.85em;
+	font-weight: 500;
+	line-height: 1.2;
+	vertical-align: middle;
+}
+
 /* === Button Group === */
 .nm-btn-group {
 	display: flex !important;
@@ -456,6 +463,19 @@ button.nm-badge {
 	min-width: 760px;
 }
 
+.nm-file-row-dir {
+	background: color-mix(in srgb, #d6a21f 11%, transparent);
+}
+
+.nm-file-row-dir:hover {
+	background: color-mix(in srgb, #d6a21f 17%, transparent);
+}
+
+.nm-file-openable:hover .nm-file-name,
+.nm-file-openable:hover .nm-file-icon {
+	cursor: pointer;
+}
+
 .nm-file-table .active {
 	background: color-mix(in srgb, var(--main-color, #337ab7) 12%, transparent);
 }
@@ -479,6 +499,18 @@ button.nm-badge {
 	white-space: nowrap;
 }
 
+.nm-file-perms {
+	cursor: pointer;
+	font-family: monospace;
+	text-decoration: underline dotted;
+	text-underline-offset: 0.2em;
+	color: var(--main-color, #337ab7);
+}
+
+.nm-file-perms:hover {
+	background: color-mix(in srgb, var(--main-color, #337ab7) 10%, transparent);
+}
+
 .nm-file-editor-modal textarea {
 	width: 100%;
 	min-height: 420px;
@@ -489,6 +521,81 @@ button.nm-badge {
 	resize: vertical;
 }
 
+.nm-code-editor {
+	position: relative;
+	min-height: 420px;
+}
+
+.nm-code-editor .nm-code-highlight,
+.nm-code-editor .nm-code-textarea {
+	width: 100%;
+	min-height: 420px;
+	box-sizing: border-box;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+	font-size: 13px;
+	line-height: 1.5;
+	tab-size: 4;
+	padding: 10px;
+	margin: 0;
+	border: 1px solid var(--border-color, #ccc);
+	border-radius: 4px;
+	white-space: pre;
+	overflow: auto;
+}
+
+.nm-code-editor .nm-code-highlight {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: color-mix(in srgb, var(--main-color, #337ab7) 3%, var(--cbi-background, #fff));
+	color: var(--text-color, #333);
+}
+
+.nm-code-editor .nm-code-textarea {
+	position: relative;
+	z-index: 1;
+	background: transparent;
+	color: transparent;
+	caret-color: var(--text-color, var(--cbi-color, #333));
+	resize: vertical;
+}
+
+.nm-code-editor .nm-code-textarea::selection {
+	background: color-mix(in srgb, var(--main-color, #337ab7) 28%, transparent);
+}
+
+.nm-code-highlight .tok-comment { color: #6b7280; font-style: italic; }
+.nm-code-highlight .tok-key { color: #4f46e5; font-weight: 600; }
+.nm-code-highlight .tok-str { color: #0f766e; }
+.nm-code-highlight .tok-num { color: #b45309; }
+.nm-code-highlight .tok-var { color: #7c3aed; }
+.nm-code-highlight .tok-prop { color: #2563eb; }
+
+.nm-perm-table {
+	border-collapse: collapse;
+	margin: 0.25em 0;
+}
+
+.nm-perm-table th,
+.nm-perm-table td {
+	padding: 0.35em 0.8em;
+	text-align: center;
+	border-bottom: 1px solid color-mix(in srgb, var(--border-color, #ccc) 70%, transparent);
+}
+
+.nm-perm-check {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25em;
+	cursor: pointer;
+}
+
+.nm-perm-octal {
+	width: 6em;
+	font-family: monospace;
+	text-align: center;
+}
+
 .nm-file-confirm-path {
 	white-space: pre-wrap;
 	word-break: break-all;
@@ -497,6 +604,28 @@ button.nm-badge {
 	border-radius: 4px;
 	padding: 0.65em;
 	font-family: monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+	.nm-file-row-dir {
+		background: color-mix(in srgb, #f2c14e 16%, transparent);
+	}
+
+	.nm-file-row-dir:hover {
+		background: color-mix(in srgb, #f2c14e 23%, transparent);
+	}
+
+	.nm-code-editor .nm-code-highlight {
+		background: color-mix(in srgb, #eab308 4%, var(--cbi-background, #1f2933));
+		color: var(--text-color, #dbe2ea);
+	}
+
+	.nm-code-highlight .tok-comment { color: #8b949e; }
+	.nm-code-highlight .tok-key { color: #a5b4fc; }
+	.nm-code-highlight .tok-str { color: #7dd3c7; }
+	.nm-code-highlight .tok-num { color: #f6c177; }
+	.nm-code-highlight .tok-var { color: #c4b5fd; }
+	.nm-code-highlight .tok-prop { color: #93c5fd; }
 }
 
 @media (max-width: 600px) {
