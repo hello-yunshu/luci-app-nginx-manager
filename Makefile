@@ -3,7 +3,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-nginx-manager
-PKG_VERSION:=1.5.4
+PKG_VERSION:=1.5.5
 PKG_RELEASE:=1
 
 PKG_LICENSE:=AGPL-3.0-only
@@ -70,6 +70,7 @@ define Package/luci-app-nginx-manager/install
 
 	$(INSTALL_DIR) $(1)/www/luci-static/resources/nginx-manager
 	$(INSTALL_DATA) ./www/luci-static/resources/nginx-manager/nginx-manager.css $(1)/www/luci-static/resources/nginx-manager/nginx-manager.css
+	$(INSTALL_DATA) ./www/luci-static/resources/nginx-manager/file-icons.svg $(1)/www/luci-static/resources/nginx-manager/file-icons.svg
 	$(INSTALL_DATA) ./www/luci-static/resources/nginx-manager/utils.js $(1)/www/luci-static/resources/nginx-manager/utils.js
 	$(SED) 's/@PKG_VERSION@/$(PKG_VERSION)/g' $(1)/www/luci-static/resources/nginx-manager/utils.js
 

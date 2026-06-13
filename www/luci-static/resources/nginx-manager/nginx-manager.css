@@ -390,12 +390,12 @@ button.nm-cert-status-badge {
 
 	.nm-responsive-table td {
 		display: flex;
-		justify-content: space-between;
+		justify-content: flex-start;
 		align-items: flex-start;
 		gap: 0.75em;
 		padding: 0.28em 0;
 		border: none;
-		text-align: right;
+		text-align: left;
 		min-width: 0;
 	}
 
@@ -605,6 +605,13 @@ button.nm-cert-status-badge {
 
 .nm-file-icon.file.editable {
 	color: var(--main-color, #337ab7);
+}
+
+.nm-file-icon.file.file-type {
+	width: 1.55em;
+	height: 1.25em;
+	border-radius: 3px;
+	filter: drop-shadow(0 1px 1px color-mix(in srgb, #000 18%, transparent));
 }
 
 .nm-file-name-text {
@@ -831,7 +838,7 @@ button.nm-cert-status-badge {
 	}
 
 	.nm-file-table tbody td.nm-file-name::before {
-		margin-right: auto;
+		margin-right: 0;
 	}
 
 	.nm-file-table tbody td.nm-file-actions {

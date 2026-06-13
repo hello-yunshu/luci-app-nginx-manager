@@ -31,6 +31,101 @@ var TEXT_FILENAMES = {
 	hosts: true, hostname: true, passwd: true, group: true,
 	shadow: true, authorized_keys: true, known_hosts: true
 };
+var FILE_ICON_TYPES = {
+	'7z': { icon: 'archive', title: 'Archive' },
+	apk: { icon: 'package', title: 'Package' },
+	ash: { icon: 'sh', title: 'Shell' },
+	avif: { icon: 'image', title: 'Image' },
+	bak: { icon: 'backup', title: 'Backup' },
+	backup: { icon: 'backup', title: 'Backup' },
+	bin: { icon: 'binary', title: 'Binary' },
+	bmp: { icon: 'image', title: 'Image' },
+	bundle: { icon: 'cert', title: 'Certificate bundle' },
+	c: { icon: 'c', title: 'C' },
+	cc: { icon: 'cpp', title: 'C++' },
+	cer: { icon: 'cert', title: 'Certificate' },
+	cert: { icon: 'cert', title: 'Certificate' },
+	chain: { icon: 'cert', title: 'Certificate chain' },
+	cjs: { icon: 'js', title: 'JavaScript' },
+	cnf: { icon: 'conf', title: 'Config' },
+	config: { icon: 'conf', title: 'Config' },
+	conf: { icon: 'nginx', title: 'Nginx config' },
+	cpp: { icon: 'cpp', title: 'C++' },
+	crt: { icon: 'cert', title: 'Certificate' },
+	css: { icon: 'css', title: 'CSS' },
+	csv: { icon: 'table', title: 'CSV' },
+	csr: { icon: 'cert', title: 'Certificate request' },
+	db: { icon: 'database', title: 'Database' },
+	deb: { icon: 'package', title: 'Package' },
+	der: { icon: 'cert', title: 'Certificate' },
+	env: { icon: 'env', title: 'Environment file' },
+	example: { icon: 'txt', title: 'Example file' },
+	gif: { icon: 'image', title: 'Image' },
+	go: { icon: 'go', title: 'Go' },
+	gz: { icon: 'archive', title: 'Archive' },
+	h: { icon: 'c', title: 'C header' },
+	hpp: { icon: 'cpp', title: 'C++ header' },
+	htm: { icon: 'html', title: 'HTML' },
+	html: { icon: 'html', title: 'HTML' },
+	ico: { icon: 'image', title: 'Icon' },
+	ini: { icon: 'conf', title: 'INI' },
+	ipk: { icon: 'package', title: 'OpenWrt package' },
+	jpeg: { icon: 'image', title: 'Image' },
+	jpg: { icon: 'image', title: 'Image' },
+	js: { icon: 'js', title: 'JavaScript' },
+	json: { icon: 'json', title: 'JSON' },
+	jsx: { icon: 'js', title: 'JSX' },
+	key: { icon: 'key', title: 'Private key' },
+	list: { icon: 'list', title: 'List' },
+	log: { icon: 'log', title: 'Log' },
+	lua: { icon: 'lua', title: 'Lua' },
+	md: { icon: 'md', title: 'Markdown' },
+	markdown: { icon: 'md', title: 'Markdown' },
+	mjs: { icon: 'js', title: 'JavaScript' },
+	p12: { icon: 'cert', title: 'Certificate bundle' },
+	pdf: { icon: 'pdf', title: 'PDF' },
+	pem: { icon: 'cert', title: 'PEM certificate' },
+	pfx: { icon: 'cert', title: 'Certificate bundle' },
+	php: { icon: 'php', title: 'PHP' },
+	png: { icon: 'image', title: 'Image' },
+	pub: { icon: 'key', title: 'Public key' },
+	py: { icon: 'py', title: 'Python' },
+	rb: { icon: 'rb', title: 'Ruby' },
+	rpm: { icon: 'package', title: 'Package' },
+	sample: { icon: 'txt', title: 'Sample file' },
+	service: { icon: 'service', title: 'Service unit' },
+	sh: { icon: 'sh', title: 'Shell' },
+	sql: { icon: 'database', title: 'SQL' },
+	sqlite: { icon: 'database', title: 'SQLite database' },
+	sqlite3: { icon: 'database', title: 'SQLite database' },
+	svg: { icon: 'image', title: 'SVG image' },
+	tar: { icon: 'archive', title: 'Archive' },
+	tgz: { icon: 'archive', title: 'Archive' },
+	toml: { icon: 'toml', title: 'TOML' },
+	ts: { icon: 'ts', title: 'TypeScript' },
+	tsv: { icon: 'table', title: 'TSV' },
+	tsx: { icon: 'ts', title: 'TSX' },
+	text: { icon: 'txt', title: 'Text' },
+	txt: { icon: 'txt', title: 'Text' },
+	webp: { icon: 'image', title: 'Image' },
+	xml: { icon: 'xml', title: 'XML' },
+	yaml: { icon: 'yaml', title: 'YAML' },
+	yml: { icon: 'yaml', title: 'YAML' },
+	zip: { icon: 'archive', title: 'Archive' }
+};
+var FILE_NAME_ICON_TYPES = {
+	Dockerfile: { icon: 'docker', title: 'Dockerfile' },
+	Makefile: { icon: 'make', title: 'Makefile' },
+	authorized_keys: { icon: 'key', title: 'Authorized keys' },
+	group: { icon: 'conf', title: 'Group file' },
+	hosts: { icon: 'conf', title: 'Hosts file' },
+	hostname: { icon: 'conf', title: 'Hostname file' },
+	known_hosts: { icon: 'key', title: 'Known hosts' },
+	nginx: { icon: 'nginx', title: 'Nginx config' },
+	passwd: { icon: 'conf', title: 'Password file' },
+	shadow: { icon: 'key', title: 'Shadow password file' },
+	uci: { icon: 'conf', title: 'UCI config' }
+};
 
 function normalizePath(path) {
 	path = (path || '/').trim();
@@ -127,6 +222,52 @@ function isEditableFile(path, entry) {
 	var dot = name.lastIndexOf('.');
 	if (dot < 0) return false;
 	return !!TEXT_EXTENSIONS[name.substring(dot + 1).toLowerCase()];
+}
+
+function fileIconInfo(path, entry) {
+	if (entry && entry.type === 'directory')
+		return { className: 'nm-file-icon dir', attrs: {} };
+
+	var name = String(path || '').split('/').pop() || '';
+	var meta = FILE_NAME_ICON_TYPES[name];
+	var dot = name.lastIndexOf('.');
+
+	if (!meta && dot >= 0)
+		meta = FILE_ICON_TYPES[name.substring(dot + 1).toLowerCase()];
+
+	if (!meta)
+		meta = { icon: 'generic', title: 'File' };
+
+	return {
+		className: 'nm-file-icon file file-type file-type-' + meta.icon + (isEditableFile(path, entry) ? ' editable' : ''),
+		attrs: {
+			'title': meta.title
+		},
+		icon: meta.icon
+	};
+}
+
+function fileIconNode(path, entry) {
+	var icon = fileIconInfo(path, entry);
+	if (!icon.icon)
+		return E('span', { 'class': icon.className, 'aria-hidden': 'true' });
+
+	var svgNS = 'http://www.w3.org/2000/svg';
+	var xlinkNS = 'http://www.w3.org/1999/xlink';
+	var svg = document.createElementNS(svgNS, 'svg');
+	var use = document.createElementNS(svgNS, 'use');
+	var href = L.resource('nginx-manager/file-icons.svg') + '#file-' + icon.icon;
+
+	svg.setAttribute('class', icon.className);
+	svg.setAttribute('viewBox', '0 0 24 24');
+	svg.setAttribute('aria-hidden', 'true');
+	svg.setAttribute('focusable', 'false');
+	if (icon.attrs.title)
+		svg.setAttribute('title', icon.attrs.title);
+	use.setAttribute('href', href);
+	use.setAttributeNS(xlinkNS, 'xlink:href', href);
+	svg.appendChild(use);
+	return svg;
 }
 
 function codeSyntax(path) {
@@ -387,13 +528,27 @@ function pushAction(actions, button) {
 	actions.push(button);
 }
 
+function selectRow(tbody, row, path) {
+	selectedPath = path;
+	Array.prototype.forEach.call(tbody.querySelectorAll('tr.nm-file-row.active'), function(activeRow) {
+		activeRow.classList.remove('active');
+	});
+	row.classList.add('active');
+}
+
 function renderRows(tbody) {
 	tbody.innerHTML = '';
 
 	if (currentPath !== '/') {
+		var parent = parentPath(currentPath);
 		tbody.appendChild(E('tr', {
-			'class': 'tr nm-file-row nm-file-row-parent nm-file-openable',
-			'click': function() { loadDirectory(parentPath(currentPath)); }
+			'class': 'tr nm-file-row nm-file-row-parent nm-file-openable' + (selectedPath === parent ? ' active' : ''),
+			'click': function() {
+				selectRow(tbody, this, parent);
+			},
+			'dblclick': function() {
+				loadDirectory(parent);
+			}
 		}, [
 			E('td', { 'class': 'td nm-file-name', 'data-label': _('Name') }, [
 				E('span', { 'class': 'nm-file-name-main' }, [
@@ -477,8 +632,7 @@ function renderRows(tbody) {
 		var row = E('tr', {
 			'class': 'tr nm-file-row ' + (isDir ? 'nm-file-row-dir ' : '') + (isDir || editable ? 'nm-file-openable ' : '') + (editable ? 'nm-file-editable ' : '') + (selectedPath === path ? 'active' : ''),
 			'click': function() {
-				selectedPath = path;
-				renderRows(tbody);
+				selectRow(tbody, this, path);
 			},
 			'dblclick': function() {
 				if (isDir) loadDirectory(path);
@@ -487,7 +641,7 @@ function renderRows(tbody) {
 		}, [
 			E('td', { 'class': 'td nm-file-name', 'data-label': _('Name') }, [
 				E('span', { 'class': 'nm-file-name-main' }, [
-					E('span', { 'class': isDir ? 'nm-file-icon dir' : editable ? 'nm-file-icon file editable' : 'nm-file-icon file', 'aria-hidden': 'true' }),
+					fileIconNode(path, entry),
 					E('span', { 'class': 'nm-file-name-text' }, entry.name)
 				])
 			]),
