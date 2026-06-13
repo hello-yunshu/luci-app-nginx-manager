@@ -82,17 +82,11 @@ function reloadSoon(ms) {
 
 return view.extend({
 	load: function() {
-		return Promise.all([
-			callStatus(),
-			callCheckCertExpiry(),
-			callCheckEnv()
-		]);
+		return callStatus();
 	},
 
 	render: function(data) {
-		var status = data[0] || {};
-		var certExpiry = data[1] || { certificates: [] };
-		var envData = data[2] || {};
+		var status = data || {};
 		var running = status.running === '1';
 
 		var container = E('div', { 'class': 'cbi-map' });
@@ -265,74 +259,101 @@ return view.extend({
 		infoSection.appendChild(infoTable);
 		container.appendChild(infoSection);
 
+		function renderEnvTable(envData) {
+			envData = envData || {};
+			while (envTable.firstChild)
+				envTable.removeChild(envTable.firstChild);
+
+			envTable.appendChild(E('tr', { 'class': 'tr' }, [
+				E('th', { 'class': 'th' }, _('OpenWrt')),
+				E('td', { 'class': 'td' }, envData.openwrt_version || '-')
+			]));
+
+			envTable.appendChild(E('tr', { 'class': 'tr' }, [
+				E('th', { 'class': 'th' }, _('Package Manager')),
+				E('td', { 'class': 'td' }, envData.package_manager || '-')
+			]));
+
+			envTable.appendChild(E('tr', { 'class': 'tr' }, [
+				E('th', { 'class': 'th' }, _('Plugin Version')),
+				E('td', { 'class': 'td' }, envData.version || status.version || '-')
+			]));
+
+			var depChecks = [
+				{ key: 'nginx_ssl', label: 'nginx-ssl' },
+				{ key: 'openssl_util', label: 'openssl-util' },
+				{ key: 'acme', label: 'acme' },
+				{ key: 'acme_dnsapi', label: 'acme-acmesh-dnsapi' },
+				{ key: 'initd_nginx', label: 'init.d nginx' },
+				{ key: 'uci_template', label: 'uci.conf.template' },
+				{ key: 'nginx_quic', label: 'nginx-http_v3_module (QUIC)' }
+			];
+
+			depChecks.forEach(function(dep) {
+				var hasValue = envData[dep.key] !== undefined;
+				var passed = envData[dep.key] === 1 || envData[dep.key] === '1';
+				var badge = E('span', {
+					'class': 'nm-badge ' + (hasValue ? (passed ? 'success' : 'error') : '')
+				}, hasValue ? ((passed ? '\u2714 ' : '\u2718 ') + (passed ? _('OK') : _('Missing'))) : _('Loading...'));
+				envTable.appendChild(E('tr', { 'class': 'tr' }, [
+					E('th', { 'class': 'th' }, dep.label),
+					E('td', { 'class': 'td' }, badge)
+				]));
+			});
+		}
+
+		function renderCertExpiry(certExpiry) {
+			while (certHost.firstChild)
+				certHost.removeChild(certHost.firstChild);
+
+			certExpiry = certExpiry || { certificates: [] };
+			if (!certExpiry.certificates || !certExpiry.certificates.length)
+				return;
+
+			var expiring = certExpiry.certificates.filter(function(c) {
+				return c.days_remaining !== undefined && parseInt(c.days_remaining) < 30;
+			});
+			if (!expiring.length)
+				return;
+
+			var certSection = E('div', { 'class': 'cbi-section' });
+			certSection.appendChild(E('h3', {}, _('Certificate Expiry')));
+			var certAlert = E('div', { 'class': 'alert-message warning' });
+			expiring.forEach(function(cert) {
+				var days = parseInt(cert.days_remaining);
+				var msg = days < 0
+					? cert.name + ': ' + _('Expired')
+					: cert.name + ': ' + days + ' ' + _('days remaining');
+				certAlert.appendChild(E('p', {}, msg));
+			});
+			certSection.appendChild(certAlert);
+			certHost.appendChild(certSection);
+		}
+
 		/* Environment Detection */
 		var envSection = E('div', { 'class': 'cbi-section' });
 		envSection.appendChild(E('h3', {}, _('Environment Detection')));
 
 		var envTable = E('table', { 'class': 'table nm-kv-table' });
-
-		envTable.appendChild(E('tr', { 'class': 'tr' }, [
-			E('th', { 'class': 'th' }, _('OpenWrt')),
-			E('td', { 'class': 'td' }, envData.openwrt_version || '-')
-		]));
-
-		envTable.appendChild(E('tr', { 'class': 'tr' }, [
-			E('th', { 'class': 'th' }, _('Package Manager')),
-			E('td', { 'class': 'td' }, envData.package_manager || '-')
-		]));
-
-		envTable.appendChild(E('tr', { 'class': 'tr' }, [
-			E('th', { 'class': 'th' }, _('Plugin Version')),
-			E('td', { 'class': 'td' }, envData.version || '-')
-		]));
-
-		var depChecks = [
-			{ key: 'nginx_ssl', label: 'nginx-ssl' },
-			{ key: 'openssl_util', label: 'openssl-util' },
-			{ key: 'acme', label: 'acme' },
-			{ key: 'acme_dnsapi', label: 'acme-acmesh-dnsapi' },
-			{ key: 'initd_nginx', label: 'init.d nginx' },
-			{ key: 'uci_template', label: 'uci.conf.template' },
-			{ key: 'nginx_quic', label: 'nginx-http_v3_module (QUIC)' }
-		];
-
-		depChecks.forEach(function(dep) {
-			var passed = envData[dep.key] === 1 || envData[dep.key] === '1';
-			var badge = E('span', { 'class': 'nm-badge ' + (passed ? 'success' : 'error') },
-				(passed ? '\u2714 ' : '\u2718 ') + (passed ? _('OK') : _('Missing')));
-			envTable.appendChild(E('tr', { 'class': 'tr' }, [
-				E('th', { 'class': 'th' }, dep.label),
-				E('td', { 'class': 'td' }, badge)
-			]));
-		});
-
+		renderEnvTable({});
 		envSection.appendChild(envTable);
 		container.appendChild(envSection);
 
 		/* Certificate Expiry Warning */
-		if (certExpiry.certificates && certExpiry.certificates.length > 0) {
-			var expiring = certExpiry.certificates.filter(function(c) {
-				return c.days_remaining !== undefined && parseInt(c.days_remaining) < 30;
+		var certHost = E('div', {});
+		container.appendChild(certHost);
+		window.setTimeout(function() {
+			callCheckEnv().then(renderEnvTable).catch(function() {
+				renderEnvTable({});
 			});
-			if (expiring.length > 0) {
-				var certSection = E('div', { 'class': 'cbi-section' });
-				certSection.appendChild(E('h3', {}, _('Certificate Expiry')));
-				var certAlert = E('div', { 'class': 'alert-message warning' });
-				expiring.forEach(function(cert) {
-					var days = parseInt(cert.days_remaining);
-					var msg = days < 0
-						? cert.name + ': ' + _('Expired')
-						: cert.name + ': ' + days + ' ' + _('days remaining');
-					certAlert.appendChild(E('p', {}, msg));
-				});
-				certSection.appendChild(certAlert);
-				container.appendChild(certSection);
-			}
-		}
+			callCheckCertExpiry().then(renderCertExpiry).catch(function() {
+				renderCertExpiry({ certificates: [] });
+			});
+		}, 0);
 
 		return utils.appendFooter(container, {
 			project: 'Nginx Manager',
-			version: envData.version || status.version || '-',
+			version: status.version || '-',
 			repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
 		});
 	},
