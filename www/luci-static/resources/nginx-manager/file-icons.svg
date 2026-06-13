@@ -1,0 +1,206 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+	<defs>
+		<style>
+			.file-label{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:5.6px;font-weight:800;letter-spacing:0;text-anchor:middle}
+			.file-label-sm{font-size:4.7px}
+			.file-fold{fill:#fff;opacity:.58}
+			.file-shade{fill:#000;opacity:.12}
+		</style>
+	</defs>
+	<symbol id="file-generic" viewBox="0 0 24 24">
+		<path fill="#7a869a" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<path class="file-shade" d="M5 18h14v4H5z"/>
+	</symbol>
+	<symbol id="file-c" viewBox="0 0 24 24">
+		<path fill="#5c6bc0" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label" x="12" y="17.5" fill="#fff">C</text>
+	</symbol>
+	<symbol id="file-archive" viewBox="0 0 24 24">
+		<path fill="#a16207" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<path fill="#fef3c7" d="M10 7h4v1.4h-4zm0 2.4h4v1.4h-4zm0 2.4h4v1.4h-4zm.7 3h2.6v2.4h-2.6z"/>
+	</symbol>
+	<symbol id="file-backup" viewBox="0 0 24 24">
+		<path fill="#0891b2" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<path fill="#cffafe" d="M15.6 11.2a4 4 0 1 0 .8 4.4H15a2.7 2.7 0 1 1-.6-3.1l-1.5 1.4h4.6V9.4z"/>
+	</symbol>
+	<symbol id="file-binary" viewBox="0 0 24 24">
+		<path fill="#374151" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label-sm file-label" x="12" y="13.5" fill="#e5e7eb">010</text>
+		<text class="file-label-sm file-label" x="12" y="18" fill="#e5e7eb">101</text>
+	</symbol>
+	<symbol id="file-cert" viewBox="0 0 24 24">
+		<path fill="#0f766e" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<path fill="#ccfbf1" d="M8 9h6v1.4H8zm0 3h4.4v1.4H8z"/>
+		<circle cx="15.5" cy="15.6" r="2.7" fill="#facc15"/>
+		<path fill="#b45309" d="m14.4 17.8-.8 2 1.9-.8 1.9.8-.8-2z"/>
+	</symbol>
+	<symbol id="file-conf" viewBox="0 0 24 24">
+		<path fill="#667085" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label-sm file-label" x="12" y="17.5" fill="#fff">INI</text>
+	</symbol>
+	<symbol id="file-cpp" viewBox="0 0 24 24">
+		<path fill="#00599c" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label-sm file-label" x="12" y="17.5" fill="#fff">C++</text>
+	</symbol>
+	<symbol id="file-css" viewBox="0 0 24 24">
+		<path fill="#1572b6" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label-sm file-label" x="12" y="17.5" fill="#fff">CSS</text>
+	</symbol>
+	<symbol id="file-database" viewBox="0 0 24 24">
+		<path fill="#0f172a" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<ellipse cx="12" cy="10" rx="4" ry="1.7" fill="#bfdbfe"/>
+		<path fill="#60a5fa" d="M8 10v5.6c0 .9 1.8 1.7 4 1.7s4-.8 4-1.7V10c0 .9-1.8 1.7-4 1.7S8 10.9 8 10z"/>
+		<path fill="#dbeafe" d="M8 12.8c0 .9 1.8 1.7 4 1.7s4-.8 4-1.7v1.4c0 .9-1.8 1.7-4 1.7s-4-.8-4-1.7z"/>
+	</symbol>
+	<symbol id="file-docker" viewBox="0 0 24 24">
+		<path fill="#2496ed" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label-sm file-label" x="12" y="17.5" fill="#fff">DOC</text>
+	</symbol>
+	<symbol id="file-env" viewBox="0 0 24 24">
+		<path fill="#16a34a" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<path fill="#dcfce7" d="M9 9.2h6v1.5H9zm-1 3.4h8v1.5H8zm1 3.4h6v1.5H9z"/>
+	</symbol>
+	<symbol id="file-go" viewBox="0 0 24 24">
+		<path fill="#00add8" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label" x="12" y="17.5" fill="#062b35">GO</text>
+	</symbol>
+	<symbol id="file-html" viewBox="0 0 24 24">
+		<path fill="#e34f26" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label-sm file-label" x="12" y="17.5" fill="#fff">HTML</text>
+	</symbol>
+	<symbol id="file-image" viewBox="0 0 24 24">
+		<path fill="#0ea5e9" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<rect x="7.5" y="9" width="9" height="7.5" rx="1" fill="#e0f2fe"/>
+		<circle cx="10.2" cy="11.4" r="1" fill="#f59e0b"/>
+		<path fill="#22c55e" d="m8.4 15.5 2.4-2.6 1.6 1.7 1.1-1.1 2.4 2z"/>
+	</symbol>
+	<symbol id="file-js" viewBox="0 0 24 24">
+		<path fill="#f7df1e" d="M5 2h9l5 5v15H5z"/>
+		<path fill="#fff" opacity=".46" d="M14 2v5h5z"/>
+		<text class="file-label" x="12" y="17.5" fill="#202124">JS</text>
+	</symbol>
+	<symbol id="file-json" viewBox="0 0 24 24">
+		<path fill="#4b5563" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label-sm file-label" x="12" y="17.5" fill="#fff">{}</text>
+	</symbol>
+	<symbol id="file-key" viewBox="0 0 24 24">
+		<path fill="#b45309" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<circle cx="10" cy="13" r="2.3" fill="none" stroke="#fef3c7" stroke-width="1.7"/>
+		<path fill="#fef3c7" d="M12.1 12.3h5.4v1.4h-1.2v1.4h-1.5v-1.4h-2.7z"/>
+	</symbol>
+	<symbol id="file-list" viewBox="0 0 24 24">
+		<path fill="#475569" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<path fill="#e2e8f0" d="M8 9h1.5v1.5H8zm3 0h5v1.5h-5zm-3 3.5h1.5V14H8zm3 0h5V14h-5zM8 16h1.5v1.5H8zm3 0h5v1.5h-5z"/>
+	</symbol>
+	<symbol id="file-log" viewBox="0 0 24 24">
+		<path fill="#334155" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<path fill="#93c5fd" d="M8 9h7v1.4H8zm0 3h5v1.4H8zm0 3h7v1.4H8z"/>
+		<circle cx="16" cy="16" r="1.5" fill="#22c55e"/>
+	</symbol>
+	<symbol id="file-lua" viewBox="0 0 24 24">
+		<path fill="#2c2d72" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label-sm file-label" x="12" y="17.5" fill="#fff">LUA</text>
+	</symbol>
+	<symbol id="file-make" viewBox="0 0 24 24">
+		<path fill="#6b7280" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label" x="12" y="17.5" fill="#fff">MK</text>
+	</symbol>
+	<symbol id="file-md" viewBox="0 0 24 24">
+		<path fill="#083fa1" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label" x="12" y="17.5" fill="#fff">MD</text>
+	</symbol>
+	<symbol id="file-nginx" viewBox="0 0 24 24">
+		<path fill="#009639" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label-sm file-label" x="12" y="17.5" fill="#fff">NGX</text>
+	</symbol>
+	<symbol id="file-package" viewBox="0 0 24 24">
+		<path fill="#2563eb" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<path fill="#dbeafe" d="m12 8 4 2.1v4.7L12 17l-4-2.2v-4.7zm0 1.6-2.3 1.2 2.3 1.2 2.3-1.2zm-2.7 2.5v1.8l1.9 1v-1.8zm5.4 0-1.9 1v1.8l1.9-1z"/>
+	</symbol>
+	<symbol id="file-pdf" viewBox="0 0 24 24">
+		<path fill="#dc2626" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label-sm file-label" x="12" y="17.5" fill="#fff">PDF</text>
+	</symbol>
+	<symbol id="file-php" viewBox="0 0 24 24">
+		<path fill="#777bb4" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label-sm file-label" x="12" y="17.5" fill="#fff">PHP</text>
+	</symbol>
+	<symbol id="file-py" viewBox="0 0 24 24">
+		<path fill="#3776ab" d="M5 2h9l5 5v15H5z"/>
+		<path fill="#ffd43b" d="M5 15h14v7H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label" x="12" y="13.8" fill="#fff">PY</text>
+	</symbol>
+	<symbol id="file-rb" viewBox="0 0 24 24">
+		<path fill="#cc342d" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label" x="12" y="17.5" fill="#fff">RB</text>
+	</symbol>
+	<symbol id="file-service" viewBox="0 0 24 24">
+		<path fill="#7c3aed" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<circle cx="12" cy="14" r="3.7" fill="none" stroke="#ede9fe" stroke-width="1.5"/>
+		<path fill="#ede9fe" d="m12 9.2.6 1.8 1.9.2-1.4 1.2.4 1.9-1.5-1-1.6 1 .4-1.9-1.4-1.2 1.9-.2z"/>
+	</symbol>
+	<symbol id="file-sh" viewBox="0 0 24 24">
+		<path fill="#4eaa25" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label" x="12" y="17.5" fill="#fff">SH</text>
+	</symbol>
+	<symbol id="file-table" viewBox="0 0 24 24">
+		<path fill="#047857" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<path fill="#d1fae5" d="M8 9h8v8H8zm1.2 1.2v1.6h2.1v-1.6zm3.3 0v1.6h2.3v-1.6zm-3.3 2.8v1.5h2.1V13zm3.3 0v1.5h2.3V13zm-3.3 2.7v.1h5.6v-.1z"/>
+	</symbol>
+	<symbol id="file-toml" viewBox="0 0 24 24">
+		<path fill="#9a3412" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label-sm file-label" x="12" y="17.5" fill="#fff">TOML</text>
+	</symbol>
+	<symbol id="file-ts" viewBox="0 0 24 24">
+		<path fill="#3178c6" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label" x="12" y="17.5" fill="#fff">TS</text>
+	</symbol>
+	<symbol id="file-txt" viewBox="0 0 24 24">
+		<path fill="#64748b" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label-sm file-label" x="12" y="17.5" fill="#fff">TXT</text>
+	</symbol>
+	<symbol id="file-xml" viewBox="0 0 24 24">
+		<path fill="#f59e0b" d="M5 2h9l5 5v15H5z"/>
+		<path fill="#fff" opacity=".5" d="M14 2v5h5z"/>
+		<text class="file-label-sm file-label" x="12" y="17.5" fill="#1f2937">XML</text>
+	</symbol>
+	<symbol id="file-yaml" viewBox="0 0 24 24">
+		<path fill="#cb171e" d="M5 2h9l5 5v15H5z"/>
+		<path class="file-fold" d="M14 2v5h5z"/>
+		<text class="file-label-sm file-label" x="12" y="17.5" fill="#fff">YML</text>
+	</symbol>
+</svg>
