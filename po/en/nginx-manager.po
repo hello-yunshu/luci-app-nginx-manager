@@ -366,8 +366,8 @@ msgstr "Generating..."
 msgid "gRPC"
 msgstr "gRPC"
 
-msgid "gRPC uses grpc:// or grpcs:// scheme."
-msgstr "gRPC uses grpc:// or grpcs:// scheme."
+msgid "Uses grpc:// or grpcs:// scheme."
+msgstr "Uses grpc:// or grpcs:// scheme."
 
 msgid "Gzip"
 msgstr "Gzip"
@@ -411,11 +411,8 @@ msgstr "Leave empty to use default ciphers."
 msgid "Leave empty to use default: TLSv1.2 TLSv1.3"
 msgstr "Leave empty to use default: TLSv1.2 TLSv1.3"
 
-msgid "Leave empty to use same-port redirect (error_page 497)"
-msgstr "Leave empty to use same-port redirect (error_page 497)"
-
-msgid "Listen"
-msgstr "Listen"
+msgid "Leave empty to use same-port redirect."
+msgstr "Leave empty to use same-port redirect."
 
 msgid "Listen Address"
 msgstr "Listen Address"
@@ -465,8 +462,8 @@ msgstr "missing domain"
 msgid "missing id"
 msgstr "missing id"
 
-msgid "Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point."
-msgstr "Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point."
+msgid "Modifying core configuration may prevent Nginx from starting and make LuCI inaccessible. Ensure SSH access is available."
+msgstr "Modifying core configuration may prevent Nginx from starting and make LuCI inaccessible. Ensure SSH access is available."
 
 msgid "Name"
 msgstr "Name"
@@ -510,8 +507,8 @@ msgstr "Non-Managed Configs"
 msgid "OCSP Stapling"
 msgstr "OCSP Stapling"
 
-msgid "OCSP stapling for custom certificates only. ACME certs not supported — Let's Encrypt has discontinued OCSP."
-msgstr "OCSP stapling for custom certificates only. ACME certs not supported — Let's Encrypt has discontinued OCSP."
+msgid "OCSP stapling for custom certificates only. Not applicable for ACME certificates."
+msgstr "OCSP stapling for custom certificates only. Not applicable for ACME certificates."
 
 msgid "OK"
 msgstr "OK"
@@ -557,9 +554,6 @@ msgstr "Private Key (PEM)"
 
 msgid "Proxy Host Header"
 msgstr "Proxy Host Header"
-
-msgid "Proxy Pass"
-msgstr "Proxy Pass"
 
 msgid "Proxy Type"
 msgstr "Proxy Type"
@@ -852,8 +846,8 @@ msgstr "Enable automatic renewal"
 msgid "Manual Renewal"
 msgstr "Manual Renewal"
 
-msgid "This certificate is configured for automatic renewal. If you renew it manually now, automatic renewal will be disabled for this certificate. You can enable it again with Edit later."
-msgstr "This certificate is configured for automatic renewal. If you renew it manually now, automatic renewal will be disabled for this certificate. You can enable it again with Edit later."
+msgid "Manual renewal will disable automatic renewal. You can re-enable it via Edit."
+msgstr "Manual renewal will disable automatic renewal. You can re-enable it via Edit."
 
 msgid "Continue"
 msgstr "Continue"
@@ -900,14 +894,14 @@ msgstr "-- Please choose --"
 msgid "DNS Wait Seconds"
 msgstr "DNS Wait Seconds"
 
-msgid "Seconds to wait for DNS propagation before validation. Leave empty for default."
-msgstr "Seconds to wait for DNS propagation before validation. Leave empty for default."
+msgid "Seconds to wait for DNS propagation before validation."
+msgstr "Seconds to wait for DNS propagation before validation."
 
 msgid "Custom DNS API Name"
 msgstr "Custom DNS API Name"
 
-msgid "acme.sh DNS API script name, e.g. dns_myapi. See acme.sh dnsapi wiki for full list."
-msgstr "acme.sh DNS API script name, e.g. dns_myapi. See acme.sh dnsapi wiki for full list."
+msgid "acme.sh DNS API script name, e.g. dns_myapi"
+msgstr "acme.sh DNS API script name, e.g. dns_myapi"
 
 msgid "Custom..."
 msgstr "Custom..."
@@ -1080,17 +1074,14 @@ msgstr "Enable HTTP/2 for SSL sites. Uses the http2 directive (nginx 1.25.1+)."
 msgid "HTTP/3 (QUIC)"
 msgstr "HTTP/3 (QUIC)"
 
-msgid "Enable HTTP/3 over QUIC. Adds quic reuseport to listen directives and Alt-Svc header. Requires nginx built with QUIC support."
-msgstr "Enable HTTP/3 over QUIC. Adds quic reuseport to listen directives and Alt-Svc header. Requires nginx built with QUIC support."
+msgid "Enable HTTP/3 over QUIC. Requires nginx built with QUIC support."
+msgstr "Enable HTTP/3 over QUIC. Requires nginx built with QUIC support."
 
 msgid "Security Headers"
 msgstr "Security Headers"
 
-msgid "Add X-Frame-Options, CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy to SSL sites."
-msgstr "Add X-Frame-Options, CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy to SSL sites."
-
-msgid "is already managed by Security Headers. Disable Security Headers to customize it."
-msgstr "is already managed by Security Headers. Disable Security Headers to customize it."
+msgid "Add common security headers to SSL sites."
+msgstr "Add common security headers to SSL sites."
 
 msgid "is managed by HSTS settings. Set HSTS Max Age to 0 to disable it."
 msgstr "is managed by HSTS settings. Set HSTS Max Age to 0 to disable it."
@@ -1223,3 +1214,372 @@ msgstr "Invalid permissions"
 
 msgid "Apply"
 msgstr "Apply"
+
+msgid "Archive"
+msgstr "Archive"
+
+msgid "Package"
+msgstr "Package"
+
+msgid "Shell"
+msgstr "Shell"
+
+msgid "Image"
+msgstr "Image"
+
+msgid "Backup"
+msgstr "Backup"
+
+msgid "Binary"
+msgstr "Binary"
+
+msgid "Certificate bundle"
+msgstr "Certificate bundle"
+
+msgid "Certificate"
+msgstr "Certificate"
+
+msgid "Certificate chain"
+msgstr "Certificate chain"
+
+msgid "Nginx config"
+msgstr "Nginx config"
+
+msgid "Certificate request"
+msgstr "Certificate request"
+
+msgid "Environment file"
+msgstr "Environment file"
+
+msgid "OpenWrt package"
+msgstr "OpenWrt package"
+
+msgid "Private key"
+msgstr "Private key"
+
+msgid "PEM certificate"
+msgstr "PEM certificate"
+
+msgid "Public key"
+msgstr "Public key"
+
+msgid "Service unit"
+msgstr "Service unit"
+
+msgid "SQLite database"
+msgstr "SQLite database"
+
+msgid "SVG image"
+msgstr "SVG image"
+
+msgid "Dockerfile"
+msgstr "Dockerfile"
+
+msgid "Makefile"
+msgstr "Makefile"
+
+msgid "Authorized keys"
+msgstr "Authorized keys"
+
+msgid "Group file"
+msgstr "Group file"
+
+msgid "Hosts file"
+msgstr "Hosts file"
+
+msgid "Hostname file"
+msgstr "Hostname file"
+
+msgid "Known hosts"
+msgstr "Known hosts"
+
+msgid "Password file"
+msgstr "Password file"
+
+msgid "Shadow password file"
+msgstr "Shadow password file"
+
+msgid "UCI config"
+msgstr "UCI config"
+
+msgid "File"
+msgstr "File"
+
+msgid "Database"
+msgstr "Database"
+
+msgid "Example file"
+msgstr "Example file"
+
+msgid "C header"
+msgstr "C header"
+
+msgid "C++ header"
+msgstr "C++ header"
+
+msgid "Icon"
+msgstr "Icon"
+
+msgid "Config"
+msgstr "Config"
+
+msgid "JavaScript"
+msgstr "JavaScript"
+
+msgid "TypeScript"
+msgstr "TypeScript"
+
+msgid "Markdown"
+msgstr "Markdown"
+
+msgid "List"
+msgstr "List"
+
+msgid "Log"
+msgstr "Log"
+
+msgid "Sample file"
+msgstr "Sample file"
+
+msgid "Text"
+msgstr "Text"
+
+msgid "Certificate is valid and active."
+msgstr "Certificate is valid and active."
+
+msgid "Certificate is expiring soon. Consider renewing it."
+msgstr "Certificate is expiring soon. Consider renewing it."
+
+msgid "Certificate has expired. Please renew or replace it."
+msgstr "Certificate has expired. Please renew or replace it."
+
+msgid "Certificate file is missing. The certificate may have been issued but the file link is broken. Try regenerating."
+msgstr "Certificate file is missing. The certificate may have been issued but the file link is broken. Try regenerating."
+
+msgid "Details"
+msgstr "Details"
+
+msgid "Certificate Status"
+msgstr "Certificate Status"
+
+msgid "Changing domain, validation method, or DNS provider requires re-issuing the certificate."
+msgstr "Changing domain, validation method, or DNS provider requires re-issuing the certificate."
+
+msgid "Domain is required"
+msgstr "Domain is required"
+
+msgid "Re-issue Required"
+msgstr "Re-issue Required"
+
+msgid "The changes you made require re-issuing the certificate. Would you like to re-issue now?"
+msgstr "The changes you made require re-issuing the certificate. Would you like to re-issue now?"
+
+msgid "Settings saved. Certificate will be re-issued on next renewal."
+msgstr "Settings saved. Certificate will be re-issued on next renewal."
+
+msgid "Later"
+msgstr "Later"
+
+msgid "Re-issue Now"
+msgstr "Re-issue Now"
+
+msgid "Certificate settings updated"
+msgstr "Certificate settings updated"
+
+msgid "certificate path generated by site settings"
+msgstr "certificate path generated by site settings"
+
+msgid "certificate key path generated by site settings"
+msgstr "certificate key path generated by site settings"
+
+msgid "SSL protocol settings generated by site settings"
+msgstr "SSL protocol settings generated by site settings"
+
+msgid "SSL cipher settings generated by site settings"
+msgstr "SSL cipher settings generated by site settings"
+
+msgid "SSL cipher preference generated by Nginx Manager"
+msgstr "SSL cipher preference generated by Nginx Manager"
+
+msgid "SSL Session Timeout field"
+msgstr "SSL Session Timeout field"
+
+msgid "SSL Session Tickets field"
+msgstr "SSL Session Tickets field"
+
+msgid "OCSP trusted certificate generated by Nginx Manager"
+msgstr "OCSP trusted certificate generated by Nginx Manager"
+
+msgid "HTTP/2 field"
+msgstr "HTTP/2 field"
+
+msgid "SSL Buffer Size field"
+msgstr "SSL Buffer Size field"
+
+msgid "OCSP Stapling field"
+msgstr "OCSP Stapling field"
+
+msgid "OCSP Stapling generated resolver"
+msgstr "OCSP Stapling generated resolver"
+
+msgid "OCSP Stapling generated resolver timeout"
+msgstr "OCSP Stapling generated resolver timeout"
+
+msgid "Line"
+msgstr "Line"
+
+msgid "reuses shared zone"
+msgstr "reuses shared zone"
+
+msgid "with size"
+msgstr "with size"
+
+msgid "but SSL Session Cache uses"
+msgstr "but SSL Session Cache uses"
+
+msgid "Use a different zone name or change the SSL Session Cache field."
+msgstr "Use a different zone name or change the SSL Session Cache field."
+
+msgid "is already managed by"
+msgstr "is already managed by"
+
+msgid "Remove this line from Custom SSL Directives and use the dedicated field instead."
+msgstr "Remove this line from Custom SSL Directives and use the dedicated field instead."
+
+msgid "Custom SSL Directives Conflict"
+msgstr "Custom SSL Directives Conflict"
+
+msgid "Please adjust Custom SSL Directives before saving. These lines conflict with settings generated by Nginx Manager:"
+msgstr "Please adjust Custom SSL Directives before saving. These lines conflict with settings generated by Nginx Manager:"
+
+msgid "Line Count"
+msgstr "Line Count"
+
+msgid "Are you sure you want to delete"
+msgstr "Are you sure you want to delete"
+
+msgid "Back"
+msgstr "Back"
+
+msgid "Cannot delete root directory"
+msgstr "Cannot delete root directory"
+
+msgid "Confirm Overwrite"
+msgstr "Confirm Overwrite"
+
+msgid "Confirm Path"
+msgstr "Confirm Path"
+
+msgid "Create a new directory in"
+msgstr "Create a new directory in"
+
+msgid "Deleted successfully"
+msgstr "Deleted successfully"
+
+msgid "Directory"
+msgstr "Directory"
+
+msgid "Directory Name"
+msgstr "Directory Name"
+
+msgid "Directory created"
+msgstr "Directory created"
+
+msgid "Directory name is required"
+msgstr "Directory name is required"
+
+msgid "Download"
+msgstr "Download"
+
+msgid "Expired %d days ago"
+msgstr "Expired %d days ago"
+
+msgid "Expires in %d days"
+msgstr "Expires in %d days"
+
+msgid "Expires today"
+msgstr "Expires today"
+
+msgid "Expiry Date"
+msgstr "Expiry Date"
+
+msgid "Failed to create directory"
+msgstr "Failed to create directory"
+
+msgid "Failed to delete"
+msgstr "Failed to delete"
+
+msgid "Failed to download"
+msgstr "Failed to download"
+
+msgid "Failed to rename"
+msgstr "Failed to rename"
+
+msgid "File uploaded successfully"
+msgstr "File uploaded successfully"
+
+msgid "Go"
+msgstr "Go"
+
+msgid "Modified"
+msgstr "Modified"
+
+msgid "Name cannot contain slashes or parent directory references"
+msgstr "Name cannot contain slashes or parent directory references"
+
+msgid "Name is required"
+msgstr "Name is required"
+
+msgid "Network error"
+msgstr "Network error"
+
+msgid "New Directory"
+msgstr "New Directory"
+
+msgid "New Name"
+msgstr "New Name"
+
+msgid "No files"
+msgstr "No files"
+
+msgid "Open"
+msgstr "Open"
+
+msgid "Path confirmation does not match"
+msgstr "Path confirmation does not match"
+
+msgid "Perms"
+msgstr "Perms"
+
+msgid "Remaining"
+msgstr "Remaining"
+
+msgid "Rename"
+msgstr "Rename"
+
+msgid "Renamed successfully"
+msgstr "Renamed successfully"
+
+msgid "Size"
+msgstr "Size"
+
+msgid "System virtual directories cannot be modified"
+msgstr "System virtual directories cannot be modified"
+
+msgid "System virtual directories cannot be opened"
+msgstr "System virtual directories cannot be opened"
+
+msgid "Type the full path to confirm deletion. This operation cannot be undone."
+msgstr "Type the full path to confirm deletion. This operation cannot be undone."
+
+msgid "Type the full path to confirm overwriting the existing file."
+msgstr "Type the full path to confirm overwriting the existing file."
+
+msgid "Upload failed"
+msgstr "Upload failed"
+
+msgid "Uploading..."
+msgstr "Uploading..."
+
+msgid "items"
+msgstr "items"

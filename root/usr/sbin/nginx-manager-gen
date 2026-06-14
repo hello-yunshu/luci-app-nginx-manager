@@ -320,7 +320,6 @@ EOF
 
 	echo "    ssl_protocols ${ssl_protocols};"
 	echo "    ssl_ciphers ${ssl_ciphers};"
-	echo "    ssl_prefer_server_ciphers off;"
 
 	# Let's Encrypt has officially discontinued OCSP support.
 	# OCSP stapling is not available for ACME-issued certificates.
@@ -335,7 +334,7 @@ EOF
 			echo "    ssl_stapling on;"
 			echo "    ssl_stapling_verify on;"
 			echo "    ssl_trusted_certificate ${cert_path};"
-			echo "    resolver 127.0.0.1 valid=300s ipv6=off;"
+			echo "    resolver 127.0.0.1 valid=300s;"
 			echo "    resolver_timeout 5s;"
 		else
 			echo "    ssl_stapling off;"
@@ -392,6 +391,7 @@ generate_proxy_headers() {
 
 generate_websocket_headers() {
 	cat <<EOF
+        proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
 EOF
@@ -434,7 +434,7 @@ generate_reverse_proxy_site() {
 	local ssl_cert access_log error_log enabled
 	local proxy_type custom_proxy_headers listen_addr listen_port
 	local proxy_connect_timeout proxy_read_timeout proxy_send_timeout
-	local redirect_http_port grpc_path grpc_pass
+	local redirect_http_port grpc_path grpc_pass http3
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
 	server_name="$(uci -q get "nginx_manager.${section}.server_name")" || return 1
@@ -459,6 +459,7 @@ generate_reverse_proxy_site() {
 	redirect_http_port="$(uci -q get "nginx_manager.${section}.redirect_http_port")" || redirect_http_port=""
 	grpc_path="$(uci -q get "nginx_manager.${section}.grpc_path")" || grpc_path=""
 	grpc_pass="$(uci -q get "nginx_manager.${section}.grpc_pass")" || grpc_pass=""
+	http3="$(uci -q get nginx_manager.global.http3)" || http3=""
 
 	local output_file="${BUILD_DIR}/${name}.conf"
 	{
@@ -500,8 +501,17 @@ generate_reverse_proxy_site() {
 			[ -n "${proxy_read_timeout}" ] && echo "        grpc_read_timeout ${proxy_read_timeout};"
 			[ -n "${proxy_send_timeout}" ] && echo "        grpc_send_timeout ${proxy_send_timeout};"
 		else
+			if [ "${websocket}" != "1" ] && [ "${proxy_type}" != "websocket" ]; then
+				echo "        proxy_http_version 1.1;"
+			fi
 			echo "        proxy_pass ${proxy_pass};"
 			generate_proxy_headers "${proxy_host}" "${proxy_xff}" "${proxy_xfp}" "${proxy_xri}"
+			echo "        proxy_set_header Connection \"\";"
+			# QUIC: ensure request body is fully buffered before forwarding to upstream
+			# to work around nginx HTTP/3 POST body handling issues
+			if [ "${http3}" = "1" ] && _nginx_has_v3; then
+				echo "        proxy_request_buffering on;"
+			fi
 			[ -n "${proxy_connect_timeout}" ] && echo "        proxy_connect_timeout ${proxy_connect_timeout};"
 			[ -n "${proxy_read_timeout}" ] && echo "        proxy_read_timeout ${proxy_read_timeout};"
 			[ -n "${proxy_send_timeout}" ] && echo "        proxy_send_timeout ${proxy_send_timeout};"
@@ -833,7 +843,7 @@ _strip_directives_from_file() {
 	local directives=""
 	[ -n "${max_body}" ] && directives="${directives} client_max_body_size"
 	[ -n "${keepalive}" ] && directives="${directives} keepalive_timeout"
-	[ -n "${gzip}" ] && directives="${directives} gzip gzip_vary gzip_proxied"
+	[ -n "${gzip}" ] && directives="${directives} gzip gzip_vary gzip_proxied gzip_types"
 	[ -n "${server_tokens}" ] && directives="${directives} server_tokens"
 	[ -n "${sendfile}" ] && directives="${directives} sendfile"
 	[ -n "${tcp_nopush}" ] && directives="${directives} tcp_nopush"
@@ -910,7 +920,7 @@ generate_global_conf() {
 	local server_tokens sendfile access_log error_log
 	local tcp_nopush tcp_nodelay
 	local ssl_session_timeout ssl_session_cache ssl_buffer_size
-	local ssl_stapling_managed="1"
+	local ssl_stapling_managed
 	local http2
 
 	max_body="$(uci -q get nginx_manager.global.client_max_body_size)" || max_body=""
@@ -934,13 +944,17 @@ generate_global_conf() {
 	ssl_buffer_size="$(uci -q get nginx_manager.global.ssl_buffer_size)" || ssl_buffer_size=""
 	local _ssl_buffer_size_set="${ssl_buffer_size}"
 	[ -z "${ssl_buffer_size}" ] && ssl_buffer_size="16k"
+	# ssl_stapling is managed per-site in generate_ssl_directives(), but we need to
+	# know if it's enabled globally so _strip_directives_from_file can comment out
+	# conflicting ssl_stapling/resolver directives in the template.
+	ssl_stapling_managed="$(uci -q get nginx_manager.global.ssl_stapling)" || ssl_stapling_managed="1"
 	http2="$(uci -q get nginx_manager.global.http2)" || http2="1"
 
 	[ -z "${max_body}" ] && [ -z "${keepalive}" ] && [ -z "${gzip}" ] && \
 	[ -z "${server_tokens}" ] && [ -z "${sendfile}" ] && \
 	[ -z "${tcp_nopush}" ] && [ -z "${tcp_nodelay}" ] && \
 	[ -z "${access_log}" ] && [ -z "${error_log}" ] && \
-	[ -z "${_ssl_session_timeout_set}" ] && [ -z "${_ssl_session_cache_set}" ] && [ -z "${_ssl_session_tickets_set}" ] && [ -z "${ssl_stapling_managed}" ] && [ -z "${_ssl_buffer_size_set}" ] && \
+	[ -z "${_ssl_session_timeout_set}" ] && [ -z "${_ssl_session_cache_set}" ] && [ -z "${_ssl_session_tickets_set}" ] && [ -z "${_ssl_buffer_size_set}" ] && \
 	{
 		# No directives to generate, restore any previously commented lines
 		_restore_template_directives
@@ -954,7 +968,7 @@ generate_global_conf() {
 		[ -n "${keepalive}" ] && echo "keepalive_timeout ${keepalive};"
 
 		if [ "${gzip}" = "1" ]; then
-			printf 'gzip on;\ngzip_vary on;\ngzip_proxied any;\n'
+			printf 'gzip on;\ngzip_vary on;\ngzip_proxied any;\ngzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;\n'
 		elif [ "${gzip}" = "0" ]; then
 			echo "gzip off;"
 		fi

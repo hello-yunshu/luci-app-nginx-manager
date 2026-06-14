@@ -402,14 +402,11 @@ msgstr "正在生成..."
 msgid "gRPC"
 msgstr "gRPC"
 
-msgid "gRPC uses grpc:// or grpcs:// scheme."
-msgstr "gRPC 使用 grpc:// 或 grpcs:// 协议。"
+msgid "Uses grpc:// or grpcs:// scheme."
+msgstr "使用 grpc:// 或 grpcs:// 协议。"
 
 msgid "Gzip"
 msgstr "Gzip 压缩"
-
-msgid "Forward"
-msgstr "前进"
 
 msgid "Go"
 msgstr "跳转"
@@ -453,11 +450,8 @@ msgstr "留空使用默认密码套件。"
 msgid "Leave empty to use default: TLSv1.2 TLSv1.3"
 msgstr "留空使用默认值：TLSv1.2 TLSv1.3"
 
-msgid "Leave empty to use same-port redirect (error_page 497)"
-msgstr "留空则使用同端口跳转（error_page 497）"
-
-msgid "Listen"
-msgstr "监听"
+msgid "Leave empty to use same-port redirect."
+msgstr "留空则使用同端口跳转。"
 
 msgid "Listen Address"
 msgstr "监听地址"
@@ -507,8 +501,8 @@ msgstr "缺少域名"
 msgid "missing id"
 msgstr "缺少 ID"
 
-msgid "Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point."
-msgstr "修改核心配置可能导致 Nginx 无法启动，甚至导致 LuCI 后台不可访问。请确保 SSH 可用，或保留 uhttpd 作为备用入口。"
+msgid "Modifying core configuration may prevent Nginx from starting and make LuCI inaccessible. Ensure SSH access is available."
+msgstr "修改核心配置可能导致 Nginx 无法启动并使 LuCI 不可访问。请确保 SSH 可用。"
 
 msgid "Modified"
 msgstr "修改时间"
@@ -524,9 +518,6 @@ msgstr "名称不能包含斜杠或父目录引用"
 
 msgid "Network error"
 msgstr "网络错误"
-
-msgid "New Dir"
-msgstr "新建目录"
 
 msgid "New Directory"
 msgstr "新建目录"
@@ -573,8 +564,8 @@ msgstr "非管理配置数"
 msgid "OCSP Stapling"
 msgstr "OCSP 装订"
 
-msgid "OCSP stapling for custom certificates only. ACME certs not supported — Let's Encrypt has discontinued OCSP."
-msgstr "仅为自定义证书启用 OCSP 装订。Let's Encrypt 已停止 OCSP，ACME 证书不支持。"
+msgid "OCSP stapling for custom certificates only. Not applicable for ACME certificates."
+msgstr "仅为自定义证书启用 OCSP 装订，不适用于 ACME 证书。"
 
 msgid "OK"
 msgstr "正常"
@@ -606,9 +597,6 @@ msgstr "路径确认不匹配"
 msgid "Perms"
 msgstr "权限"
 
-msgid "Permissions"
-msgstr "权限"
-
 msgid "No files"
 msgstr "无文件"
 
@@ -632,9 +620,6 @@ msgstr "私钥 (PEM)"
 
 msgid "Proxy Host Header"
 msgstr "代理 Host 头"
-
-msgid "Proxy Pass"
-msgstr "代理地址"
 
 msgid "Proxy Type"
 msgstr "代理类型"
@@ -885,9 +870,6 @@ msgstr "gRPC 流量的 URL 路径，如 /grpc 或 /api.Service"
 msgid "gRPC Backend Address"
 msgstr "gRPC 后端地址"
 
-msgid "Uses grpc:// or grpcs:// scheme."
-msgstr "使用 grpc:// 或 grpcs:// 协议。"
-
 msgid "X-Forwarded-For"
 msgstr "X-Forwarded-For"
 
@@ -954,8 +936,8 @@ msgstr "启用自动续期"
 msgid "Manual Renewal"
 msgstr "手动续期"
 
-msgid "This certificate is configured for automatic renewal. If you renew it manually now, automatic renewal will be disabled for this certificate. You can enable it again with Edit later."
-msgstr "此证书已开启自动续期。如果现在手动续期，将关闭此证书的自动续期。之后可以通过编辑重新开启。"
+msgid "Manual renewal will disable automatic renewal. You can re-enable it via Edit."
+msgstr "手动续期将关闭自动续期。之后可通过编辑重新开启。"
 
 msgid "Continue"
 msgstr "继续"
@@ -1002,14 +984,14 @@ msgstr "-- 请选择 --"
 msgid "DNS Wait Seconds"
 msgstr "DNS 等待秒数"
 
-msgid "Seconds to wait for DNS propagation before validation. Leave empty for default."
-msgstr "DNS 记录传播等待时间（秒），留空使用默认值"
+msgid "Seconds to wait for DNS propagation before validation."
+msgstr "DNS 记录传播等待时间（秒）"
 
 msgid "Custom DNS API Name"
 msgstr "自定义 DNS API 名称"
 
-msgid "acme.sh DNS API script name, e.g. dns_myapi. See acme.sh dnsapi wiki for full list."
-msgstr "acme.sh 的 DNS API 脚本名称，如 dns_myapi，完整列表见 acme.sh dnsapi wiki"
+msgid "acme.sh DNS API script name, e.g. dns_myapi"
+msgstr "acme.sh 的 DNS API 脚本名称，如 dns_myapi"
 
 msgid "Custom..."
 msgstr "自定义..."
@@ -1188,17 +1170,14 @@ msgstr "为 SSL 站点启用 HTTP/2，使用 http2 指令（nginx 1.25.1+）。"
 msgid "HTTP/3 (QUIC)"
 msgstr "HTTP/3 (QUIC)"
 
-msgid "Enable HTTP/3 over QUIC. Adds quic reuseport to listen directives and Alt-Svc header. Requires nginx built with QUIC support."
-msgstr "启用基于 QUIC 的 HTTP/3，在 listen 指令中添加 quic reuseport 参数并输出 Alt-Svc 响应头。需要 nginx 编译时包含 QUIC 支持。"
+msgid "Enable HTTP/3 over QUIC. Requires nginx built with QUIC support."
+msgstr "启用基于 QUIC 的 HTTP/3。需要 nginx 编译时包含 QUIC 支持。"
 
 msgid "Security Headers"
 msgstr "安全响应头"
 
-msgid "Add X-Frame-Options, CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy to SSL sites."
-msgstr "为 SSL 站点添加 X-Frame-Options、CSP、X-Content-Type-Options、Referrer-Policy、Permissions-Policy 安全响应头。"
-
-msgid "is already managed by Security Headers. Disable Security Headers to customize it."
-msgstr "已由安全响应头管理。如需自定义请先关闭安全响应头开关。"
+msgid "Add common security headers to SSL sites."
+msgstr "为 SSL 站点添加常用安全响应头。"
 
 msgid "is managed by HSTS settings. Set HSTS Max Age to 0 to disable it."
 msgstr "已由 HSTS 设置管理。将 HSTS 最大有效期设为 0 可禁用。"
@@ -1361,3 +1340,243 @@ msgstr "今天过期"
 
 msgid "Expires in %d days"
 msgstr "%d 天后过期"
+
+msgid "Archive"
+msgstr "归档"
+
+msgid "Package"
+msgstr "软件包"
+
+msgid "Shell"
+msgstr "Shell脚本"
+
+msgid "Image"
+msgstr "图片"
+
+msgid "Backup"
+msgstr "备份"
+
+msgid "Binary"
+msgstr "二进制文件"
+
+msgid "Certificate bundle"
+msgstr "证书包"
+
+msgid "Certificate"
+msgstr "证书"
+
+msgid "Certificate chain"
+msgstr "证书链"
+
+msgid "Nginx config"
+msgstr "Nginx 配置"
+
+msgid "Certificate request"
+msgstr "证书请求"
+
+msgid "Environment file"
+msgstr "环境文件"
+
+msgid "OpenWrt package"
+msgstr "OpenWrt 软件包"
+
+msgid "Private key"
+msgstr "私钥"
+
+msgid "PEM certificate"
+msgstr "PEM 证书"
+
+msgid "Public key"
+msgstr "公钥"
+
+msgid "Service unit"
+msgstr "服务单元"
+
+msgid "SQLite database"
+msgstr "SQLite 数据库"
+
+msgid "SVG image"
+msgstr "SVG 图片"
+
+msgid "Dockerfile"
+msgstr "Dockerfile"
+
+msgid "Makefile"
+msgstr "Makefile"
+
+msgid "Authorized keys"
+msgstr "授权密钥"
+
+msgid "Group file"
+msgstr "组文件"
+
+msgid "Hosts file"
+msgstr "Hosts 文件"
+
+msgid "Hostname file"
+msgstr "主机名文件"
+
+msgid "Known hosts"
+msgstr "已知主机"
+
+msgid "Password file"
+msgstr "密码文件"
+
+msgid "Shadow password file"
+msgstr "影子密码文件"
+
+msgid "UCI config"
+msgstr "UCI 配置"
+
+msgid "File"
+msgstr "文件"
+
+msgid "Database"
+msgstr "数据库"
+
+msgid "Example file"
+msgstr "示例文件"
+
+msgid "C header"
+msgstr "C 头文件"
+
+msgid "C++ header"
+msgstr "C++ 头文件"
+
+msgid "Icon"
+msgstr "图标"
+
+msgid "Config"
+msgstr "配置"
+
+msgid "JavaScript"
+msgstr "JavaScript"
+
+msgid "TypeScript"
+msgstr "TypeScript"
+
+msgid "Markdown"
+msgstr "Markdown"
+
+msgid "List"
+msgstr "列表"
+
+msgid "Log"
+msgstr "日志"
+
+msgid "Sample file"
+msgstr "示例文件"
+
+msgid "Text"
+msgstr "文本"
+
+msgid "Certificate is valid and active."
+msgstr "证书有效且处于活动状态。"
+
+msgid "Certificate is expiring soon. Consider renewing it."
+msgstr "证书即将过期，建议续期。"
+
+msgid "Certificate has expired. Please renew or replace it."
+msgstr "证书已过期，请续期或更换。"
+
+msgid "Certificate file is missing. The certificate may have been issued but the file link is broken. Try regenerating."
+msgstr "证书文件缺失。证书可能已签发但文件链接已断开，请尝试重新生成。"
+
+msgid "Details"
+msgstr "详情"
+
+msgid "Certificate Status"
+msgstr "证书状态"
+
+msgid "Changing domain, validation method, or DNS provider requires re-issuing the certificate."
+msgstr "更改域名、验证方式或 DNS 提供商需要重新签发证书。"
+
+msgid "Domain is required"
+msgstr "域名不能为空"
+
+msgid "Re-issue Required"
+msgstr "需要重新签发"
+
+msgid "The changes you made require re-issuing the certificate. Would you like to re-issue now?"
+msgstr "所做的更改需要重新签发证书。是否立即重新签发？"
+
+msgid "Settings saved. Certificate will be re-issued on next renewal."
+msgstr "设置已保存，证书将在下次续期时重新签发。"
+
+msgid "Later"
+msgstr "稍后"
+
+msgid "Re-issue Now"
+msgstr "立即重新签发"
+
+msgid "Certificate settings updated"
+msgstr "证书设置已更新"
+
+msgid "certificate path generated by site settings"
+msgstr "站点设置生成的证书路径"
+
+msgid "certificate key path generated by site settings"
+msgstr "站点设置生成的证书密钥路径"
+
+msgid "SSL protocol settings generated by site settings"
+msgstr "站点设置生成的 SSL 协议设置"
+
+msgid "SSL cipher settings generated by site settings"
+msgstr "站点设置生成的 SSL 密码设置"
+
+msgid "SSL cipher preference generated by Nginx Manager"
+msgstr "Nginx Manager 生成的 SSL 密码偏好"
+
+msgid "SSL Session Timeout field"
+msgstr "SSL 会话超时字段"
+
+msgid "SSL Session Tickets field"
+msgstr "SSL 会话票证字段"
+
+msgid "OCSP trusted certificate generated by Nginx Manager"
+msgstr "Nginx Manager 生成的 OCSP 信任证书"
+
+msgid "HTTP/2 field"
+msgstr "HTTP/2 字段"
+
+msgid "SSL Buffer Size field"
+msgstr "SSL 缓冲区大小字段"
+
+msgid "OCSP Stapling field"
+msgstr "OCSP 装订字段"
+
+msgid "OCSP Stapling generated resolver"
+msgstr "OCSP 装订生成的解析器"
+
+msgid "OCSP Stapling generated resolver timeout"
+msgstr "OCSP 装订生成的解析器超时"
+
+msgid "Line"
+msgstr "行"
+
+msgid "reuses shared zone"
+msgstr "复用共享区域"
+
+msgid "with size"
+msgstr "大小为"
+
+msgid "but SSL Session Cache uses"
+msgstr "但 SSL 会话缓存使用"
+
+msgid "Use a different zone name or change the SSL Session Cache field."
+msgstr "请使用不同的区域名称或更改 SSL 会话缓存字段。"
+
+msgid "is already managed by"
+msgstr "已由以下管理"
+
+msgid "Remove this line from Custom SSL Directives and use the dedicated field instead."
+msgstr "请从自定义 SSL 指令中移除此行，改用专用字段。"
+
+msgid "Custom SSL Directives Conflict"
+msgstr "自定义 SSL 指令冲突"
+
+msgid "Please adjust Custom SSL Directives before saving. These lines conflict with settings generated by Nginx Manager:"
+msgstr "保存前请调整自定义 SSL 指令。以下行与 Nginx Manager 生成的设置冲突："
+
+msgid "Line Count"
+msgstr "行数"

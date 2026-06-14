@@ -121,12 +121,12 @@ return view.extend({
 				var ptype = proxyTypeSelect.value;
 				var isGrpc = (ptype === 'grpc');
 				if (isGrpc) {
-					proxyPassInput.placeholder = 'grpc://192.168.1.1:9000';
+					proxyPassInput.placeholder = 'grpc://127.0.0.1:9000';
 					websocketRow.style.display = 'none';
 					grpcPassthroughRow.style.display = 'none';
 					grpcPassthroughFields.style.display = 'none';
 				} else {
-					proxyPassInput.placeholder = 'http://192.168.1.1:3000';
+					proxyPassInput.placeholder = 'http://127.0.0.1:3000';
 					websocketRow.style.display = '';
 					grpcPassthroughRow.style.display = '';
 					/* gRPC passthrough fields visibility depends on checkbox */
@@ -232,11 +232,11 @@ return view.extend({
 		var redirectHttpPortInput = E('input', {
 			'type': 'text',
 			'class': 'cbi-input-text',
-			'placeholder': _('Leave empty to use same-port redirect (error_page 497)')
+			'placeholder': _('Leave empty to use same-port redirect.')
 		});
 		if (!isNew && site && site.redirect_http_port) redirectHttpPortInput.value = site.redirect_http_port;
 		var redirectHttpPortRow = makeField('opt-redirect_http_port', _('HTTP Redirect Port'), redirectHttpPortInput,
-			_('Leave empty to use same-port redirect (error_page 497)'));
+			_('Leave empty to use same-port redirect.'));
 		sslSection.appendChild(redirectHttpPortRow);
 
 		function updateRedirectHttpPortVisibility() {
@@ -310,10 +310,10 @@ return view.extend({
 		proxySection.appendChild(makeField('opt-proxy_type', _('Proxy Type'), proxyTypeSelect));
 
 		/* Proxy Pass */
-		proxyPassInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': 'http://192.168.1.1:3000' });
+		proxyPassInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': 'http://127.0.0.1:3000' });
 		if (!isNew && site && site.proxy_pass) proxyPassInput.value = site.proxy_pass;
 		proxySection.appendChild(makeField('opt-proxy_pass', _('Backend Address'), proxyPassInput,
-			_('gRPC uses grpc:// or grpcs:// scheme.')));
+			_('Uses grpc:// or grpcs:// scheme.')));
 
 		/* WebSocket Support (only visible when proxy_type=http) */
 		websocketRow = makeFlag('opt-websocket', _('WebSocket Support'),
@@ -333,7 +333,7 @@ return view.extend({
 		grpcPassthroughFields.appendChild(makeField('opt-grpc_path', _('gRPC Path'), grpcPathInput,
 			_('URL path for gRPC traffic, e.g. /grpc or /api.Service')));
 
-		var grpcPassInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': 'grpc://192.168.1.1:9000' });
+			var grpcPassInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': 'grpc://127.0.0.1:9000' });
 		if (!isNew && site && site.grpc_pass) grpcPassInput.value = site.grpc_pass;
 		grpcPassthroughFields.appendChild(makeField('opt-grpc_pass', _('gRPC Backend Address'), grpcPassInput,
 			_('Uses grpc:// or grpcs:// scheme.')));
