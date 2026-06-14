@@ -69,12 +69,11 @@ button.nm-cert-status-badge {
 	flex-wrap: wrap;
 	align-items: center;
 	align-content: center;
-	gap: 0.4em 0.5em;
 }
 
 .nm-actions button,
 .nm-actions .cbi-button {
-	margin: 0 !important;
+	margin: 0.1em 0.25em 0.1em 0 !important;
 	white-space: nowrap;
 }
 
