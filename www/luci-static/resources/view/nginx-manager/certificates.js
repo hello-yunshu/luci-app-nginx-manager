@@ -111,6 +111,7 @@ function certStatusLabel(status) {
 		case 'missing': return _('File Missing');
 		case 'acme_running': return _('Generating...');
 		case 'acme_failed': return _('Failed');
+		case 'unknown': return _('Unknown');
 		default: return status || '-';
 	}
 }
@@ -352,7 +353,7 @@ function requestAcmeRenew(cert) {
 	}
 
 	ui.showModal(_('Manual Renewal'), [
-		E('p', {}, _('This certificate is configured for automatic renewal. If you renew it manually now, automatic renewal will be disabled for this certificate. You can enable it again with Edit later.')),
+		E('p', {}, _('Manual renewal will disable automatic renewal. You can re-enable it via Edit.')),
 		E('div', { 'class': 'right' }, [
 			E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 			E('button', {
@@ -859,7 +860,7 @@ return view.extend({
 						E('label', { 'class': 'cbi-value-title' }, _('Custom DNS API Name')),
 						E('div', { 'class': 'cbi-value-field' }, [
 							dnsApiCustomInput,
-							E('div', { 'class': 'cbi-value-description' }, _('acme.sh DNS API script name, e.g. dns_myapi. See acme.sh dnsapi wiki for full list.'))
+							E('div', { 'class': 'cbi-value-description' }, _('acme.sh DNS API script name, e.g. dns_myapi'))
 						])
 					]),
 					E('div', { 'class': 'cbi-value', 'id': 'cert-dns-creds-row', 'style': 'display:none' }, [
@@ -874,7 +875,7 @@ return view.extend({
 						E('label', { 'class': 'cbi-value-title' }, _('DNS Wait Seconds')),
 						E('div', { 'class': 'cbi-value-field' }, [
 							dnsWaitInput,
-							E('div', { 'class': 'cbi-value-description' }, _('Seconds to wait for DNS propagation before validation. Leave empty for default.'))
+							E('div', { 'class': 'cbi-value-description' }, _('Seconds to wait for DNS propagation before validation.'))
 						])
 					]),
 					E('div', { 'class': 'right' }, [

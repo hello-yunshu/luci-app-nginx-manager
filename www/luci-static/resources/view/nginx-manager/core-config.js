@@ -285,7 +285,7 @@ return view.extend({
 		o.default = '1';
 
 		o = s2.option(form.Flag, 'ssl_stapling', _('OCSP Stapling'),
-			_('OCSP stapling for custom certificates only. ACME certs not supported — Let\'s Encrypt has discontinued OCSP.'));
+			_('OCSP stapling for custom certificates only. Not applicable for ACME certificates.'));
 		o.rmempty = true;
 		o.default = '1';
 		this.customSslOptions.sslStapling = o;
@@ -296,11 +296,11 @@ return view.extend({
 		o.default = '1';
 
 		o = s2.option(form.Flag, 'http3', _('HTTP/3 (QUIC)'),
-			_('Enable HTTP/3 over QUIC. Adds quic reuseport to listen directives and Alt-Svc header. Requires nginx built with QUIC support.'));
+			_('Enable HTTP/3 over QUIC. Requires nginx built with QUIC support.'));
 		o.rmempty = true;
 
 		o = s2.option(form.Flag, 'security_headers', _('Security Headers'),
-			_('Add X-Frame-Options, CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy to SSL sites.'));
+			_('Add common security headers to SSL sites.'));
 		o.rmempty = true;
 		o.default = '1';
 		this.customSslOptions.securityHeaders = o;
@@ -369,7 +369,7 @@ return view.extend({
 			dangerZone.appendChild(E('h3', {}, _('Danger Zone')));
 
 			var dangerWarning = E('div', { 'class': 'alert-message warning' });
-			dangerWarning.appendChild(E('p', {}, _('Modifying core configuration may prevent Nginx from starting, which could make the LuCI web interface inaccessible. Please ensure SSH is available or keep uhttpd as a backup entry point.')));
+			dangerWarning.appendChild(E('p', {}, _('Modifying core configuration may prevent Nginx from starting and make LuCI inaccessible. Ensure SSH access is available.')));
 			dangerZone.appendChild(dangerWarning);
 
 			var dangerToggle = E('button', {
