@@ -959,6 +959,7 @@ handle_upload_cert() {
 
 	local cert_subdir="${CERT_DIR}/${cert_id}"
 	mkdir -p "${cert_subdir}"
+	chmod 700 "${cert_subdir}"
 
 	printf '%s' "${cert_content}" > "${cert_subdir}/fullchain.pem"
 	printf '%s' "${key_content}" > "${cert_subdir}/privkey.pem"
@@ -995,6 +996,7 @@ handle_issue_self_signed() {
 
 	local cert_subdir="${CERT_DIR}/${cert_id}"
 	mkdir -p "${cert_subdir}"
+	chmod 700 "${cert_subdir}"
 
 	openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 		-keyout "${cert_subdir}/privkey.pem" \
@@ -2283,6 +2285,7 @@ _acme_issue_worker() {
 
 	local cert_subdir="${cert_dir}/${cert_id}"
 	mkdir -p "${cert_subdir}"
+	chmod 700 "${cert_subdir}"
 
 	# Symlink to acme certificate files
 	ln -sf "${acme_cert}" "${cert_subdir}/fullchain.pem"
