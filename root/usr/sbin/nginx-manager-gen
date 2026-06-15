@@ -507,11 +507,6 @@ generate_reverse_proxy_site() {
 			echo "        proxy_pass ${proxy_pass};"
 			generate_proxy_headers "${proxy_host}" "${proxy_xff}" "${proxy_xfp}" "${proxy_xri}"
 			echo "        proxy_set_header Connection \"\";"
-			# QUIC: ensure request body is fully buffered before forwarding to upstream
-			# to work around nginx HTTP/3 POST body handling issues
-			if [ "${http3}" = "1" ] && _nginx_has_v3; then
-				echo "        proxy_request_buffering on;"
-			fi
 			[ -n "${proxy_connect_timeout}" ] && echo "        proxy_connect_timeout ${proxy_connect_timeout};"
 			[ -n "${proxy_read_timeout}" ] && echo "        proxy_read_timeout ${proxy_read_timeout};"
 			[ -n "${proxy_send_timeout}" ] && echo "        proxy_send_timeout ${proxy_send_timeout};"
@@ -856,6 +851,7 @@ _strip_directives_from_file() {
 	[ -n "${ssl_stapling_managed}" ] && directives="${directives} ssl_stapling ssl_stapling_verify resolver resolver_timeout"
 	[ -n "${ssl_buffer_size}" ] && directives="${directives} ssl_buffer_size"
 	[ -n "${http2}" ] && directives="${directives} http2"
+	[ "${http3}" = "1" ] && directives="${directives} http3_stream_buffer_size"
 	directives="${directives} ssl_prefer_server_ciphers"
 
 	[ -z "${directives}" ] && return 0
@@ -921,7 +917,7 @@ generate_global_conf() {
 	local tcp_nopush tcp_nodelay
 	local ssl_session_timeout ssl_session_cache ssl_buffer_size
 	local ssl_stapling_managed
-	local http2
+	local http2 http3 http3_stream_buffer_size
 
 	max_body="$(uci -q get nginx_manager.global.client_max_body_size)" || max_body=""
 	keepalive="$(uci -q get nginx_manager.global.keepalive_timeout)" || keepalive=""
@@ -949,12 +945,17 @@ generate_global_conf() {
 	# conflicting ssl_stapling/resolver directives in the template.
 	ssl_stapling_managed="$(uci -q get nginx_manager.global.ssl_stapling)" || ssl_stapling_managed="1"
 	http2="$(uci -q get nginx_manager.global.http2)" || http2="1"
+	http3="$(uci -q get nginx_manager.global.http3)" || http3=""
+	http3_stream_buffer_size="$(uci -q get nginx_manager.global.http3_stream_buffer_size)" || http3_stream_buffer_size=""
+	local _http3_stream_buffer_size_set="${http3_stream_buffer_size}"
+	[ -z "${http3_stream_buffer_size}" ] && http3_stream_buffer_size="256k"
 
 	[ -z "${max_body}" ] && [ -z "${keepalive}" ] && [ -z "${gzip}" ] && \
 	[ -z "${server_tokens}" ] && [ -z "${sendfile}" ] && \
 	[ -z "${tcp_nopush}" ] && [ -z "${tcp_nodelay}" ] && \
 	[ -z "${access_log}" ] && [ -z "${error_log}" ] && \
 	[ -z "${_ssl_session_timeout_set}" ] && [ -z "${_ssl_session_cache_set}" ] && [ -z "${_ssl_session_tickets_set}" ] && [ -z "${_ssl_buffer_size_set}" ] && \
+	[ -z "${_http3_stream_buffer_size_set}" ] && [ "${http3}" != "1" ] && \
 	{
 		# No directives to generate, restore any previously commented lines
 		_restore_template_directives
@@ -1019,6 +1020,11 @@ generate_global_conf() {
 			echo "http2 on;"
 		elif [ "${http2}" = "0" ]; then
 			echo "http2 off;"
+		fi
+
+		# HTTP/3 stream buffer size (http level)
+		if [ "${http3}" = "1" ] && _nginx_has_v3; then
+			echo "http3_stream_buffer_size ${http3_stream_buffer_size};"
 		fi
 	} > "${output_file}"
 

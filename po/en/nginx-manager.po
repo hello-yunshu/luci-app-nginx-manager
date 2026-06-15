@@ -189,6 +189,18 @@ msgstr "Confirm Save"
 msgid "Config Test Result"
 msgstr "Config Test Result"
 
+msgid "Config File"
+msgstr "Config File"
+
+msgid "Config file not found. It will be created after saving the site."
+msgstr "Config file not found. It will be created after saving the site."
+
+msgid "Config file path not available"
+msgstr "Config file path not available"
+
+msgid "Config file saved successfully"
+msgstr "Config file saved successfully"
+
 msgid "Configuration test failed"
 msgstr "Configuration test failed"
 
@@ -273,6 +285,12 @@ msgstr "Disable"
 msgid "Disable Dangerous Edit"
 msgstr "Disable Dangerous Edit"
 
+msgid "Direct Edit"
+msgstr "Direct Edit"
+
+msgid "Direct edits will be overwritten when regenerating config. Use for temporary tweaks only."
+msgstr "Direct edits will be overwritten when regenerating config. Use for temporary tweaks only."
+
 msgid "Disabled"
 msgstr "Disabled"
 
@@ -296,6 +314,9 @@ msgstr "Enable"
 
 msgid "Enable Dangerous Edit"
 msgstr "Enable Dangerous Edit"
+
+msgid "Enable direct editing of the config file"
+msgstr "Enable direct editing of the config file"
 
 msgid "Enabled"
 msgstr "Enabled"
@@ -341,6 +362,9 @@ msgstr "Failed to upload certificate"
 
 msgid "File Missing"
 msgstr "File Missing"
+
+msgid "File Path"
+msgstr "File Path"
 
 msgid "File not found"
 msgstr "File not found"
@@ -507,8 +531,8 @@ msgstr "Non-Managed Configs"
 msgid "OCSP Stapling"
 msgstr "OCSP Stapling"
 
-msgid "OCSP stapling for custom certificates only. Not applicable for ACME certificates."
-msgstr "OCSP stapling for custom certificates only. Not applicable for ACME certificates."
+msgid "OCSP stapling for custom certificates only. ACME certs not supported — Let's Encrypt has discontinued OCSP."
+msgstr "OCSP stapling for custom certificates only. ACME certs not supported — Let's Encrypt has discontinued OCSP."
 
 msgid "OK"
 msgstr "OK"
@@ -632,6 +656,12 @@ msgstr "SSL Settings"
 
 msgid "Save"
 msgstr "Save"
+
+msgid "Save Config File"
+msgstr "Save Config File"
+
+msgid "Save changes to the config file? A backup will be created first."
+msgstr "Save changes to the config file? A backup will be created first."
 
 msgid "Save failed"
 msgstr "Save failed"
@@ -861,6 +891,9 @@ msgstr "Automatic renewal disabled"
 msgid "Failed to update automatic renewal"
 msgstr "Failed to update automatic renewal"
 
+msgid "Failed to update certificate"
+msgstr "Failed to update certificate"
+
 msgid "Auto (ACME DNS-01)"
 msgstr "Auto (ACME DNS-01)"
 
@@ -1074,14 +1107,14 @@ msgstr "Enable HTTP/2 for SSL sites. Uses the http2 directive (nginx 1.25.1+)."
 msgid "HTTP/3 (QUIC)"
 msgstr "HTTP/3 (QUIC)"
 
-msgid "Enable HTTP/3 over QUIC. Requires nginx built with QUIC support."
-msgstr "Enable HTTP/3 over QUIC. Requires nginx built with QUIC support."
+msgid "Enable HTTP/3 over QUIC. Adds quic reuseport to listen directives and Alt-Svc header. Requires nginx built with QUIC support."
+msgstr "Enable HTTP/3 over QUIC. Adds quic reuseport to listen directives and Alt-Svc header. Requires nginx built with QUIC support."
 
 msgid "Security Headers"
 msgstr "Security Headers"
 
-msgid "Add common security headers to SSL sites."
-msgstr "Add common security headers to SSL sites."
+msgid "Add X-Frame-Options, CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy to SSL sites."
+msgstr "Add X-Frame-Options, CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy to SSL sites."
 
 msgid "is managed by HSTS settings. Set HSTS Max Age to 0 to disable it."
 msgstr "is managed by HSTS settings. Set HSTS Max Age to 0 to disable it."
@@ -1454,6 +1487,21 @@ msgstr "Please adjust Custom SSL Directives before saving. These lines conflict 
 
 msgid "Line Count"
 msgstr "Line Count"
+
+msgid "HTTP/3 Stream Buffer Size"
+msgstr "HTTP/3 Stream Buffer Size"
+
+msgid "QUIC stream buffer size, e.g. 64k, 256k. Leave empty for default."
+msgstr "QUIC stream buffer size, e.g. 64k, 256k. Leave empty for default."
+
+msgid "HTTP/3 Stream Buffer Size field"
+msgstr "HTTP/3 Stream Buffer Size field"
+
+msgid "<br/><strong style=\"color:var(--red)\">Warning:</strong> "
+msgstr "<br/><strong style=\"color:var(--red)\">Warning:</strong> "
+
+msgid "Nginx HTTP/3 module has a known bug where POST requests may trigger a massive memory allocation (8GB), causing 500 errors. If you encounter this issue, disable HTTP/3 until nginx fixes the bug."
+msgstr "Nginx HTTP/3 module has a known bug where POST requests may trigger a massive memory allocation (8GB), causing 500 errors. If you encounter this issue, disable HTTP/3 until nginx fixes the bug."
 
 msgid "Are you sure you want to delete"
 msgstr "Are you sure you want to delete"

@@ -4,6 +4,7 @@
 'require view';
 'require ui';
 'require rpc';
+'require fs';
 'require nginx-manager/utils as utils';
 
 var callGetSite = rpc.declare({
@@ -34,6 +35,13 @@ var callRenderSite = rpc.declare({
 	object: 'nginx_manager',
 	method: 'render_site',
 	params: ['id'],
+	expect: {}
+});
+
+var callSaveFile = rpc.declare({
+	object: 'nginx_manager',
+	method: 'save_file',
+	params: ['path', 'content'],
 	expect: {}
 });
 
@@ -445,6 +453,92 @@ return view.extend({
 
 		page.appendChild(loggingSection);
 
+		/* ========== Config File ========== */
+		if (!isNew) {
+			var configSection = E('div', { 'class': 'cbi-section' });
+			configSection.appendChild(E('h3', {}, _('Config File')));
+
+			var configPath = site.config_path || '';
+			var configPathRow = E('div', { 'class': 'cbi-value' });
+			configPathRow.appendChild(E('label', { 'class': 'cbi-value-title' }, _('File Path')));
+			var configPathField = E('div', { 'class': 'cbi-value-field' });
+			configPathField.appendChild(E('code', { 'style': 'word-break:break-all;' }, configPath || '-'));
+			configPathRow.appendChild(configPathField);
+			configSection.appendChild(configPathRow);
+
+			/* Enable edit checkbox */
+			var enableEditRow = E('div', { 'class': 'cbi-value' });
+			enableEditRow.appendChild(E('label', { 'class': 'cbi-value-title' }, _('Direct Edit')));
+			var enableEditField = E('div', { 'class': 'cbi-value-field' });
+			var enableEditCb = E('input', { 'type': 'checkbox', 'id': 'opt-enable_config_edit', 'class': 'cbi-input-checkbox' });
+			enableEditField.appendChild(enableEditCb);
+			enableEditField.appendChild(E('label', { 'for': 'opt-enable_config_edit', 'style': 'margin-left:0.4em;cursor:pointer;' }, _('Enable direct editing of the config file')));
+			enableEditRow.appendChild(enableEditField);
+			configSection.appendChild(enableEditRow);
+
+			/* Warning */
+			var configWarning = E('div', { 'class': 'alert-message warning', 'style': 'display:none;' });
+			configWarning.appendChild(E('p', {}, _('Direct edits will be overwritten when regenerating config. Use for temporary tweaks only.')));
+			configSection.appendChild(configWarning);
+
+			/* Code editor */
+			var configEditor = utils.createCodeEditor('', configPath || 'site.conf', { readonly: true });
+			configSection.appendChild(configEditor.container);
+
+			/* Save button for config file */
+			var configSaveBtn = E('button', {
+				'class': 'cbi-button cbi-button-apply',
+				'style': 'display:none; margin-top:0.8em;',
+				'click': function() {
+					if (!configPath) {
+						ui.addNotification(null, E('p', {}, _('Config file path not available')), 'error');
+						return;
+					}
+					ui.showModal(_('Confirm Save'), [
+						E('p', {}, _('Save changes to the config file? A backup will be created first.')),
+						E('div', { 'class': 'right' }, [
+							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+							E('button', {
+								'class': 'cbi-button cbi-button-apply',
+								'click': function() {
+									ui.hideModal();
+									callSaveFile(configPath, configEditor.textarea.value).then(function(result) {
+										if (result && result.error) {
+											ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + result.error), 'error');
+										} else {
+											ui.addNotification(null, E('p', {}, _('Config file saved successfully')), 'info');
+										}
+									}).catch(function(err) {
+										ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || err)), 'error');
+									});
+								}
+							}, _('Save'))
+						])
+					]);
+				}
+			}, _('Save Config File'));
+			configSection.appendChild(configSaveBtn);
+
+			/* Toggle edit mode */
+			enableEditCb.addEventListener('change', function() {
+				var edit = enableEditCb.checked;
+				configEditor.setReadonly(!edit);
+				configWarning.style.display = edit ? '' : 'none';
+				configSaveBtn.style.display = edit ? '' : 'none';
+			});
+
+			/* Load config file content */
+			if (configPath) {
+				fs.read(configPath).then(function(content) {
+					configEditor.setContent(content || '');
+				}).catch(function() {
+					configEditor.setContent(_('Config file not found. It will be created after saving the site.'));
+				});
+			}
+
+			page.appendChild(configSection);
+		}
+
 		/* ========== Actions ========== */
 		var actionsDiv = E('div', { 'class': 'nm-btn-group', 'style': 'justify-content: flex-end; margin-top: 1.5em;' });
 
@@ -453,9 +547,56 @@ return view.extend({
 				'class': 'cbi-button',
 				'click': function() {
 					callRenderSite(siteId).then(function(result) {
+						var configText = (result && result.config) || '';
+						var configFilePath = (result && result.config_path) || '';
+						var editor = utils.createCodeEditor(configText, configFilePath || 'site.conf', { readonly: true });
+
+						var editBtn = E('button', {
+							'class': 'cbi-button',
+							'click': function() {
+								editor.setReadonly(false);
+								editBtn.style.display = 'none';
+								saveBtn.style.display = '';
+							}
+						}, _('Edit'));
+
+						var saveBtn = E('button', {
+							'class': 'cbi-button cbi-button-apply',
+							'style': 'display:none;',
+							'click': function() {
+								if (!configFilePath) {
+									ui.addNotification(null, E('p', {}, _('Config file path not available')), 'error');
+									return;
+								}
+								ui.showModal(_('Confirm Save'), [
+									E('p', {}, _('Save changes to the config file? A backup will be created first.')),
+									E('div', { 'class': 'right' }, [
+										E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+										E('button', {
+											'class': 'cbi-button cbi-button-apply',
+											'click': function() {
+												ui.hideModal();
+												callSaveFile(configFilePath, editor.textarea.value).then(function(r) {
+													if (r && r.error) {
+														ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + r.error), 'error');
+													} else {
+														ui.addNotification(null, E('p', {}, _('Config file saved successfully')), 'info');
+													}
+												}).catch(function(err) {
+													ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || err)), 'error');
+												});
+											}
+										}, _('Save'))
+									])
+								]);
+							}
+						}, _('Save'));
+
 						ui.showModal(_('Generated Config'), [
-							E('pre', { 'class': 'nm-code-block' }, (result && result.config) || ''),
+							editor.container,
 							E('div', { 'class': 'right' }, [
+								editBtn,
+								saveBtn,
 								E('button', {
 									'class': 'btn',
 									'click': function() { ui.hideModal(); }
