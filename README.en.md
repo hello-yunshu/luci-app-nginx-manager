@@ -79,7 +79,6 @@ Adjust common parameters through a visual editor — no manual file editing need
 - `sendfile` — Zero-copy file transfer
 - `http2` — HTTP/2 toggle (uses `http2 on;` directive for nginx 1.25.1+)
 - `http3` — HTTP/3 (QUIC) toggle, requires nginx with QUIC support
-- `ssl_protocols` / `ssl_ciphers` — SSL protocol and cipher suite selection
 - `ssl_stapling` — OCSP Stapling
 - `ssl_buffer_size` — SSL buffer size
 
@@ -165,20 +164,23 @@ root/
 │   ├── config/nginx_manager                    # UCI configuration
 │   └── uci-defaults/90-luci-app-nginx-manager  # First-install init script
 ├── usr/
-│   ├── libexec/rpcd/nginx_manager              # RPC backend (38 API methods)
+│   ├── libexec/rpcd/nginx_manager              # RPC backend (47 API methods)
 │   ├── sbin/nginx-manager-gen                  # Config generator & deployer
 │   └── share/
 │       ├── luci/menu.d/                        # LuCI menu registration
 │       └── rpcd/acl.d/                         # RPC access control
 
-htdocs/luci-static/resources/
-├── nginx-manager/nginx-manager.css             # Global styles
-├── nginx-manager/utils.js                      # Shared utilities
+www/luci-static/resources/
+├── nginx-manager/
+│   ├── file-icons.svg                          # File icons
+│   ├── nginx-manager.css                       # Global styles
+│   └── utils.js                                # Shared utilities
 └── view/nginx-manager/
     ├── overview.js                             # Dashboard overview
     ├── sites.js                                # Site listing
     ├── site-edit.js                            # Site edit form
     ├── certificates.js                         # Certificate management
+    ├── files.js                                # File manager
     ├── logs.js                                 # Log viewer
     ├── core-config.js                          # Core config editor (incl. dangerous edit)
     └── backups.js                              # Backup & restore
@@ -189,7 +191,7 @@ htdocs/luci-static/resources/
 ```
 ┌──────────────┐     ubus/rpcd     ┌──────────────────┐     UCI      ┌──────────────┐
 │  LuCI Frontend│ ──────────────→  │  rpcd Backend     │ ──────────→ │  UCI Config   │
-│  (7 JS views) │ ←──────────────  │  (38 API methods) │ ←──────────  │  nginx_manager│
+│  (8 JS views) │ ←──────────────  │  (47 API methods) │ ←──────────  │  nginx_manager│
 └──────────────┘     JSON response └──────────────────┘              └──────┬───────┘
                                                                             │
                                                               nginx-manager-gen
@@ -227,23 +229,60 @@ htdocs/luci-static/resources/
 | `reload_after_save` | boolean | 1 | Auto-reload after save |
 | `advanced_mode` | boolean | 0 | Advanced mode |
 | `dangerous_core_edit` | boolean | 0 | Dangerous edit mode |
-| `max_backups` | integer | 5 | Maximum backup count |
+| `max_backups` | integer | 10 | Maximum backup count |
+| `client_max_body_size` | string | — | Request body size limit |
+| `keepalive_timeout` | string | — | Keep-alive timeout |
+| `gzip` | boolean | 0 | Compression toggle |
+| `server_tokens` | string | — | Version info visibility |
+| `sendfile` | boolean | 0 | Zero-copy file transfer |
+| `access_log` | string | — | Access log path |
+| `error_log` | string | — | Error log path |
+| `ssl_session_cache` | string | — | SSL session cache |
+| `ssl_session_tickets` | string | 1 | SSL session tickets |
+| `ssl_session_timeout` | string | — | SSL session timeout |
+| `ssl_stapling` | string | — | OCSP Stapling (custom certs only) |
+| `ssl_buffer_size` | string | — | SSL buffer size |
+| `custom_ssl_directives` | string | — | Custom SSL directives |
+| `http2` | boolean | 1 | HTTP/2 toggle |
+| `http3` | boolean | 0 | HTTP/3 (QUIC) toggle |
+| `security_headers` | boolean | 1 | Security response headers |
+| `core_config_initialized` | boolean | 0 | Whether core config has been initialized |
 
 ### Site Section
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `name` | string | Site name (used as filename) |
-| `mode` | enum | `reverse_proxy` / `static` / `custom` / `redirect` |
-| `server_name` | string | Domain name |
-| `proxy_pass` | string | Backend address (reverse proxy mode) |
-| `root` | path | Document root (static mode) |
-| `index` | string | Default index file |
-| `websocket` | boolean | Enable WebSocket proxy |
-| `redirect_https` | boolean | Auto HTTP→HTTPS redirect |
-| `ssl_cert` | string | Associated certificate ID |
-| `listen` | list | Listen port list |
-| `enabled` | boolean | Enable site |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `name` | string | — | Site name (used as filename) |
+| `mode` | enum | `reverse_proxy` | `reverse_proxy` / `static` / `custom` / `redirect` |
+| `server_name` | string | — | Domain name |
+| `enabled` | boolean | 1 | Enable site |
+| `listen_addr` | string | — | Listen address |
+| `listen_port` | string | 80 | Listen port |
+| `proxy_pass` | string | — | Backend address (reverse proxy mode) |
+| `root` | path | — | Document root (static mode) |
+| `index` | string | `index.html` | Default index file |
+| `websocket` | boolean | 0 | Enable WebSocket proxy |
+| `proxy_type` | string | `http` | Proxy type: `http` / `grpc` |
+| `grpc_path` | string | — | gRPC path |
+| `grpc_pass` | string | — | gRPC backend address |
+| `custom_proxy_headers` | string | — | Custom proxy headers |
+| `redirect_https` | boolean | 0 | Auto HTTP→HTTPS redirect |
+| `redirect_http_port` | string | — | HTTP redirect listen port |
+| `redirect_target` | string | — | Redirect target URL (redirect mode) |
+| `proxy_host` | boolean | 1 | Pass Host header |
+| `proxy_xff` | boolean | 1 | Pass X-Forwarded-For header |
+| `proxy_xfp` | boolean | 1 | Pass X-Forwarded-Proto header |
+| `proxy_xri` | boolean | 1 | Pass X-Real-IP header |
+| `ssl_cert` | string | — | Associated certificate ID |
+| `ssl_protocols` | string | — | SSL protocols (site-level) |
+| `ssl_ciphers` | string | — | SSL cipher suites (site-level) |
+| `hsts_max_age` | string | — | HSTS max-age (empty=default 31536000, 0=disable) |
+| `access_log` | boolean | 0 | Enable access log |
+| `error_log` | boolean | 1 | Enable error log |
+| `custom_server_block` | string | — | Custom server block content (custom mode) |
+| `proxy_connect_timeout` | string | — | Proxy connect timeout |
+| `proxy_read_timeout` | string | — | Proxy read timeout |
+| `proxy_send_timeout` | string | — | Proxy send timeout |
 
 ## CLI Tool
 
@@ -255,6 +294,12 @@ nginx-manager-gen apply                 # Generate + test + reload (rollback on 
 nginx-manager-gen render <section>      # Preview generated config for a site
 nginx-manager-gen test                  # Run nginx -t
 nginx-manager-gen backup                # Create a manual backup
+nginx-manager-gen --status              # Get nginx runtime status (JSON)
+nginx-manager-gen --check-env           # Check runtime environment dependencies (JSON)
+nginx-manager-gen --test-config         # Test config and record result (JSON)
+nginx-manager-gen --reload              # Reload nginx (JSON)
+nginx-manager-gen --restart             # Restart nginx (JSON)
+nginx-manager-gen --start               # Start nginx (JSON)
 ```
 
 ## Building
