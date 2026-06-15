@@ -673,6 +673,7 @@ button.nm-cert-status-btn {
 .nm-code-editor {
 	position: relative;
 	min-height: 420px;
+	border-radius: var(--border-radius, 3px);
 }
 
 .nm-code-editor .nm-code-highlight,
@@ -694,7 +695,7 @@ button.nm-cert-status-btn {
 	position: absolute;
 	inset: 0;
 	pointer-events: none;
-	background: color-mix(in srgb, var(--main-color, #337ab7) 3%, var(--cbi-background, #fff));
+	background: var(--cbi-background, color-mix(in srgb, var(--main-color, #337ab7) 3%, #fff));
 	color: var(--text-color, #333);
 }
 
@@ -805,7 +806,7 @@ button.nm-cert-status-btn {
 	}
 
 	.nm-code-editor .nm-code-highlight {
-		background: color-mix(in srgb, #eab308 4%, var(--cbi-background, #1f2933));
+		background: var(--cbi-background, color-mix(in srgb, #eab308 4%, #1f2933));
 		color: var(--text-color, #dbe2ea);
 	}
 
