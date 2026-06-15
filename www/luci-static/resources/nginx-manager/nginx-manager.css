@@ -683,8 +683,6 @@ button.nm-cert-status-badge {
 	tab-size: 4;
 	padding: 10px;
 	margin: 0;
-	border: 1px solid var(--border-color, #ccc);
-	border-radius: 4px;
 	white-space: pre;
 	overflow: auto;
 }
@@ -703,9 +701,10 @@ button.nm-cert-status-badge {
 	background: transparent;
 	color: transparent;
 	caret-color: var(--text-color, var(--cbi-color, #333));
-	border-color: transparent;
+	border: none;
 	outline: none;
 	resize: vertical;
+	box-shadow: none;
 }
 
 .nm-code-editor .nm-code-textarea::selection {
@@ -717,8 +716,9 @@ button.nm-cert-status-badge {
 	cursor: default;
 }
 
-.nm-code-editor .nm-code-highlight-editing {
-	border-color: color-mix(in srgb, var(--warning-color, #c68014) 50%, var(--border-color, #ccc));
+.nm-code-editor.nm-code-highlight-editing {
+	border: 2px solid color-mix(in srgb, var(--warning-color, #c68014) 60%, var(--border-color, #ccc));
+	box-shadow: 0 0 0 0.15rem color-mix(in srgb, var(--warning-color, #c68014) 25%, transparent);
 }
 
 .nm-code-highlight .tok-comment { color: #6b7280; font-style: italic; }

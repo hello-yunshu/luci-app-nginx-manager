@@ -348,8 +348,10 @@ return view.extend({
 				'class': 'cbi-button',
 				'click': function() {
 					callGetNginxT().then(function(result) {
+						var content = (result && result.content) || '';
+						var editor = utils.createCodeEditor(content, 'nginx.conf', { readonly: true });
 						ui.showModal(_('nginx -T Output'), [
-							E('pre', { 'class': 'nm-code-block' }, (result && result.content) || ''),
+							editor.container,
 							E('div', { 'class': 'right' }, [
 								E('button', { 'type': 'button', 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
 							])
@@ -363,8 +365,10 @@ return view.extend({
 				'class': 'cbi-button',
 				'click': function() {
 					callGetFileReadonly('/etc/nginx/uci.conf.template').then(function(result) {
+						var content = (result && result.content) || '';
+						var editor = utils.createCodeEditor(content, 'uci.conf.template', { readonly: true });
 						ui.showModal(_('/etc/nginx/uci.conf.template'), [
-							E('pre', { 'class': 'nm-code-block' }, (result && result.content) || _('File not found')),
+							editor.container,
 							E('div', { 'class': 'right' }, [
 								E('button', { 'type': 'button', 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
 							])

@@ -180,6 +180,9 @@ msgstr ""
 msgid "Config file not found. It will be created after saving the site."
 msgstr ""
 
+msgid "Content"
+msgstr ""
+
 msgid "Config file path not available"
 msgstr ""
 
@@ -669,7 +672,10 @@ msgstr ""
 msgid "Save Config File"
 msgstr ""
 
-msgid "Save changes to the config file? A backup will be created first."
+msgid "Save changes to the config file?"
+msgstr ""
+
+msgid "A backup will be created before saving."
 msgstr ""
 
 msgid "Save failed"

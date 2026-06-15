@@ -205,8 +205,9 @@ return view.extend({
 				return callTestConfig().then(function(result) {
 					resetBusy(btn);
 					var output = (result && result.output) || _('No output');
+					var editor = utils.createCodeEditor(output, 'nginx.conf', { readonly: true });
 					ui.showModal(_('Config Test Result'), [
-						E('pre', { 'class': 'nm-code-block' }, output),
+						editor.container,
 						E('div', { 'class': 'right' }, [
 							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('OK'))
 						])
@@ -222,8 +223,10 @@ return view.extend({
 			'class': 'cbi-button',
 			'click': function() {
 				return callGetNginxT().then(function(result) {
+					var content = (result && result.content) || '';
+					var editor = utils.createCodeEditor(content, 'nginx.conf', { readonly: true });
 					ui.showModal(_('View Full Config'), [
-						E('pre', { 'class': 'nm-code-block' }, (result && result.content) || ''),
+						editor.container,
 						E('div', { 'class': 'right' }, [
 							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
 						])

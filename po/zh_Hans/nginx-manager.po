@@ -207,6 +207,9 @@ msgstr "配置文件"
 msgid "Config file not found. It will be created after saving the site."
 msgstr "配置文件未找到，保存站点后将自动创建。"
 
+msgid "Content"
+msgstr "内容"
+
 msgid "Config file path not available"
 msgstr "配置文件路径不可用"
 
@@ -732,8 +735,11 @@ msgstr "保存"
 msgid "Save Config File"
 msgstr "保存配置文件"
 
-msgid "Save changes to the config file? A backup will be created first."
-msgstr "保存对配置文件的修改？将先创建备份。"
+msgid "Save changes to the config file?"
+msgstr "保存对配置文件的修改？"
+
+msgid "A backup will be created before saving."
+msgstr "保存前将先创建备份。"
 
 msgid "Size"
 msgstr "大小"
