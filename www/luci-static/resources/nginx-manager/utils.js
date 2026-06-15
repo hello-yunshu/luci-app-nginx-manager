@@ -240,7 +240,7 @@ function createCodeEditor(content, path, options) {
 	var readonly = options.readonly !== false;
 
 	var textarea = E('textarea', {
-		'class': 'cbi-input-textarea nm-code-textarea',
+		'class': 'nm-code-textarea',
 		'spellcheck': 'false'
 	});
 	textarea.value = content || '';
@@ -262,16 +262,16 @@ function createCodeEditor(content, path, options) {
 	textarea.addEventListener('scroll', syncScroll);
 	updateHighlight();
 
-	var container = E('div', { 'class': 'nm-code-editor' }, [highlight, textarea]);
+	var container = E('div', { 'class': 'nm-code-editor cbi-input-textarea' }, [highlight, textarea]);
 
 	function setReadonly(ro) {
 		textarea.readOnly = ro;
 		if (ro) {
 			textarea.classList.add('nm-code-readonly');
-			highlight.classList.remove('nm-code-highlight-editing');
+			container.classList.remove('nm-code-highlight-editing');
 		} else {
 			textarea.classList.remove('nm-code-readonly');
-			highlight.classList.add('nm-code-highlight-editing');
+			container.classList.add('nm-code-highlight-editing');
 		}
 	}
 

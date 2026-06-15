@@ -260,7 +260,9 @@ return view.extend({
 									return;
 								}
 								ui.showModal(_('Confirm Save'), [
-									E('p', {}, _('Save changes to the config file? A backup will be created first.')),
+									E('p', {}, _('Save changes to the config file?')),
+									E('p', {}, _('A backup will be created before saving.')),
+									E('p', { 'style': 'margin-top:0.5em;' }, _('Direct edits will be overwritten when regenerating config. Use for temporary tweaks only.')),
 									E('div', { 'class': 'right' }, [
 										E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 										E('button', {

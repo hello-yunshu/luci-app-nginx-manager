@@ -479,45 +479,39 @@ return view.extend({
 			/* Warning */
 			var configWarning = E('div', { 'class': 'alert-message warning', 'style': 'display:none;' });
 			configWarning.appendChild(E('p', {}, _('Direct edits will be overwritten when regenerating config. Use for temporary tweaks only.')));
-			configSection.appendChild(configWarning);
 
-			/* Code editor */
+			/* Code editor - wrapped in cbi-value row to align with form fields */
 			var configEditor = utils.createCodeEditor('', configPath || 'site.conf', { readonly: true });
-			configSection.appendChild(configEditor.container);
 
 			/* Save button for config file */
 			var configSaveBtn = E('button', {
 				'class': 'cbi-button cbi-button-apply',
-				'style': 'display:none; margin-top:0.8em;',
+				'style': 'display:none; margin-top:0.5em;',
 				'click': function() {
 					if (!configPath) {
 						ui.addNotification(null, E('p', {}, _('Config file path not available')), 'error');
 						return;
 					}
-					ui.showModal(_('Confirm Save'), [
-						E('p', {}, _('Save changes to the config file? A backup will be created first.')),
-						E('div', { 'class': 'right' }, [
-							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
-							E('button', {
-								'class': 'cbi-button cbi-button-apply',
-								'click': function() {
-									ui.hideModal();
-									callSaveFile(configPath, configEditor.textarea.value).then(function(result) {
-										if (result && result.error) {
-											ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + result.error), 'error');
-										} else {
-											ui.addNotification(null, E('p', {}, _('Config file saved successfully')), 'info');
-										}
-									}).catch(function(err) {
-										ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || err)), 'error');
-									});
-								}
-							}, _('Save'))
-						])
-					]);
+					callSaveFile(configPath, configEditor.textarea.value).then(function(result) {
+						if (result && result.error) {
+							ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + result.error), 'error');
+						} else {
+							ui.addNotification(null, E('p', {}, _('Config file saved successfully')), 'info');
+						}
+					}).catch(function(err) {
+						ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || err)), 'error');
+					});
 				}
 			}, _('Save Config File'));
-			configSection.appendChild(configSaveBtn);
+
+			var configEditorRow = E('div', { 'class': 'cbi-value' });
+			configEditorRow.appendChild(E('label', { 'class': 'cbi-value-title' }, _('Content')));
+			var configEditorField = E('div', { 'class': 'cbi-value-field' });
+			configEditorField.appendChild(configWarning);
+			configEditorField.appendChild(configEditor.container);
+			configEditorField.appendChild(configSaveBtn);
+			configEditorRow.appendChild(configEditorField);
+			configSection.appendChild(configEditorRow);
 
 			/* Toggle edit mode */
 			enableEditCb.addEventListener('change', function() {
@@ -569,7 +563,9 @@ return view.extend({
 									return;
 								}
 								ui.showModal(_('Confirm Save'), [
-									E('p', {}, _('Save changes to the config file? A backup will be created first.')),
+									E('p', {}, _('Save changes to the config file?')),
+									E('p', {}, _('A backup will be created before saving.')),
+									E('p', { 'style': 'margin-top:0.5em;' }, _('Direct edits will be overwritten when regenerating config. Use for temporary tweaks only.')),
 									E('div', { 'class': 'right' }, [
 										E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 										E('button', {
