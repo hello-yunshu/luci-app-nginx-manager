@@ -155,6 +155,143 @@ function validateNameInput(inputEl, descEl) {
 	return check;
 }
 
+/* === Code Editor Helpers (shared with files.js) === */
+
+function escapeHtml(text) {
+	return String(text || '')
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;');
+}
+
+function codeSyntax(path) {
+	path = String(path || '');
+	var name = path.split('/').pop() || '';
+	var ext = name.indexOf('.') >= 0 ? name.substring(name.lastIndexOf('.') + 1).toLowerCase() : '';
+	if (name === 'nginx.conf' || ext === 'conf') return 'nginx';
+	if (ext === 'json') return 'json';
+	if (ext === 'css') return 'css';
+	if (ext === 'html' || ext === 'htm' || ext === 'xml') return 'html';
+	if (ext === 'sh' || ext === 'ash' || path.indexOf('/etc/init.d/') === 0) return 'shell';
+	return 'generic';
+}
+
+function splitComment(line, syntax) {
+	var markers = syntax === 'json' ? [] : syntax === 'css' || syntax === 'html' ? [ '<!--', '/*' ] : [ '#', '//' ];
+	var best = -1;
+	markers.forEach(function(marker) {
+		var idx = line.indexOf(marker);
+		if (idx >= 0 && (best < 0 || idx < best)) best = idx;
+	});
+	return best >= 0 ? [ line.substring(0, best), line.substring(best) ] : [ line, '' ];
+}
+
+function highlightCodePart(code, syntax) {
+	var strings = [];
+	code = code.replace(/(&quot;(?:\\.|[^&])*?&quot;|'(?:\\.|[^'])*')/g, function(match) {
+		var token = '\ue000' + String.fromCharCode(0xe001 + strings.length);
+		strings.push('<span class="tok-str">' + match + '</span>');
+		return token;
+	});
+
+	if (syntax === 'nginx') {
+		code = code.replace(/\b(server|location|listen|proxy_pass|upstream|return|if|set|include|root|index|ssl_certificate|ssl_certificate_key|ssl_protocols|ssl_ciphers|ssl_prefer_server_ciphers|ssl_session_cache|ssl_session_timeout|ssl_session_tickets|ssl_stapling|ssl_stapling_verify|ssl_trusted_certificate|ssl_buffer_size|add_header|error_page|access_log|error_log|http2|http3|http3_stream_buffer_size|quic|server_name|client_max_body_size|keepalive_timeout|sendfile|tcp_nopush|tcp_nodelay|gzip|server_tokens|resolver|resolver_timeout|proxy_set_header|proxy_redirect|proxy_buffering|proxy_connect_timeout|proxy_read_timeout|proxy_send_timeout|grpc_pass|try_files|autoindex|alias|rewrite)\b/g, '<span class="tok-key">$1</span>');
+	} else if (syntax === 'json') {
+		code = code.replace(/\b(true|false|null)\b/g, '<span class="tok-key">$1</span>');
+		code = code.replace(/([A-Za-z0-9_"\ue000-\uf8ff]+)(\s*:)/g, '<span class="tok-prop">$1</span>$2');
+	} else if (syntax === 'shell') {
+		code = code.replace(/\b(if|then|else|elif|fi|for|while|do|done|case|esac|function|local|return|export|readonly|in)\b/g, '<span class="tok-key">$1</span>');
+		code = code.replace(/(\$[{(]?[A-Za-z0-9_@#?*!-]+[})]?)/g, '<span class="tok-var">$1</span>');
+	} else if (syntax === 'css') {
+		code = code.replace(/([A-Za-z-]+)(\s*:)/g, '<span class="tok-prop">$1</span>$2');
+		code = code.replace(/(@[A-Za-z-]+)/g, '<span class="tok-key">$1</span>');
+	} else {
+		code = code.replace(/\b(function|return|var|let|const|if|else|for|while|switch|case|break|continue|class|new|try|catch|true|false|null|undefined)\b/g, '<span class="tok-key">$1</span>');
+	}
+
+	code = code.replace(/\b([0-9]+(?:\.[0-9]+)?)([a-zA-Z%]+)?\b/g, '<span class="tok-num">$1$2</span>');
+	code = code.replace(/\ue000([\ue001-\uf8ff])/g, function(_, idx) {
+		return strings[idx.charCodeAt(0) - 0xe001] || '';
+	});
+	return code;
+}
+
+function highlightCode(text, path) {
+	var syntax = codeSyntax(path);
+	return String(text || '').split('\n').map(function(line) {
+		var parts = splitComment(escapeHtml(line), syntax);
+		var code = highlightCodePart(parts[0], syntax);
+		return code + (parts[1] ? '<span class="tok-comment">' + parts[1] + '</span>' : '');
+	}).join('\n') + '\n';
+}
+
+/**
+ * Create a code editor widget with syntax highlighting.
+ * Uses nm-code-editor layout (highlight overlay + transparent textarea).
+ * @param {string} content - Initial content
+ * @param {string} path - File path (used for syntax detection)
+ * @param {object} [options] - Options
+ * @param {boolean} [options.readonly=true] - Whether the editor is read-only
+ * @returns {object} Editor widget with { container, textarea, highlight, setContent, setReadonly }
+ */
+function createCodeEditor(content, path, options) {
+	options = options || {};
+	var readonly = options.readonly !== false;
+
+	var textarea = E('textarea', {
+		'class': 'cbi-input-textarea nm-code-textarea',
+		'spellcheck': 'false'
+	});
+	textarea.value = content || '';
+
+	var highlight = E('pre', {
+		'class': 'nm-code-highlight',
+		'aria-hidden': 'true'
+	});
+
+	var updateHighlight = function() {
+		highlight.innerHTML = highlightCode(textarea.value, path);
+	};
+	var syncScroll = function() {
+		highlight.scrollTop = textarea.scrollTop;
+		highlight.scrollLeft = textarea.scrollLeft;
+	};
+
+	textarea.addEventListener('input', updateHighlight);
+	textarea.addEventListener('scroll', syncScroll);
+	updateHighlight();
+
+	var container = E('div', { 'class': 'nm-code-editor' }, [highlight, textarea]);
+
+	function setReadonly(ro) {
+		textarea.readOnly = ro;
+		if (ro) {
+			textarea.classList.add('nm-code-readonly');
+			highlight.classList.remove('nm-code-highlight-editing');
+		} else {
+			textarea.classList.remove('nm-code-readonly');
+			highlight.classList.add('nm-code-highlight-editing');
+		}
+	}
+
+	setReadonly(readonly);
+
+	function setContent(text) {
+		textarea.value = text || '';
+		updateHighlight();
+	}
+
+	return {
+		container: container,
+		textarea: textarea,
+		highlight: highlight,
+		setContent: setContent,
+		setReadonly: setReadonly,
+		updateHighlight: updateHighlight
+	};
+}
+
 return baseclass.extend({
 	loadSharedCSS: loadSharedCSS,
 	renderFooter: renderFooter,
@@ -164,5 +301,11 @@ return baseclass.extend({
 	isApplyNoDataError: isApplyNoDataError,
 	validateNameInput: validateNameInput,
 	NAME_PATTERN: NAME_PATTERN,
-	NAME_TIP: NAME_TIP
+	NAME_TIP: NAME_TIP,
+	escapeHtml: escapeHtml,
+	codeSyntax: codeSyntax,
+	splitComment: splitComment,
+	highlightCodePart: highlightCodePart,
+	highlightCode: highlightCode,
+	createCodeEditor: createCodeEditor
 });

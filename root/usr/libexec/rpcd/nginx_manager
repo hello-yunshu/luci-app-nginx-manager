@@ -305,6 +305,16 @@ handle_get_site() {
 	json_init
 	json_add_string "id" "${site_id}"
 
+	# Add config file path
+	load_global_config
+	local site_enabled
+	site_enabled="$(uci -q get "nginx_manager.${site_id}.enabled")" || site_enabled="1"
+	if [ "${site_enabled}" = "0" ]; then
+		json_add_string "config_path" "${MANAGED_DIR}/disabled/${site_id}.conf.disabled"
+	else
+		json_add_string "config_path" "${MANAGED_DIR}/sites/${site_id}.conf"
+	fi
+
 	local opt
 	for opt in name mode server_name listen_addr listen_port proxy_pass root index websocket proxy_type grpc_path grpc_pass custom_proxy_headers redirect_https redirect_http_port \
 		proxy_host proxy_xff proxy_xfp proxy_xri ssl_cert ssl_protocols ssl_ciphers hsts_max_age \
@@ -675,8 +685,17 @@ handle_render_site() {
 	local rendered
 	rendered="$("${NGINX_MANAGER_GEN}" render "${site_id}" 2>&1)"
 
+	load_global_config
+	local site_enabled
+	site_enabled="$(uci -q get "nginx_manager.${site_id}.enabled")" || site_enabled="1"
+
 	json_init
 	json_add_string "config" "${rendered}"
+	if [ "${site_enabled}" = "0" ]; then
+		json_add_string "config_path" "${MANAGED_DIR}/disabled/${site_id}.conf.disabled"
+	else
+		json_add_string "config_path" "${MANAGED_DIR}/sites/${site_id}.conf"
+	fi
 	json_dump
 }
 

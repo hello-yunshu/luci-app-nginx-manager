@@ -47,6 +47,13 @@ var callDuplicateSite = rpc.declare({
 	expect: {}
 });
 
+var callSaveFile = rpc.declare({
+	object: 'nginx_manager',
+	method: 'save_file',
+	params: ['path', 'content'],
+	expect: {}
+});
+
 var callSetSite = rpc.declare({
 	object: 'nginx_manager',
 	method: 'set_site',
@@ -231,10 +238,60 @@ return view.extend({
 				'class': 'cbi-button',
 				'click': function() {
 					callRenderSite(site.id).then(function(result) {
+						var configText = (result && result.config) || '';
+						var configFilePath = (result && result.config_path) || '';
+						var editor = utils.createCodeEditor(configText, configFilePath || 'site.conf', { readonly: true });
+
+						var editBtn = E('button', {
+							'class': 'cbi-button',
+							'click': function() {
+								editor.setReadonly(false);
+								editBtn.style.display = 'none';
+								saveBtn.style.display = '';
+							}
+						}, _('Edit'));
+
+						var saveBtn = E('button', {
+							'class': 'cbi-button cbi-button-apply',
+							'style': 'display:none;',
+							'click': function() {
+								if (!configFilePath) {
+									ui.addNotification(null, E('p', {}, _('Config file path not available')), 'error');
+									return;
+								}
+								ui.showModal(_('Confirm Save'), [
+									E('p', {}, _('Save changes to the config file? A backup will be created first.')),
+									E('div', { 'class': 'right' }, [
+										E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+										E('button', {
+											'class': 'cbi-button cbi-button-apply',
+											'click': function() {
+												ui.hideModal();
+												callSaveFile(configFilePath, editor.textarea.value).then(function(r) {
+													if (r && r.error) {
+														ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + r.error), 'error');
+													} else {
+														ui.addNotification(null, E('p', {}, _('Config file saved successfully')), 'info');
+													}
+												}).catch(function(err) {
+													ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || err)), 'error');
+												});
+											}
+										}, _('Save'))
+									])
+								]);
+							}
+						}, _('Save'));
+
 						ui.showModal(_('Generated Config'), [
-							E('pre', { 'class': 'nm-code-block' }, (result && result.config) || ''),
+							editor.container,
 							E('div', { 'class': 'right' }, [
-								E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
+								editBtn,
+								saveBtn,
+								E('button', {
+									'class': 'btn',
+									'click': function() { ui.hideModal(); }
+								}, _('Close'))
 							])
 						]);
 					});

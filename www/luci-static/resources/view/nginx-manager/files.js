@@ -194,14 +194,6 @@ function formatTime(ts) {
 	return new Date(ts * 1000).toLocaleString();
 }
 
-function escapeHtml(text) {
-	return String(text || '')
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;');
-}
-
 function isCodeFile(path) {
 	path = String(path || '');
 	if (path.indexOf('/etc/config/') === 0 || path.indexOf('/etc/init.d/') === 0) return true;
@@ -268,67 +260,6 @@ function fileIconNode(path, entry) {
 	use.setAttributeNS(xlinkNS, 'xlink:href', href);
 	svg.appendChild(use);
 	return svg;
-}
-
-function codeSyntax(path) {
-	path = String(path || '');
-	var name = String(path || '').split('/').pop() || '';
-	var ext = name.indexOf('.') >= 0 ? name.substring(name.lastIndexOf('.') + 1).toLowerCase() : '';
-	if (name === 'nginx.conf' || ext === 'conf') return 'nginx';
-	if (ext === 'json') return 'json';
-	if (ext === 'css') return 'css';
-	if (ext === 'html' || ext === 'htm' || ext === 'xml') return 'html';
-	if (ext === 'sh' || ext === 'ash' || path.indexOf('/etc/init.d/') === 0) return 'shell';
-	return 'generic';
-}
-
-function splitComment(line, syntax) {
-	var markers = syntax === 'json' ? [] : syntax === 'css' || syntax === 'html' ? [ '<!--', '/*' ] : [ '#', '//' ];
-	var best = -1;
-	markers.forEach(function(marker) {
-		var idx = line.indexOf(marker);
-		if (idx >= 0 && (best < 0 || idx < best)) best = idx;
-	});
-	return best >= 0 ? [ line.substring(0, best), line.substring(best) ] : [ line, '' ];
-}
-
-function highlightCodePart(code, syntax) {
-	var strings = [];
-	code = code.replace(/(&quot;(?:\\.|[^&])*?&quot;|'(?:\\.|[^'])*')/g, function(match) {
-		var token = '\ue000' + String.fromCharCode(0xe001 + strings.length);
-		strings.push('<span class="tok-str">' + match + '</span>');
-		return token;
-	});
-
-	if (syntax === 'json') {
-		code = code.replace(/\b(true|false|null)\b/g, '<span class="tok-key">$1</span>');
-		code = code.replace(/([A-Za-z0-9_"\ue000-\uf8ff]+)(\s*:)/g, '<span class="tok-prop">$1</span>$2');
-	} else if (syntax === 'nginx') {
-		code = code.replace(/\b(server|location|listen|proxy_pass|upstream|return|if|set|include|root|index|ssl_certificate|ssl_certificate_key|ssl_protocols|ssl_ciphers|ssl_prefer_server_ciphers|ssl_session_cache|ssl_session_timeout|ssl_session_tickets|ssl_stapling|ssl_stapling_verify|ssl_trusted_certificate|ssl_buffer_size|add_header|error_page|access_log|error_log|http2|http3|quic|server_name|client_max_body_size|keepalive_timeout|sendfile|tcp_nopush|tcp_nodelay|gzip|server_tokens|resolver|resolver_timeout|proxy_set_header|proxy_redirect|proxy_buffering|proxy_connect_timeout|proxy_read_timeout|proxy_send_timeout|grpc_pass|try_files|autoindex|alias|rewrite)\b/g, '<span class="tok-key">$1</span>');
-	} else if (syntax === 'shell') {
-		code = code.replace(/\b(if|then|else|elif|fi|for|while|do|done|case|esac|function|local|return|export|readonly|in)\b/g, '<span class="tok-key">$1</span>');
-		code = code.replace(/(\$[{(]?[A-Za-z0-9_@#?*!-]+[})]?)/g, '<span class="tok-var">$1</span>');
-	} else if (syntax === 'css') {
-		code = code.replace(/([A-Za-z-]+)(\s*:)/g, '<span class="tok-prop">$1</span>$2');
-		code = code.replace(/(@[A-Za-z-]+)/g, '<span class="tok-key">$1</span>');
-	} else {
-		code = code.replace(/\b(function|return|var|let|const|if|else|for|while|switch|case|break|continue|class|new|try|catch|true|false|null|undefined)\b/g, '<span class="tok-key">$1</span>');
-	}
-
-	code = code.replace(/\b([0-9]+(?:\.[0-9]+)?)([a-zA-Z%]+)?\b/g, '<span class="tok-num">$1$2</span>');
-	code = code.replace(/\ue000([\ue001-\uf8ff])/g, function(_, idx) {
-		return strings[idx.charCodeAt(0) - 0xe001] || '';
-	});
-	return code;
-}
-
-function highlightCode(text, path) {
-	var syntax = codeSyntax(path);
-	return String(text || '').split('\n').map(function(line) {
-		var parts = splitComment(escapeHtml(line), syntax);
-		var code = highlightCodePart(parts[0], syntax);
-		return code + (parts[1] ? '<span class="tok-comment">' + parts[1] + '</span>' : '');
-	}).join('\n') + '\n';
 }
 
 function showError(prefix, err) {
@@ -699,42 +630,31 @@ function openEditor(path, entry) {
 	fs.read(path).then(function(content) {
 		setStatus('');
 		var codeFile = isCodeFile(path);
-		var highlight = null;
-		var textarea = E('textarea', {
-			'id': 'nm-file-editor-textarea',
-			'class': 'cbi-input-textarea' + (codeFile ? ' nm-code-textarea' : ''),
-			'spellcheck': 'false'
-		});
-		textarea.value = content || '';
+		var editorWidget, editorContainer;
 
 		if (codeFile) {
-			highlight = E('pre', {
-				'class': 'nm-code-highlight',
-				'aria-hidden': 'true'
+			editorWidget = utils.createCodeEditor(content || '', path, { readonly: false });
+			editorContainer = editorWidget.container;
+		} else {
+			var textarea = E('textarea', {
+				'id': 'nm-file-editor-textarea',
+				'class': 'cbi-input-textarea',
+				'spellcheck': 'false'
 			});
-
-			var updateHighlight = function() {
-				highlight.innerHTML = highlightCode(textarea.value, path);
-			};
-			var syncHighlightScroll = function() {
-				highlight.scrollTop = textarea.scrollTop;
-				highlight.scrollLeft = textarea.scrollLeft;
-			};
-
-			textarea.addEventListener('input', updateHighlight);
-			textarea.addEventListener('scroll', syncHighlightScroll);
-			updateHighlight();
+			textarea.value = content || '';
+			editorWidget = { textarea: textarea };
+			editorContainer = E('div', { 'class': 'nm-file-editor-modal' }, [textarea]);
 		}
 
 		ui.showModal(_('Edit') + ' - ' + path, [
-			E('div', { 'class': 'nm-file-editor-modal' + (codeFile ? ' nm-code-editor' : '') }, codeFile ? [highlight, textarea] : [textarea]),
+			editorContainer,
 			E('div', { 'class': 'right' }, [
 				E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 				E('button', {
 					'class': 'cbi-button cbi-button-apply',
 					'click': function() {
 						if (blockIfUnsafe(path)) return;
-						fs.write(path, textarea.value).then(function() {
+						fs.write(path, editorWidget.textarea.value).then(function() {
 							ui.hideModal();
 							ui.addNotification(null, E('p', {}, _('File saved successfully')), 'info');
 							loadDirectory(currentPath);
