@@ -491,7 +491,7 @@ function renderRows(tbody) {
 			E('td', { 'class': 'td', 'data-label': _('Size') }, '-'),
 			E('td', { 'class': 'td', 'data-label': _('Perms') }, '-'),
 			E('td', { 'class': 'td', 'data-label': _('Modified') }, '-'),
-			E('td', { 'class': 'td nowrap nm-file-actions', 'data-label': _('Actions') }, [
+			E('td', { 'class': 'td nowrap nm-actions', 'data-label': _('Actions') }, [
 				E('button', {
 					'class': 'cbi-button cbi-button-neutral',
 					'click': function(ev) {
@@ -588,7 +588,7 @@ function renderRows(tbody) {
 				}
 			}, perms),
 			E('td', { 'class': 'td nowrap', 'data-label': _('Modified') }, formatTime(entry.mtime)),
-			E('td', { 'class': 'td nowrap nm-file-actions', 'data-label': _('Actions') }, actions)
+			E('td', { 'class': 'td nowrap nm-actions', 'data-label': _('Actions') }, actions)
 		]);
 		tbody.appendChild(row);
 	});
