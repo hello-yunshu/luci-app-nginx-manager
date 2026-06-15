@@ -74,10 +74,9 @@ button.nm-cert-status-btn {
 .nm-actions {
 	display: flex;
 	flex-wrap: wrap;
-	align-items: center;
+	align-items: stretch;
 	align-content: center;
 }
-
 .nm-actions button,
 .nm-actions .cbi-button {
 	margin: 0.1em 0.25em 0.1em 0 !important;
@@ -425,6 +424,7 @@ button.nm-cert-status-btn {
 
 	.nm-responsive-table .nm-actions {
 		justify-content: flex-start;
+		align-items: stretch;
 	}
 
 	.nm-responsive-table .nm-actions::before {
