@@ -128,6 +128,30 @@ function certStatusClass(status) {
 	}
 }
 
+function certStatusBtnClass(status) {
+	switch (status) {
+		case 'valid': return 'nm-cert-status-valid';
+		case 'expiring': return 'nm-cert-status-expiring';
+		case 'expired': return 'nm-cert-status-expired';
+		case 'missing': return 'nm-cert-status-missing';
+		case 'acme_running': return 'nm-cert-status-running';
+		case 'acme_failed': return 'nm-cert-status-failed';
+		default: return 'nm-cert-status-unknown';
+	}
+}
+
+function certStatusIcon(status) {
+	switch (status) {
+		case 'valid': return '\u2713';
+		case 'expiring': return '\u26A0';
+		case 'expired': return '\u2717';
+		case 'missing': return '\u2717';
+		case 'acme_running': return '\u21BB';
+		case 'acme_failed': return '\u2717';
+		default: return '\u25CF';
+	}
+}
+
 function isAcmeTaskStatus(status) {
 	return status === 'acme_running' || status === 'acme_failed';
 }
@@ -1065,9 +1089,9 @@ return view.extend({
 
 			var statusCell = E('td', { 'data-label': _('Status') });
 			statusCell.appendChild(E('button', {
-				'class': certStatusClass(cert.status) + ' nm-cert-status-badge',
+				'class': 'cbi-button nm-cert-status-btn ' + certStatusBtnClass(cert.status),
 				'click': function() { showCertStatusModal(cert); }
-			}, certStatusLabel(cert.status)));
+			}, certStatusIcon(cert.status) + ' ' + certStatusLabel(cert.status)));
 			row.appendChild(statusCell);
 
 			var actionsCell = E('td', { 'class': 'nm-actions', 'data-label': _('Actions') });

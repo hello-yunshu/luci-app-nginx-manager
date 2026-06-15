@@ -152,8 +152,9 @@ return view.extend({
 				'class': 'cbi-button',
 				'click': function() {
 					callDiffBackup(backup.id).then(function(result) {
+						var diffEditor = utils.createCodeEditor((result && result.diff) || _('No differences'), 'backup.diff', { readonly: true });
 						ui.showModal(_('Compare with Current'), [
-							E('pre', { 'class': 'nm-code-block' }, (result && result.diff) || _('No differences')),
+							diffEditor.container,
 							E('div', { 'class': 'right' }, [
 								E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
 							])
