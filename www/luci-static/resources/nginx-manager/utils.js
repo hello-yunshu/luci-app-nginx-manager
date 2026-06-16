@@ -253,25 +253,49 @@ function createCodeEditor(content, path, options) {
 	var updateHighlight = function() {
 		highlight.innerHTML = highlightCode(textarea.value, path);
 	};
+	// 用 transform 同步滚动：highlight 是 overflow:hidden，scrollTop/scrollLeft 对它无效。
+	// transform 在同一帧内应用，避免 scroll 事件异步导致的跳动。
 	var syncScroll = function() {
-		highlight.scrollTop = textarea.scrollTop;
-		highlight.scrollLeft = textarea.scrollLeft;
+		highlight.style.transform = 'translate(' + (-textarea.scrollLeft) + 'px,' + (-textarea.scrollTop) + 'px)';
+	};
+
+	// 运行时从 textarea 主题样式检测排版与盒模型，同步给 highlight 层。
+	// textarea 的 color 是 transparent（隐藏文字），不能直接同步，highlight 用容器继承色。
+	var syncStyle = function() {
+		var bs = getComputedStyle(textarea);
+		highlight.style.borderTopWidth = bs.borderTopWidth;
+		highlight.style.borderRightWidth = bs.borderRightWidth;
+		highlight.style.borderBottomWidth = bs.borderBottomWidth;
+		highlight.style.borderLeftWidth = bs.borderLeftWidth;
+		highlight.style.borderStyle = 'solid';
+		highlight.style.borderColor = 'transparent';
+		highlight.style.paddingTop = bs.paddingTop;
+		highlight.style.paddingRight = bs.paddingRight;
+		highlight.style.paddingBottom = bs.paddingBottom;
+		highlight.style.paddingLeft = bs.paddingLeft;
+		highlight.style.fontFamily = bs.fontFamily;
+		highlight.style.fontSize = bs.fontSize;
+		highlight.style.lineHeight = bs.lineHeight;
+		highlight.style.tabSize = bs.tabSize;
+		highlight.style.color = '';
 	};
 
 	textarea.addEventListener('input', updateHighlight);
-	textarea.addEventListener('scroll', syncScroll);
+	textarea.addEventListener('scroll', syncScroll, { passive: true });
 	updateHighlight();
+	syncScroll();
+	syncStyle();
 
-	var container = E('div', { 'class': 'nm-code-editor cbi-input-textarea' }, [highlight, textarea]);
+	var container = E('div', { 'class': 'nm-code-editor' }, [highlight, textarea]);
 
 	function setReadonly(ro) {
 		textarea.readOnly = ro;
 		if (ro) {
 			textarea.classList.add('nm-code-readonly');
-			container.classList.remove('nm-code-highlight-editing');
+			textarea.classList.remove('nm-code-highlight-editing');
 		} else {
 			textarea.classList.remove('nm-code-readonly');
-			container.classList.add('nm-code-highlight-editing');
+			textarea.classList.add('nm-code-highlight-editing');
 		}
 	}
 
@@ -288,7 +312,8 @@ function createCodeEditor(content, path, options) {
 		highlight: highlight,
 		setContent: setContent,
 		setReadonly: setReadonly,
-		updateHighlight: updateHighlight
+		updateHighlight: updateHighlight,
+		syncStyle: syncStyle
 	};
 }
 
