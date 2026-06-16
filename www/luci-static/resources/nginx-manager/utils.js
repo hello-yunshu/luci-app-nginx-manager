@@ -260,7 +260,8 @@ function createCodeEditor(content, path, options) {
 	};
 
 	// 运行时从 textarea 主题样式检测排版与盒模型，同步给 highlight 层。
-	// textarea 的 color 是 transparent（隐藏文字），不能直接同步，highlight 用容器继承色。
+	// textarea 的 color 是 transparent（隐藏文字），不能直接同步。
+	// highlight 用主题文字色：优先 --text-color-medium，回退 --subtext-color，再回退 #333。
 	var syncStyle = function() {
 		var bs = getComputedStyle(textarea);
 		highlight.style.borderTopWidth = bs.borderTopWidth;
@@ -277,7 +278,8 @@ function createCodeEditor(content, path, options) {
 		highlight.style.fontSize = bs.fontSize;
 		highlight.style.lineHeight = bs.lineHeight;
 		highlight.style.tabSize = bs.tabSize;
-		highlight.style.color = '';
+		// 用 CSS 变量链确保文字色可见，不依赖 inherit（避免继承到透明色）
+		highlight.style.color = 'var(--text-color-medium, var(--subtext-color, var(--text-color, #333)))';
 	};
 
 	textarea.addEventListener('input', updateHighlight);
