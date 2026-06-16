@@ -670,49 +670,62 @@ button.nm-cert-status-btn {
 	resize: vertical;
 }
 
+/*
+ * 代码编辑器：排版与盒模型全部由 JS 运行时从 textarea 主题样式检测并同步，不硬编码。
+ * 高亮层在 textarea 下方（z-index:0），textarea 透明文字覆盖其上（z-index:1）。
+ * highlight 层用透明 border 占位对齐 textarea 的主题 border，避免字符错位。
+ */
 .nm-code-editor {
 	position: relative;
 	min-height: 420px;
-	border-radius: var(--border-radius, 3px);
+	width: 100%;
+	box-sizing: border-box;
+	overflow: hidden;
+	padding: 0;
+	margin: 0;
 }
 
 .nm-code-editor .nm-code-highlight,
 .nm-code-editor .nm-code-textarea {
+	position: absolute;
+	top: 0;
+	left: 0;
 	width: 100%;
-	min-height: 420px;
+	height: 100%;
 	box-sizing: border-box;
-	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-	font-size: 13px;
-	line-height: 1.5;
-	tab-size: 4;
-	padding: 10px;
 	margin: 0;
 	white-space: pre;
-	overflow: auto;
+	word-wrap: normal;
+	overflow-wrap: normal;
+	background: transparent;
 }
 
 .nm-code-editor .nm-code-highlight {
-	position: absolute;
-	inset: 0;
 	pointer-events: none;
-	background: var(--cbi-background, color-mix(in srgb, var(--main-color, #337ab7) 3%, #fff));
-	color: var(--text-color, #333);
+	overflow: hidden;
+	color: inherit;
+	border-style: solid;
+	border-color: transparent;
+	z-index: 0;
 }
 
 .nm-code-editor .nm-code-textarea {
-	position: relative;
-	z-index: 1;
-	background: transparent;
+	overflow: auto;
+	resize: none;
 	color: transparent;
-	caret-color: var(--text-color, var(--cbi-color, #333));
-	border: none;
+	-webkit-text-fill-color: transparent;
+	caret-color: var(--main-color, #337ab7);
 	outline: none;
-	resize: vertical;
-	box-shadow: none;
+	z-index: 1;
 }
 
 .nm-code-editor .nm-code-textarea::selection {
 	background: color-mix(in srgb, var(--main-color, #337ab7) 28%, transparent);
+	-webkit-text-fill-color: var(--main-color, #337ab7);
+}
+
+.nm-code-editor .nm-code-textarea::-webkit-scrollbar {
+	display: none;
 }
 
 .nm-code-editor .nm-code-readonly {
@@ -720,10 +733,9 @@ button.nm-cert-status-btn {
 	cursor: default;
 }
 
-.nm-code-editor.nm-code-highlight-editing {
-	border: 1.5px solid color-mix(in srgb, var(--warning-color, #c68014) 60%, var(--border-color, #ccc));
-	border-radius: var(--border-radius, 3px);
-	box-shadow: 0 0 0 0.15rem color-mix(in srgb, var(--warning-color, #c68014) 25%, transparent);
+.nm-code-textarea.nm-code-highlight-editing {
+	border-color: var(--main-color, #337ab7);
+	box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--main-color, #337ab7) 30%, transparent);
 }
 
 .nm-code-highlight .tok-comment { color: #6b7280; font-style: italic; }
@@ -806,8 +818,7 @@ button.nm-cert-status-btn {
 	}
 
 	.nm-code-editor .nm-code-highlight {
-		background: var(--cbi-background, color-mix(in srgb, #eab308 4%, #1f2933));
-		color: var(--text-color, #dbe2ea);
+		color: inherit;
 	}
 
 	.nm-code-highlight .tok-comment { color: #8b949e; }
