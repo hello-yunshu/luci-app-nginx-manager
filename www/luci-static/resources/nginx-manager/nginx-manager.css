@@ -703,7 +703,7 @@ button.nm-cert-status-btn {
 .nm-code-editor .nm-code-highlight {
 	pointer-events: none;
 	overflow: hidden;
-	color: inherit;
+	color: var(--text-color-medium, var(--subtext-color, var(--text-color, #333)));
 	border-style: solid;
 	border-color: transparent;
 	z-index: 0;
@@ -818,7 +818,7 @@ button.nm-cert-status-btn {
 	}
 
 	.nm-code-editor .nm-code-highlight {
-		color: inherit;
+		color: var(--text-color-medium, var(--subtext-color, var(--text-color, #dbe2ea)));
 	}
 
 	.nm-code-highlight .tok-comment { color: #8b949e; }
