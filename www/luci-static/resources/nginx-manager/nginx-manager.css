@@ -694,15 +694,15 @@ button.nm-cert-status-btn {
 	height: 100%;
 	box-sizing: border-box;
 	margin: 0;
-	white-space: pre;
-	word-wrap: normal;
-	overflow-wrap: normal;
+	white-space: pre !important;
+	word-wrap: normal !important;
+	overflow-wrap: normal !important;
 	background: transparent;
 }
 
 .nm-code-editor .nm-code-highlight {
 	pointer-events: none;
-	overflow: hidden;
+	overflow: hidden !important;
 	color: var(--text-color-medium, var(--subtext-color, var(--text-color, #333)));
 	border-style: solid;
 	border-color: transparent;
@@ -740,10 +740,13 @@ button.nm-cert-status-btn {
 
 .nm-code-highlight .tok-comment { color: #6b7280; font-style: italic; }
 .nm-code-highlight .tok-key { color: #4f46e5; font-weight: 600; }
-.nm-code-highlight .tok-str { color: #0f766e; }
+.nm-code-highlight .tok-string { color: #0f766e; }
 .nm-code-highlight .tok-num { color: #b45309; }
 .nm-code-highlight .tok-var { color: #7c3aed; }
 .nm-code-highlight .tok-prop { color: #2563eb; }
+.nm-code-highlight .tok-bool { color: #d97706; font-weight: 500; }
+.nm-code-highlight .tok-punct { color: #6b7280; }
+.nm-code-highlight .tok-op { color: #6b7280; }
 
 .nm-perm-table {
 	border-collapse: collapse;
@@ -823,10 +826,13 @@ button.nm-cert-status-btn {
 
 	.nm-code-highlight .tok-comment { color: #8b949e; }
 	.nm-code-highlight .tok-key { color: #a5b4fc; }
-	.nm-code-highlight .tok-str { color: #7dd3c7; }
+	.nm-code-highlight .tok-string { color: #7dd3c7; }
 	.nm-code-highlight .tok-num { color: #f6c177; }
 	.nm-code-highlight .tok-var { color: #c4b5fd; }
 	.nm-code-highlight .tok-prop { color: #93c5fd; }
+	.nm-code-highlight .tok-bool { color: #fbbf24; font-weight: 500; }
+	.nm-code-highlight .tok-punct { color: #8b949e; }
+	.nm-code-highlight .tok-op { color: #8b949e; }
 }
 
 @media (max-width: 1024px) {
