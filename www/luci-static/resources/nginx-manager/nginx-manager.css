@@ -795,7 +795,8 @@ body.nm-dark .nm-log-area.is-error {
 
 /* JS 检测到的 LuCI 实际主题（优先级高于系统媒体查询） */
 .nm-code-editor.nm-code-dark,
-body.nm-dark .nm-code-editor {
+body.nm-dark .nm-code-editor,
+[data-darkmode="true"] .nm-code-editor {
 	--nm-code-bg: #191724;
 	--nm-code-surface: #1f1d2e;
 	--nm-code-overlay: #26233a;
@@ -834,7 +835,7 @@ body.nm-dark .nm-code-editor {
 	background: var(--nm-code-bg);
 	color: var(--nm-code-fg);
 	border: 1px solid var(--nm-code-border);
-	border-radius: 6px;
+	border-radius: inherit;
 	color-scheme: var(--nm-code-color-scheme);
 }
 
@@ -875,6 +876,13 @@ body.nm-dark .nm-code-editor {
 	z-index: 1;
 }
 
+.nm-code-editor textarea:focus,
+.nm-code-editor .nm-code-textarea:focus {
+	outline: none;
+	border-color: transparent;
+	box-shadow: none;
+}
+
 .nm-code-editor .nm-code-textarea::selection {
 	background: var(--nm-code-selection-bg);
 	-webkit-text-fill-color: var(--nm-code-selection-fg);
@@ -890,20 +898,58 @@ body.nm-dark .nm-code-editor {
 	cursor: default;
 }
 
-.nm-code-textarea.nm-code-highlight-editing {
-	border-color: var(--nm-code-keyword);
-	box-shadow: 0 0 0 0.18rem rgba(144, 122, 169, 0.20);
+.nm-code-editor:focus-within {
+	border-color: var(--nm-code-type);
+	box-shadow: 0 0 0 0.18rem rgba(41, 150, 178, 0.20);
 }
 
 @media (prefers-color-scheme: dark) {
-	.nm-code-textarea.nm-code-highlight-editing {
-		box-shadow: 0 0 0 0.18rem rgba(196, 167, 231, 0.20);
+	.nm-code-editor:focus-within {
+		box-shadow: 0 0 0 0.18rem rgba(156, 207, 216, 0.20);
 	}
 }
 
-.nm-code-dark .nm-code-textarea.nm-code-highlight-editing,
-body.nm-dark .nm-code-textarea.nm-code-highlight-editing {
-	box-shadow: 0 0 0 0.18rem rgba(196, 167, 231, 0.20);
+.nm-code-dark .nm-code-editor:focus-within,
+body.nm-dark .nm-code-editor:focus-within,
+[data-darkmode="true"] .nm-code-editor:focus-within {
+	box-shadow: 0 0 0 0.18rem rgba(156, 207, 216, 0.20);
+}
+
+/* 明确浅色主题覆盖系统暗色偏好：主题白 + 系统黑时不冲突 */
+.nm-code-editor.nm-code-light,
+body.nm-light .nm-code-editor,
+[data-darkmode="false"] .nm-code-editor {
+	--nm-code-bg: #faf4ed;
+	--nm-code-surface: #fffaf3;
+	--nm-code-overlay: #f2e9e1;
+
+	--nm-code-fg: #575279;
+	--nm-code-muted: #9893a5;
+	--nm-code-subtle: #797593;
+
+	--nm-code-keyword: #907aa9;
+	--nm-code-string: #ea9d34;
+	--nm-code-function: #b4637a;
+	--nm-code-type: #2996b2;
+	--nm-code-number: #d7827e;
+	--nm-code-operator: #286983;
+
+	--nm-code-error: #d7827e;
+	--nm-code-warning: #ea9d34;
+	--nm-code-info: #2996b2;
+	--nm-code-success: #2996b2;
+
+	--nm-code-border: rgba(87, 82, 121, 0.15);
+	--nm-code-caret: #b4637a;
+	--nm-code-selection-bg: rgba(180, 99, 122, 0.14);
+	--nm-code-selection-fg: #575279;
+	--nm-code-color-scheme: light;
+}
+
+.nm-code-light .nm-code-editor:focus-within,
+body.nm-light .nm-code-editor:focus-within,
+[data-darkmode="false"] .nm-code-editor:focus-within {
+	box-shadow: 0 0 0 0.18rem rgba(41, 150, 178, 0.20);
 }
 
 /* === Token 配色：统一玫瑰松木夜色，所有语言共用一套 === */

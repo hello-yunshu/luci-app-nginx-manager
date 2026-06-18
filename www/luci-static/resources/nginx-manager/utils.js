@@ -6,11 +6,19 @@
 
 var FOOTER_VERSION = '@PKG_VERSION@';
 
-// 检测 LuCI 当前主题明暗：读取页面实际背景色亮度判断
-// 优先级：1) LuCI CSS 变量 --background-color  2) body 计算背景色  3) prefers-color-scheme
+// 检测 LuCI 当前主题明暗
+// 优先级：1) 主题 data-darkmode 属性  2) LuCI CSS 变量 --background-color
+//         3) body 计算背景色  4) prefers-color-scheme
 function detectLightMode() {
 	try {
 		var root = document.documentElement;
+		var body = document.body;
+		var darkAttr = (root.dataset && root.dataset.darkmode) || (body.dataset && body.dataset.darkmode);
+		if (darkAttr === 'true')
+			return false;
+		if (darkAttr === 'false')
+			return true;
+
 		var bgVar = getComputedStyle(root).getPropertyValue('--background-color').trim();
 		if (bgVar) {
 			var tmp = document.createElement('div');
@@ -777,10 +785,8 @@ function createCodeEditor(content, path, options) {
 		textarea.readOnly = ro;
 		if (ro) {
 			textarea.classList.add('nm-code-readonly');
-			textarea.classList.remove('nm-code-highlight-editing');
 		} else {
 			textarea.classList.remove('nm-code-readonly');
-			textarea.classList.add('nm-code-highlight-editing');
 		}
 	}
 
