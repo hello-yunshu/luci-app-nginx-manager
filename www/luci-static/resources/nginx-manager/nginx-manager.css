@@ -206,6 +206,29 @@ button.nm-cert-status-btn {
 	}
 }
 
+body.nm-dark .nm-code-block {
+	background: #191724;
+	color: #e0def4;
+	border-color: rgba(224, 222, 244, 0.12);
+	color-scheme: dark;
+}
+
+body.nm-dark .nm-log-area {
+	background: #191724;
+	color: #e0def4;
+	border-color: rgba(224, 222, 244, 0.12);
+	color-scheme: dark;
+}
+
+body.nm-dark .nm-log-area.is-empty,
+body.nm-dark .nm-log-area.is-loading {
+	color: #908caa;
+}
+
+body.nm-dark .nm-log-area.is-error {
+	color: #eb6f92;
+}
+
 /* === Value Full Width (for modals) === */
 .nm-value-full .cbi-value-title { float: none; width: auto; }
 .nm-value-full .cbi-value-field { width: 100%; }
@@ -739,6 +762,7 @@ button.nm-cert-status-btn {
 }
 
 /* === Rose Pine Night: 深色主题变量 === */
+/* 系统暗色主题回退 */
 @media (prefers-color-scheme: dark) {
 	.nm-code-editor {
 		--nm-code-bg: #191724;
@@ -767,6 +791,36 @@ button.nm-cert-status-btn {
 		--nm-code-selection-fg: #e0def4;
 		--nm-code-color-scheme: dark;
 	}
+}
+
+/* JS 检测到的 LuCI 实际主题（优先级高于系统媒体查询） */
+.nm-code-editor.nm-code-dark,
+body.nm-dark .nm-code-editor {
+	--nm-code-bg: #191724;
+	--nm-code-surface: #1f1d2e;
+	--nm-code-overlay: #26233a;
+
+	--nm-code-fg: #e0def4;
+	--nm-code-muted: #908caa;
+	--nm-code-subtle: #6e6a86;
+
+	--nm-code-keyword: #c4a7e7;
+	--nm-code-string: #f6c177;
+	--nm-code-function: #ebbcba;
+	--nm-code-type: #9ccfd8;
+	--nm-code-number: #eb6f92;
+	--nm-code-operator: #31748f;
+
+	--nm-code-error: #eb6f92;
+	--nm-code-warning: #f6c177;
+	--nm-code-info: #9ccfd8;
+	--nm-code-success: #9ccfd8;
+
+	--nm-code-border: rgba(224, 222, 244, 0.12);
+	--nm-code-caret: #ebbcba;
+	--nm-code-selection-bg: rgba(235, 188, 186, 0.22);
+	--nm-code-selection-fg: #e0def4;
+	--nm-code-color-scheme: dark;
 }
 
 .nm-code-editor {
@@ -845,6 +899,11 @@ button.nm-cert-status-btn {
 	.nm-code-textarea.nm-code-highlight-editing {
 		box-shadow: 0 0 0 0.18rem rgba(196, 167, 231, 0.20);
 	}
+}
+
+.nm-code-dark .nm-code-textarea.nm-code-highlight-editing,
+body.nm-dark .nm-code-textarea.nm-code-highlight-editing {
+	box-shadow: 0 0 0 0.18rem rgba(196, 167, 231, 0.20);
 }
 
 /* === Token 配色：统一玫瑰松木夜色，所有语言共用一套 === */
