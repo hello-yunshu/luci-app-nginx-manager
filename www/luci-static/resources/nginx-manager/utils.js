@@ -170,7 +170,7 @@ function codeSyntax(path) {
 	var name = path.split('/').pop() || '';
 	var ext = name.indexOf('.') >= 0 ? name.substring(name.lastIndexOf('.') + 1).toLowerCase() : '';
 	// Nginx config
-	if (name === 'nginx.conf' || name === 'nginx' || ext === 'conf' || ext === 'config') return 'nginx';
+	if (name === 'nginx.conf' || name === 'nginx' || name === 'uci.conf.template' || ext === 'conf' || ext === 'config') return 'nginx';
 	// JSON
 	if (ext === 'json') return 'json';
 	// CSS
@@ -223,7 +223,7 @@ function codeSyntax(path) {
 var HIGHLIGHT_RULES = {
 	nginx: [
 		// Comment: # to end of line (must be preceded by whitespace/start or { ; })
-		{ re: /(^|[\s{};])#[^\n]*/g, type: 'comment', lookbehind: true },
+		{ re: /(^|[\s{};])#[^\n]*/g, type: 'comment', lookbehind: true, overlap: true },
 		// String: double-quoted (with backslash escapes)
 		{ re: /"(?:[^"\\]|\\.)*"/g, type: 'string' },
 		// String: single-quoted (with backslash escapes)
@@ -251,7 +251,7 @@ var HIGHLIGHT_RULES = {
 	],
 	shell: [
 		// Comment: # to end of line
-		{ re: /#[^\n]*/g, type: 'comment' },
+		{ re: /#[^\n]*/g, type: 'comment', overlap: true },
 		// String: double-quoted
 		{ re: /"(?:[^"\\]|\\.)*"/g, type: 'string' },
 		// String: single-quoted
@@ -265,7 +265,7 @@ var HIGHLIGHT_RULES = {
 	],
 	css: [
 		// Block comment
-		{ re: /\/\*[\s\S]*?\*\//g, type: 'comment' },
+		{ re: /\/\*[\s\S]*?\*\//g, type: 'comment', overlap: true },
 		// String
 		{ re: /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g, type: 'string' },
 		// At-rule
@@ -279,7 +279,7 @@ var HIGHLIGHT_RULES = {
 	],
 	html: [
 		// Comment
-		{ re: /<!--[\s\S]*?-->/g, type: 'comment' },
+		{ re: /<!--[\s\S]*?-->/g, type: 'comment', overlap: true },
 		// Closing tag
 		{ re: /<\/[A-Za-z][A-Za-z0-9]*/g, type: 'key' },
 		// Opening tag
@@ -296,18 +296,18 @@ var HIGHLIGHT_RULES = {
 		{ re: /^diff\s+--git\s+[^\n]*/gm, type: 'key' },
 		// Hunk header
 		{ re: /^@@[^@]+@@/gm, type: 'prop' },
+		// File markers
+		{ re: /^(---|\+\+\+|index)\s+[^\n]*/gm, type: 'key' },
 		// Added line
 		{ re: /^\+[^\n]*/gm, type: 'string' },
 		// Removed line
-		{ re: /^-[^\n]*/gm, type: 'var' },
-		// File markers
-		{ re: /^(---|\+\+\+|index)\s+[^\n]*/gm, type: 'key' }
+		{ re: /^-[^\n]*/gm, type: 'var' }
 	],
 	javascript: [
 		// Line comment
-		{ re: /\/\/[^\n]*/g, type: 'comment' },
+		{ re: /\/\/[^\n]*/g, type: 'comment', overlap: true },
 		// Block comment
-		{ re: /\/\*[\s\S]*?\*\//g, type: 'comment' },
+		{ re: /\/\*[\s\S]*?\*\//g, type: 'comment', overlap: true },
 		// String
 		{ re: /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`/g, type: 'string' },
 		// Keyword
@@ -321,9 +321,9 @@ var HIGHLIGHT_RULES = {
 	],
 	typescript: [
 		// Line comment
-		{ re: /\/\/[^\n]*/g, type: 'comment' },
+		{ re: /\/\/[^\n]*/g, type: 'comment', overlap: true },
 		// Block comment
-		{ re: /\/\*[\s\S]*?\*\//g, type: 'comment' },
+		{ re: /\/\*[\s\S]*?\*\//g, type: 'comment', overlap: true },
 		// String
 		{ re: /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`/g, type: 'string' },
 		// Keyword (JS + TS-specific)
@@ -339,7 +339,7 @@ var HIGHLIGHT_RULES = {
 	],
 	yaml: [
 		// Comment: # to end of line
-		{ re: /#[^\n]*/g, type: 'comment' },
+		{ re: /#[^\n]*/g, type: 'comment', overlap: true },
 		// String: double-quoted
 		{ re: /"(?:[^"\\]|\\.)*"/g, type: 'string' },
 		// String: single-quoted
@@ -357,7 +357,7 @@ var HIGHLIGHT_RULES = {
 	],
 	toml: [
 		// Comment: # to end of line
-		{ re: /#[^\n]*/g, type: 'comment' },
+		{ re: /#[^\n]*/g, type: 'comment', overlap: true },
 		// String: double-quoted (with escapes)
 		{ re: /"(?:[^"\\]|\\.)*"/g, type: 'string' },
 		// String: single-quoted (literal)
@@ -377,7 +377,7 @@ var HIGHLIGHT_RULES = {
 	],
 	ini: [
 		// Comment: # or ; to end of line
-		{ re: /[;#][^\n]*/g, type: 'comment' },
+		{ re: /[;#][^\n]*/g, type: 'comment', overlap: true },
 		// Section header: [section]
 		{ re: /^\s*\[[^\]]+\]/gm, type: 'key' },
 		// Key: word before = sign
@@ -393,9 +393,9 @@ var HIGHLIGHT_RULES = {
 	],
 	lua: [
 		// Block comment: --[[ ... ]]
-		{ re: /--\[\[[\s\S]*?\]\]/g, type: 'comment' },
+		{ re: /--\[\[[\s\S]*?\]\]/g, type: 'comment', overlap: true },
 		// Line comment: -- to end of line
-		{ re: /--[^\n]*/g, type: 'comment' },
+		{ re: /--[^\n]*/g, type: 'comment', overlap: true },
 		// String: double-quoted
 		{ re: /"(?:[^"\\]|\\.)*"/g, type: 'string' },
 		// String: single-quoted
@@ -413,7 +413,7 @@ var HIGHLIGHT_RULES = {
 		// Block comment / docstring: triple-quoted
 		{ re: /"""[\s\S]*?"""|'''[\s\S]*?'''/g, type: 'string' },
 		// Line comment
-		{ re: /#[^\n]*/g, type: 'comment' },
+		{ re: /#[^\n]*/g, type: 'comment', overlap: true },
 		// String: double-quoted
 		{ re: /"(?:[^"\\]|\\.)*"/g, type: 'string' },
 		// String: single-quoted
@@ -431,9 +431,9 @@ var HIGHLIGHT_RULES = {
 	],
 	php: [
 		// Line comment: // and #
-		{ re: /(?:\/\/|#)[^\n]*/g, type: 'comment' },
+		{ re: /(?:\/\/|#)[^\n]*/g, type: 'comment', overlap: true },
 		// Block comment
-		{ re: /\/\*[\s\S]*?\*\//g, type: 'comment' },
+		{ re: /\/\*[\s\S]*?\*\//g, type: 'comment', overlap: true },
 		// String: double-quoted
 		{ re: /"(?:[^"\\]|\\.)*"/g, type: 'string' },
 		// String: single-quoted
@@ -449,9 +449,9 @@ var HIGHLIGHT_RULES = {
 	],
 	ruby: [
 		// Line comment
-		{ re: /#[^\n]*/g, type: 'comment' },
+		{ re: /#[^\n]*/g, type: 'comment', overlap: true },
 		// Block comment: =begin ... =end
-		{ re: /^=begin[\s\S]*?^=end/gm, type: 'comment' },
+		{ re: /^=begin[\s\S]*?^=end/gm, type: 'comment', overlap: true },
 		// String: double-quoted
 		{ re: /"(?:[^"\\]|\\.)*"/g, type: 'string' },
 		// String: single-quoted
@@ -471,9 +471,9 @@ var HIGHLIGHT_RULES = {
 	],
 	go: [
 		// Line comment
-		{ re: /\/\/[^\n]*/g, type: 'comment' },
+		{ re: /\/\/[^\n]*/g, type: 'comment', overlap: true },
 		// Block comment
-		{ re: /\/\*[\s\S]*?\*\//g, type: 'comment' },
+		{ re: /\/\*[\s\S]*?\*\//g, type: 'comment', overlap: true },
 		// String: double-quoted (interpreted)
 		{ re: /"(?:[^"\\]|\\.)*"/g, type: 'string' },
 		// String: backtick (raw)
@@ -489,9 +489,9 @@ var HIGHLIGHT_RULES = {
 	],
 	c: [
 		// Line comment
-		{ re: /\/\/[^\n]*/g, type: 'comment' },
+		{ re: /\/\/[^\n]*/g, type: 'comment', overlap: true },
 		// Block comment
-		{ re: /\/\*[\s\S]*?\*\//g, type: 'comment' },
+		{ re: /\/\*[\s\S]*?\*\//g, type: 'comment', overlap: true },
 		// Preprocessor directive
 		{ re: /^#[ \t]*(?:include|define|undef|if|ifdef|ifndef|else|elif|endif|pragma|error|warning|line)[^\n]*/gm, type: 'prop' },
 		// String
@@ -507,9 +507,9 @@ var HIGHLIGHT_RULES = {
 	],
 	cpp: [
 		// Line comment
-		{ re: /\/\/[^\n]*/g, type: 'comment' },
+		{ re: /\/\/[^\n]*/g, type: 'comment', overlap: true },
 		// Block comment
-		{ re: /\/\*[\s\S]*?\*\//g, type: 'comment' },
+		{ re: /\/\*[\s\S]*?\*\//g, type: 'comment', overlap: true },
 		// Preprocessor directive
 		{ re: /^#[ \t]*(?:include|define|undef|if|ifdef|ifndef|else|elif|endif|pragma|error|warning|line)[^\n]*/gm, type: 'prop' },
 		// String
@@ -523,7 +523,7 @@ var HIGHLIGHT_RULES = {
 	],
 	makefile: [
 		// Comment: # to end of line
-		{ re: /#[^\n]*/g, type: 'comment' },
+		{ re: /#[^\n]*/g, type: 'comment', overlap: true },
 		// Target: line-start identifier followed by colon
 		{ re: /^[A-Za-z_][\w.-]*(?=\s*:)/gm, type: 'key' },
 		// Variable assignment: name = value or name := value
@@ -554,9 +554,9 @@ var HIGHLIGHT_RULES = {
 	],
 	generic: [
 		// Line comment (// and #)
-		{ re: /(?:\/\/|#)[^\n]*/g, type: 'comment' },
+		{ re: /(?:\/\/|#)[^\n]*/g, type: 'comment', overlap: true },
 		// Block comment
-		{ re: /\/\*[\s\S]*?\*\//g, type: 'comment' },
+		{ re: /\/\*[\s\S]*?\*\//g, type: 'comment', overlap: true },
 		// String
 		{ re: /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g, type: 'string' },
 		// Keyword
@@ -602,8 +602,11 @@ function highlightCode(text, path) {
 				}
 			}
 			if (content.length > 0) {
-				tokens.push({ start: start, end: start + content.length, type: rule.type, content: content });
+				tokens.push({ start: start, end: start + content.length, type: rule.type, content: content, priority: ri });
 			}
+			// A comment marker inside a string may otherwise consume a later real comment.
+			if (rule.overlap)
+				regex.lastIndex = match.index + 1;
 		}
 	}
 
@@ -611,7 +614,7 @@ function highlightCode(text, path) {
 	tokens.sort(function(a, b) {
 		if (a.start !== b.start) return a.start - b.start;
 		if (a.end !== b.end) return b.end - a.end; // longer match wins
-		return 0;
+		return a.priority - b.priority;
 	});
 
 	// Remove overlapping tokens (keep the first/longest)
@@ -668,14 +671,16 @@ function createCodeEditor(content, path, options) {
 		'class': 'nm-code-highlight',
 		'aria-hidden': 'true'
 	});
+	var container = E('div', { 'class': 'nm-code-editor' }, [highlight, textarea]);
 
 	var updateHighlight = function() {
 		highlight.innerHTML = highlightCode(textarea.value, path);
 	};
-	// 用 transform 同步滚动：highlight 是 overflow:hidden，scrollTop/scrollLeft 对它无效。
-	// transform 在同一帧内应用，避免 scroll 事件异步导致的跳动。
+	// 高亮层保留自己的滚动区域，并与 textarea 同步。
+	// 不能平移固定尺寸的 pre：超出其盒子的内容会先被 overflow 裁掉，滚动后仍不可见。
 	var syncScroll = function() {
-		highlight.style.transform = 'translate(' + (-textarea.scrollLeft) + 'px,' + (-textarea.scrollTop) + 'px)';
+		highlight.scrollLeft = textarea.scrollLeft;
+		highlight.scrollTop = textarea.scrollTop;
 	};
 
 	// 运行时从 textarea 主题样式检测排版与盒模型，同步给 highlight 层。
@@ -710,8 +715,10 @@ function createCodeEditor(content, path, options) {
 	updateHighlight();
 	syncScroll();
 	syncStyle();
-
-	var container = E('div', { 'class': 'nm-code-editor' }, [highlight, textarea]);
+	requestAnimationFrame(function() {
+		syncStyle();
+		syncScroll();
+	});
 
 	function setReadonly(ro) {
 		textarea.readOnly = ro;
