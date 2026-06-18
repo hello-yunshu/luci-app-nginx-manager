@@ -141,10 +141,10 @@ button.nm-cert-status-btn {
 
 /* === Code Block (for modals) === */
 .nm-code-block {
-	background: inherit;
-	color: inherit;
-	border: 1px solid var(--border-color, transparent);
-	border-radius: 4px;
+	background: #191724;
+	color: #e0def4;
+	border: 1px solid rgba(224, 222, 244, 0.12);
+	border-radius: 6px;
 	padding: 12px;
 	font-family: monospace;
 	font-size: 0.85rem;
@@ -152,6 +152,7 @@ button.nm-cert-status-btn {
 	word-break: break-all;
 	max-height: 400px;
 	overflow-y: auto;
+	color-scheme: dark;
 }
 
 /* === Log Area === */
@@ -162,16 +163,21 @@ button.nm-cert-status-btn {
 	font-family: monospace;
 	white-space: pre;
 	tab-size: 4;
+	background: #191724;
+	color: #e0def4;
+	border: 1px solid rgba(224, 222, 244, 0.12);
+	border-radius: 6px;
+	color-scheme: dark;
 }
 
 .nm-log-area.is-empty,
 .nm-log-area.is-loading {
-	color: var(--subtext-color);
+	color: #908caa;
 	font-style: italic;
 }
 
 .nm-log-area.is-error {
-	color: var(--danger-color);
+	color: #eb6f92;
 }
 
 /* === Value Full Width (for modals) === */
@@ -205,7 +211,6 @@ button.nm-cert-status-btn {
 	min-height: 200px;
 	box-sizing: border-box;
 }
-
 .nm-danger-file .cbi-button {
 	margin-top: 0.5em;
 }
@@ -674,7 +679,33 @@ button.nm-cert-status-btn {
  * 代码编辑器：排版与盒模型全部由 JS 运行时从 textarea 主题样式检测并同步，不硬编码。
  * 高亮层在 textarea 下方（z-index:0），textarea 透明文字覆盖其上（z-index:1）。
  * highlight 层用透明 border 占位对齐 textarea 的主题 border，避免字符错位。
+ *
+ * 主题：玫瑰松木夜色（Rose Pine Night）— 固定深色，不随 LuCI 明暗主题改变。
  */
+
+/* === Rose Pine Night: 集中定义 CSS 变量 === */
+.nm-code-editor {
+	--nm-code-bg: #191724;
+	--nm-code-surface: #1f1d2e;
+	--nm-code-overlay: #26233a;
+
+	--nm-code-fg: #e0def4;
+	--nm-code-muted: #908caa;
+	--nm-code-subtle: #6e6a86;
+
+	--nm-code-keyword: #c4a7e7;
+	--nm-code-string: #f6c177;
+	--nm-code-function: #ebbcba;
+	--nm-code-type: #9ccfd8;
+	--nm-code-number: #eb6f92;
+	--nm-code-operator: #31748f;
+
+	--nm-code-error: #eb6f92;
+	--nm-code-warning: #f6c177;
+	--nm-code-info: #9ccfd8;
+	--nm-code-success: #9ccfd8;
+}
+
 .nm-code-editor {
 	position: relative;
 	min-height: 420px;
@@ -683,6 +714,11 @@ button.nm-cert-status-btn {
 	overflow: hidden;
 	padding: 0;
 	margin: 0;
+	background: var(--nm-code-bg);
+	color: var(--nm-code-fg);
+	border: 1px solid rgba(224, 222, 244, 0.12);
+	border-radius: 6px;
+	color-scheme: dark;
 }
 
 .nm-code-editor .nm-code-highlight,
@@ -705,7 +741,7 @@ button.nm-cert-status-btn {
 	pointer-events: none;
 	overflow: auto !important;
 	scrollbar-width: none;
-	color: var(--text-color-medium, var(--subtext-color, var(--text-color, #333)));
+	color: var(--nm-code-fg);
 	border-style: solid;
 	border-color: transparent;
 	z-index: 0;
@@ -717,14 +753,14 @@ button.nm-cert-status-btn {
 	resize: none;
 	color: transparent;
 	-webkit-text-fill-color: transparent;
-	caret-color: var(--main-color, #337ab7);
+	caret-color: #ebbcba;
 	outline: none;
 	z-index: 1;
 }
 
 .nm-code-editor .nm-code-textarea::selection {
-	background: color-mix(in srgb, var(--main-color, #337ab7) 28%, transparent);
-	-webkit-text-fill-color: var(--main-color, #337ab7);
+	background: rgba(235, 188, 186, 0.22);
+	-webkit-text-fill-color: #e0def4;
 }
 
 .nm-code-editor .nm-code-highlight::-webkit-scrollbar,
@@ -738,19 +774,32 @@ button.nm-cert-status-btn {
 }
 
 .nm-code-textarea.nm-code-highlight-editing {
-	border-color: var(--main-color, #337ab7);
-	box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--main-color, #337ab7) 30%, transparent);
+	border-color: #c4a7e7;
+	box-shadow: 0 0 0 0.18rem rgba(196, 167, 231, 0.20);
 }
 
-.nm-code-highlight .tok-comment { color: #6b7280; font-style: italic; }
-.nm-code-highlight .tok-key { color: #4f46e5; font-weight: 600; }
-.nm-code-highlight .tok-string { color: #0f766e; }
-.nm-code-highlight .tok-num { color: #b45309; }
-.nm-code-highlight .tok-var { color: #7c3aed; }
-.nm-code-highlight .tok-prop { color: #2563eb; }
-.nm-code-highlight .tok-bool { color: #d97706; font-weight: 500; }
-.nm-code-highlight .tok-punct { color: #6b7280; }
-.nm-code-highlight .tok-op { color: #6b7280; }
+/* === Token 配色：统一玫瑰松木夜色，所有语言共用一套 === */
+.nm-code-highlight .tok-comment { color: var(--nm-code-muted); font-style: italic; }
+.nm-code-highlight .tok-key { color: var(--nm-code-keyword); font-weight: 600; }
+.nm-code-highlight .tok-string { color: var(--nm-code-string); }
+.nm-code-highlight .tok-num { color: var(--nm-code-number); }
+.nm-code-highlight .tok-var { color: var(--nm-code-type); }
+.nm-code-highlight .tok-prop { color: var(--nm-code-function); }
+.nm-code-highlight .tok-bool { color: var(--nm-code-type); font-weight: 500; }
+.nm-code-highlight .tok-punct { color: var(--nm-code-subtle); }
+.nm-code-highlight .tok-op { color: var(--nm-code-operator); }
+
+/* === Diff 专用 token === */
+.nm-code-highlight .tok-inserted { color: #9ccfd8; background: rgba(156, 207, 216, 0.08); }
+.nm-code-highlight .tok-deleted { color: #eb6f92; background: rgba(235, 111, 146, 0.08); }
+.nm-code-highlight .tok-diff-hunk { color: #c4a7e7; }
+.nm-code-highlight .tok-diff-meta { color: #908caa; }
+
+/* === Log 专用 token === */
+.nm-code-highlight .tok-error { color: #eb6f92; }
+.nm-code-highlight .tok-warning { color: #f6c177; }
+.nm-code-highlight .tok-info { color: #9ccfd8; }
+.nm-code-highlight .tok-debug { color: #908caa; }
 
 .nm-perm-table {
 	border-collapse: collapse;
@@ -823,20 +872,6 @@ button.nm-cert-status-btn {
 	.nm-file-icon.file::after {
 		background: var(--background-color, var(--cbi-background, #1f2933));
 	}
-
-	.nm-code-editor .nm-code-highlight {
-		color: var(--text-color-medium, var(--subtext-color, var(--text-color, #dbe2ea)));
-	}
-
-	.nm-code-highlight .tok-comment { color: #8b949e; }
-	.nm-code-highlight .tok-key { color: #a5b4fc; }
-	.nm-code-highlight .tok-string { color: #7dd3c7; }
-	.nm-code-highlight .tok-num { color: #f6c177; }
-	.nm-code-highlight .tok-var { color: #c4b5fd; }
-	.nm-code-highlight .tok-prop { color: #93c5fd; }
-	.nm-code-highlight .tok-bool { color: #fbbf24; font-weight: 500; }
-	.nm-code-highlight .tok-punct { color: #8b949e; }
-	.nm-code-highlight .tok-op { color: #8b949e; }
 }
 
 @media (max-width: 1024px) {

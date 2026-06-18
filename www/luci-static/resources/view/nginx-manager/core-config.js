@@ -426,21 +426,19 @@ return view.extend({
 					var fileDiv = E('div', { 'class': 'nm-danger-file' });
 					fileDiv.appendChild(E('h5', {}, file.label));
 
-					var textarea = E('textarea', {
-						'class': 'cbi-input-textarea nm-danger-editor',
-						'id': 'editor-' + file.label.replace(/[^a-z]/g, '')
-					});
+					var editorWidget = utils.createCodeEditor('', file.path, { readonly: false });
 
 					callGetFileReadonly(file.path).then(function(result) {
 						if (result && result.content) {
-							textarea.value = result.content;
+							editorWidget.setContent(result.content);
 						} else {
-							textarea.value = _('File not found or not readable');
-							textarea.disabled = true;
+							editorWidget.setContent(_('File not found or not readable'));
+							editorWidget.setReadonly(true);
+							editorWidget.textarea.disabled = true;
 						}
 					});
 
-					fileDiv.appendChild(textarea);
+					fileDiv.appendChild(editorWidget.container);
 
 					fileDiv.appendChild(E('button', {
 						'type': 'button',
@@ -455,7 +453,7 @@ return view.extend({
 										'class': 'cbi-button cbi-button-reset',
 										'click': function() {
 											ui.hideModal();
-											callSetFileDangerous(file.path, textarea.value).then(function(result) {
+											callSetFileDangerous(file.path, editorWidget.textarea.value).then(function(result) {
 												if (result && result.error) {
 													ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (result.detail || result.error)), 'error');
 												} else {

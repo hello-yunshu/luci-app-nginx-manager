@@ -3,7 +3,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-nginx-manager
-PKG_VERSION:=1.7.1
+PKG_VERSION:=1.8.0
 PKG_RELEASE:=1
 
 PKG_LICENSE:=AGPL-3.0-only

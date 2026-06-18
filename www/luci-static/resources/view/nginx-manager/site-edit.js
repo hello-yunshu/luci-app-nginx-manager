@@ -435,9 +435,18 @@ return view.extend({
 		customSection = E('div', { 'class': 'cbi-section' });
 		customSection.appendChild(E('h3', {}, _('Custom Server Block')));
 
-		var customBlockInput = E('textarea', { 'class': 'cbi-input-textarea nm-modal-textarea', 'rows': 15 });
-		if (!isNew && site && site.custom_server_block) customBlockInput.value = site.custom_server_block;
-		customSection.appendChild(makeField('opt-custom_server_block', _('Custom Server Block Content'), customBlockInput));
+		var customBlockEditor = utils.createCodeEditor(
+			(!isNew && site && site.custom_server_block) ? site.custom_server_block : '',
+			'site.conf',
+			{ readonly: false }
+		);
+
+		var customBlockEditorRow = E('div', { 'class': 'cbi-value' });
+		customBlockEditorRow.appendChild(E('label', { 'class': 'cbi-value-title' }, _('Custom Server Block Content')));
+		var customBlockEditorField = E('div', { 'class': 'cbi-value-field' });
+		customBlockEditorField.appendChild(customBlockEditor.container);
+		customBlockEditorRow.appendChild(customBlockEditorField);
+		customSection.appendChild(customBlockEditorRow);
 
 		page.appendChild(customSection);
 
@@ -661,7 +670,7 @@ return view.extend({
 			data.root                = document.getElementById('opt-root').value.trim();
 			data.index               = document.getElementById('opt-index').value.trim();
 			data.redirect_target     = document.getElementById('opt-redirect_target').value.trim();
-			data.custom_server_block = document.getElementById('opt-custom_server_block').value;
+			data.custom_server_block = customBlockEditor.textarea.value;
 			data.access_log          = document.getElementById('opt-access_log').checked ? '1' : '0';
 			data.error_log           = document.getElementById('opt-error_log').checked ? '1' : '0';
 
