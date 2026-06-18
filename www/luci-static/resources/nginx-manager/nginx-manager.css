@@ -180,26 +180,24 @@ button.nm-cert-status-btn {
 	color: #eb6f92;
 }
 
-/* === 浅色主题：code-block / log-area 适配 === */
-@media (prefers-color-scheme: light) {
-	.nm-code-block {
-		background: #faf4ed;
-		color: #575279;
-		border-color: rgba(87, 82, 121, 0.15);
-		color-scheme: light;
-	}
+/* === 浅色主题：code-block / log-area 适配（由 JS 检测后给 body 添加 .nm-light） === */
+body.nm-light .nm-code-block {
+	background: #faf4ed;
+	color: #575279;
+	border-color: rgba(87, 82, 121, 0.15);
+	color-scheme: light;
+}
 
-	.nm-log-area {
-		background: #faf4ed;
-		color: #575279;
-		border-color: rgba(87, 82, 121, 0.15);
-		color-scheme: light;
-	}
+body.nm-light .nm-log-area {
+	background: #faf4ed;
+	color: #575279;
+	border-color: rgba(87, 82, 121, 0.15);
+	color-scheme: light;
+}
 
-	.nm-log-area.is-empty,
-	.nm-log-area.is-loading {
-		color: #9893a5;
-	}
+body.nm-light .nm-log-area.is-empty,
+body.nm-light .nm-log-area.is-loading {
+	color: #9893a5;
 }
 
 /* === Value Full Width (for modals) === */
@@ -734,35 +732,33 @@ button.nm-cert-status-btn {
 	--nm-code-color-scheme: dark;
 }
 
-/* === Rose Pine Dawn: 浅色主题变量 === */
-@media (prefers-color-scheme: light) {
-	.nm-code-editor {
-		--nm-code-bg: #faf4ed;
-		--nm-code-surface: #fffaf3;
-		--nm-code-overlay: #f2e9e1;
+/* === Rose Pine Dawn: 浅色主题变量（由 JS 检测 LuCI 实际主题后添加 .nm-code-light） === */
+.nm-code-editor.nm-code-light {
+	--nm-code-bg: #faf4ed;
+	--nm-code-surface: #fffaf3;
+	--nm-code-overlay: #f2e9e1;
 
-		--nm-code-fg: #575279;
-		--nm-code-muted: #9893a5;
-		--nm-code-subtle: #797593;
+	--nm-code-fg: #575279;
+	--nm-code-muted: #9893a5;
+	--nm-code-subtle: #797593;
 
-		--nm-code-keyword: #907aa9;
-		--nm-code-string: #ea9d34;
-		--nm-code-function: #b4637a;
-		--nm-code-type: #2996b2;
-		--nm-code-number: #d7827e;
-		--nm-code-operator: #286983;
+	--nm-code-keyword: #907aa9;
+	--nm-code-string: #ea9d34;
+	--nm-code-function: #b4637a;
+	--nm-code-type: #2996b2;
+	--nm-code-number: #d7827e;
+	--nm-code-operator: #286983;
 
-		--nm-code-error: #d7827e;
-		--nm-code-warning: #ea9d34;
-		--nm-code-info: #2996b2;
-		--nm-code-success: #2996b2;
+	--nm-code-error: #d7827e;
+	--nm-code-warning: #ea9d34;
+	--nm-code-info: #2996b2;
+	--nm-code-success: #2996b2;
 
-		--nm-code-border: rgba(87, 82, 121, 0.15);
-		--nm-code-caret: #b4637a;
-		--nm-code-selection-bg: rgba(180, 99, 122, 0.14);
-		--nm-code-selection-fg: #575279;
-		--nm-code-color-scheme: light;
-	}
+	--nm-code-border: rgba(87, 82, 121, 0.15);
+	--nm-code-caret: #b4637a;
+	--nm-code-selection-bg: rgba(180, 99, 122, 0.14);
+	--nm-code-selection-fg: #575279;
+	--nm-code-color-scheme: light;
 }
 
 .nm-code-editor {
@@ -837,10 +833,8 @@ button.nm-cert-status-btn {
 	box-shadow: 0 0 0 0.18rem rgba(196, 167, 231, 0.20);
 }
 
-@media (prefers-color-scheme: light) {
-	.nm-code-textarea.nm-code-highlight-editing {
-		box-shadow: 0 0 0 0.18rem rgba(144, 122, 169, 0.20);
-	}
+.nm-code-editor.nm-code-light .nm-code-textarea.nm-code-highlight-editing {
+	box-shadow: 0 0 0 0.18rem rgba(144, 122, 169, 0.20);
 }
 
 /* === Token 配色：统一玫瑰松木夜色，所有语言共用一套 === */

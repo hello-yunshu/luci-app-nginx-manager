@@ -6,6 +6,34 @@
 
 var FOOTER_VERSION = '@PKG_VERSION@';
 
+// 检测 LuCI 当前主题明暗：读取页面实际背景色亮度判断
+// 优先级：1) LuCI CSS 变量 --background-color  2) body 计算背景色  3) prefers-color-scheme
+function detectLightMode() {
+	try {
+		var root = document.documentElement;
+		var bgVar = getComputedStyle(root).getPropertyValue('--background-color').trim();
+		if (bgVar) {
+			var tmp = document.createElement('div');
+			tmp.style.color = bgVar;
+			document.body.appendChild(tmp);
+			var computed = getComputedStyle(tmp).color;
+			document.body.removeChild(tmp);
+			var m = computed.match(/(\d+)/g);
+			if (m && m.length >= 3) {
+				var lum = (0.299 * +m[0] + 0.587 * +m[1] + 0.114 * +m[2]) / 255;
+				return lum > 0.5;
+			}
+		}
+		var bodyBg = getComputedStyle(document.body).backgroundColor;
+		var m2 = bodyBg.match(/(\d+)/g);
+		if (m2 && m2.length >= 3) {
+			var lum2 = (0.299 * +m2[0] + 0.587 * +m2[1] + 0.114 * +m2[2]) / 255;
+			return lum2 > 0.5;
+		}
+	} catch (e) { /* ignore */ }
+	return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+}
+
 function loadSharedCSS() {
 	if (!document.getElementById('nm-shared-css')) {
 		var link = E('link', {
@@ -14,6 +42,11 @@ function loadSharedCSS() {
 			'href': L.resource('nginx-manager/nginx-manager.css') + '?v=@PKG_VERSION@'
 		});
 		document.head.appendChild(link);
+	}
+	// 检测 LuCI 当前主题明暗，给 body 添加 class 供非编辑器代码区域使用
+	if (!document.body.classList.contains('nm-theme-detected')) {
+		document.body.classList.add('nm-theme-detected');
+		document.body.classList.add(detectLightMode() ? 'nm-light' : 'nm-dark');
 	}
 }
 
@@ -689,6 +722,9 @@ function createCodeEditor(content, path, options) {
 		'aria-hidden': 'true'
 	});
 	var container = E('div', { 'class': 'nm-code-editor' }, [highlight, textarea]);
+
+	var isLight = detectLightMode();
+	container.classList.add(isLight ? 'nm-code-light' : 'nm-code-dark');
 
 	var updateHighlight = function() {
 		highlight.innerHTML = highlightCode(textarea.value, path);
