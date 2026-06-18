@@ -694,6 +694,7 @@ button.nm-cert-status-btn {
 	height: 100%;
 	box-sizing: border-box;
 	margin: 0;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 	white-space: pre !important;
 	word-wrap: normal !important;
 	overflow-wrap: normal !important;
@@ -702,7 +703,8 @@ button.nm-cert-status-btn {
 
 .nm-code-editor .nm-code-highlight {
 	pointer-events: none;
-	overflow: hidden !important;
+	overflow: auto !important;
+	scrollbar-width: none;
 	color: var(--text-color-medium, var(--subtext-color, var(--text-color, #333)));
 	border-style: solid;
 	border-color: transparent;
@@ -711,6 +713,7 @@ button.nm-cert-status-btn {
 
 .nm-code-editor .nm-code-textarea {
 	overflow: auto;
+	scrollbar-width: none;
 	resize: none;
 	color: transparent;
 	-webkit-text-fill-color: transparent;
@@ -724,6 +727,7 @@ button.nm-cert-status-btn {
 	-webkit-text-fill-color: var(--main-color, #337ab7);
 }
 
+.nm-code-editor .nm-code-highlight::-webkit-scrollbar,
 .nm-code-editor .nm-code-textarea::-webkit-scrollbar {
 	display: none;
 }

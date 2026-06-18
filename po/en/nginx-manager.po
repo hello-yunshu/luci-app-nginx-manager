@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: luci-app-nginx-manager\n"
-"PO-Revision-Date: 2026-06-13 00:00+0000\n"
+"PO-Revision-Date: 2026-06-18 00:00+0000\n"
 "Last-Translator: yunshu\n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -812,9 +812,6 @@ msgstr "URL path for gRPC traffic, e.g. /grpc or /api.Service"
 
 msgid "gRPC Backend Address"
 msgstr "gRPC Backend Address"
-
-msgid "Uses grpc:// or grpcs:// scheme."
-msgstr "Uses grpc:// or grpcs:// scheme."
 
 msgid "X-Forwarded-For"
 msgstr "X-Forwarded-For"
