@@ -211,6 +211,17 @@ function codeSyntax(path) {
 }
 
 /**
+ * Determine if a file path should use the code editor with syntax highlighting.
+ * Single source of truth — uses codeSyntax() internally so there is no separate
+ * extension whitelist to maintain.
+ * Files that resolve to 'generic' (plain text, certificates, keys, markdown, etc.)
+ * return false and should use a plain textarea instead.
+ */
+function isCodeFile(path) {
+	return codeSyntax(path) !== 'generic';
+}
+
+/**
  * Token-based syntax highlighter.
  * Scans the input left-to-right, matching token patterns in priority order.
  * Inspired by PrismJS nginx language definition.
@@ -292,16 +303,16 @@ var HIGHLIGHT_RULES = {
 		{ re: /\/?>/g, type: 'punct' }
 	],
 	diff: [
-		// Diff header
-		{ re: /^diff\s+--git\s+[^\n]*/gm, type: 'key' },
-		// Hunk header
-		{ re: /^@@[^@]+@@/gm, type: 'prop' },
+		// Diff header (diff --git, ---, +++, index)
+		{ re: /^diff\s+--git\s+[^\n]*/gm, type: 'diff-meta' },
 		// File markers
-		{ re: /^(---|\+\+\+|index)\s+[^\n]*/gm, type: 'key' },
+		{ re: /^(---|\+\+\+|index)\s+[^\n]*/gm, type: 'diff-meta' },
+		// Hunk header
+		{ re: /^@@[^@]+@@/gm, type: 'diff-hunk' },
 		// Added line
-		{ re: /^\+[^\n]*/gm, type: 'string' },
+		{ re: /^\+[^\n]*/gm, type: 'inserted' },
 		// Removed line
-		{ re: /^-[^\n]*/gm, type: 'var' }
+		{ re: /^-[^\n]*/gm, type: 'deleted' }
 	],
 	javascript: [
 		// Line comment
@@ -545,8 +556,14 @@ var HIGHLIGHT_RULES = {
 		{ re: /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g, type: 'var' },
 		// HTTP status code
 		{ re: /\s[1-5]\d{2}\s/g, type: 'num' },
-		// Log level
-		{ re: /\b(ERROR|WARN|WARNING|INFO|DEBUG|TRACE|CRITICAL|FATAL|NOTICE|ALERT|EMERGENCY)\b/g, type: 'key' },
+		// Log level: error/critical/fatal/alert/emergency
+		{ re: /\b(ERROR|CRITICAL|FATAL|ALERT|EMERGENCY)\b/g, type: 'error' },
+		// Log level: warn/warning/notice
+		{ re: /\b(WARN|WARNING|NOTICE)\b/g, type: 'warning' },
+		// Log level: info
+		{ re: /\b(INFO)\b/g, type: 'info' },
+		// Log level: debug/trace
+		{ re: /\b(DEBUG|TRACE)\b/g, type: 'debug' },
 		// Quoted strings
 		{ re: /"(?:[^"\\]|\\.)*"/g, type: 'string' },
 		// HTTP method
@@ -761,6 +778,7 @@ return baseclass.extend({
 	NAME_TIP: NAME_TIP,
 	escapeHtml: escapeHtml,
 	codeSyntax: codeSyntax,
+	isCodeFile: isCodeFile,
 	highlightCode: highlightCode,
 	createCodeEditor: createCodeEditor
 });

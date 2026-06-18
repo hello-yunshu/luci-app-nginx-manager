@@ -12,20 +12,10 @@ var currentPath = DEFAULT_DIR;
 var currentEntries = [];
 var selectedPath = '';
 var BLOCKED_ROOTS = [ '/proc', '/sys', '/dev' ];
-var CODE_EXTENSIONS = {
-	conf: true, config: true, json: true, js: true, mjs: true, cjs: true,
-	css: true, html: true, htm: true, xml: true, sh: true, ash: true,
-	lua: true, py: true, php: true, rb: true, go: true, c: true, h: true,
-	cpp: true, hpp: true, ts: true, tsx: true, jsx: true, yaml: true,
-	yml: true, toml: true, ini: true, service: true, log: true
-};
 var TEXT_EXTENSIONS = {
 	txt: true, text: true, md: true, markdown: true, crt: true, cer: true,
 	pem: true, key: true, csr: true, cert: true, chain: true, bundle: true,
 	pub: true, cnf: true, list: true, env: true, sample: true, example: true
-};
-var CODE_FILENAMES = {
-	Makefile: true, Dockerfile: true, nginx: true, uci: true
 };
 var TEXT_FILENAMES = {
 	hosts: true, hostname: true, passwd: true, group: true,
@@ -195,13 +185,7 @@ function formatTime(ts) {
 }
 
 function isCodeFile(path) {
-	path = String(path || '');
-	if (path.indexOf('/etc/config/') === 0 || path.indexOf('/etc/init.d/') === 0) return true;
-	var name = String(path || '').split('/').pop() || '';
-	if (CODE_FILENAMES[name]) return true;
-	var dot = name.lastIndexOf('.');
-	if (dot < 0) return false;
-	return !!CODE_EXTENSIONS[name.substring(dot + 1).toLowerCase()];
+	return utils.isCodeFile(path);
 }
 
 function isEditableFile(path, entry) {
