@@ -731,6 +731,7 @@ button.nm-cert-status-btn {
 	--nm-code-caret: #ebbcba;
 	--nm-code-selection-bg: rgba(235, 188, 186, 0.22);
 	--nm-code-selection-fg: #e0def4;
+	--nm-code-color-scheme: dark;
 }
 
 /* === Rose Pine Dawn: 浅色主题变量 === */
@@ -744,10 +745,23 @@ button.nm-cert-status-btn {
 		--nm-code-muted: #9893a5;
 		--nm-code-subtle: #797593;
 
+		--nm-code-keyword: #907aa9;
+		--nm-code-string: #ea9d34;
+		--nm-code-function: #b4637a;
+		--nm-code-type: #2996b2;
+		--nm-code-number: #d7827e;
+		--nm-code-operator: #286983;
+
+		--nm-code-error: #d7827e;
+		--nm-code-warning: #ea9d34;
+		--nm-code-info: #2996b2;
+		--nm-code-success: #2996b2;
+
 		--nm-code-border: rgba(87, 82, 121, 0.15);
 		--nm-code-caret: #b4637a;
 		--nm-code-selection-bg: rgba(180, 99, 122, 0.14);
 		--nm-code-selection-fg: #575279;
+		--nm-code-color-scheme: light;
 	}
 }
 
@@ -763,7 +777,7 @@ button.nm-cert-status-btn {
 	color: var(--nm-code-fg);
 	border: 1px solid var(--nm-code-border);
 	border-radius: 6px;
-	color-scheme: dark;
+	color-scheme: var(--nm-code-color-scheme);
 }
 
 .nm-code-editor .nm-code-highlight,
@@ -819,8 +833,14 @@ button.nm-cert-status-btn {
 }
 
 .nm-code-textarea.nm-code-highlight-editing {
-	border-color: #c4a7e7;
+	border-color: var(--nm-code-keyword);
 	box-shadow: 0 0 0 0.18rem rgba(196, 167, 231, 0.20);
+}
+
+@media (prefers-color-scheme: light) {
+	.nm-code-textarea.nm-code-highlight-editing {
+		box-shadow: 0 0 0 0.18rem rgba(144, 122, 169, 0.20);
+	}
 }
 
 /* === Token 配色：统一玫瑰松木夜色，所有语言共用一套 === */
@@ -835,16 +855,16 @@ button.nm-cert-status-btn {
 .nm-code-highlight .tok-op { color: var(--nm-code-operator); }
 
 /* === Diff 专用 token === */
-.nm-code-highlight .tok-inserted { color: #9ccfd8; background: rgba(156, 207, 216, 0.08); }
-.nm-code-highlight .tok-deleted { color: #eb6f92; background: rgba(235, 111, 146, 0.08); }
-.nm-code-highlight .tok-diff-hunk { color: #c4a7e7; }
-.nm-code-highlight .tok-diff-meta { color: #908caa; }
+.nm-code-highlight .tok-inserted { color: var(--nm-code-info); background: rgba(156, 207, 216, 0.08); }
+.nm-code-highlight .tok-deleted { color: var(--nm-code-error); background: rgba(235, 111, 146, 0.08); }
+.nm-code-highlight .tok-diff-hunk { color: var(--nm-code-keyword); }
+.nm-code-highlight .tok-diff-meta { color: var(--nm-code-muted); }
 
 /* === Log 专用 token === */
-.nm-code-highlight .tok-error { color: #eb6f92; }
-.nm-code-highlight .tok-warning { color: #f6c177; }
-.nm-code-highlight .tok-info { color: #9ccfd8; }
-.nm-code-highlight .tok-debug { color: #908caa; }
+.nm-code-highlight .tok-error { color: var(--nm-code-error); }
+.nm-code-highlight .tok-warning { color: var(--nm-code-warning); }
+.nm-code-highlight .tok-info { color: var(--nm-code-info); }
+.nm-code-highlight .tok-debug { color: var(--nm-code-muted); }
 
 .nm-perm-table {
 	border-collapse: collapse;
