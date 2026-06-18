@@ -180,6 +180,28 @@ button.nm-cert-status-btn {
 	color: #eb6f92;
 }
 
+/* === 浅色主题：code-block / log-area 适配 === */
+@media (prefers-color-scheme: light) {
+	.nm-code-block {
+		background: #faf4ed;
+		color: #575279;
+		border-color: rgba(87, 82, 121, 0.15);
+		color-scheme: light;
+	}
+
+	.nm-log-area {
+		background: #faf4ed;
+		color: #575279;
+		border-color: rgba(87, 82, 121, 0.15);
+		color-scheme: light;
+	}
+
+	.nm-log-area.is-empty,
+	.nm-log-area.is-loading {
+		color: #9893a5;
+	}
+}
+
 /* === Value Full Width (for modals) === */
 .nm-value-full .cbi-value-title { float: none; width: auto; }
 .nm-value-full .cbi-value-field { width: 100%; }
@@ -680,10 +702,10 @@ button.nm-cert-status-btn {
  * 高亮层在 textarea 下方（z-index:0），textarea 透明文字覆盖其上（z-index:1）。
  * highlight 层用透明 border 占位对齐 textarea 的主题 border，避免字符错位。
  *
- * 主题：玫瑰松木夜色（Rose Pine Night）— 固定深色，不随 LuCI 明暗主题改变。
+ * 主题：玫瑰松木（Rose Pine）— 深色使用 Night，浅色使用 Dawn，跟随系统明暗主题。
  */
 
-/* === Rose Pine Night: 集中定义 CSS 变量 === */
+/* === Rose Pine: 集中定义 CSS 变量（默认深色 Night） === */
 .nm-code-editor {
 	--nm-code-bg: #191724;
 	--nm-code-surface: #1f1d2e;
@@ -704,6 +726,29 @@ button.nm-cert-status-btn {
 	--nm-code-warning: #f6c177;
 	--nm-code-info: #9ccfd8;
 	--nm-code-success: #9ccfd8;
+
+	--nm-code-border: rgba(224, 222, 244, 0.12);
+	--nm-code-caret: #ebbcba;
+	--nm-code-selection-bg: rgba(235, 188, 186, 0.22);
+	--nm-code-selection-fg: #e0def4;
+}
+
+/* === Rose Pine Dawn: 浅色主题变量 === */
+@media (prefers-color-scheme: light) {
+	.nm-code-editor {
+		--nm-code-bg: #faf4ed;
+		--nm-code-surface: #fffaf3;
+		--nm-code-overlay: #f2e9e1;
+
+		--nm-code-fg: #575279;
+		--nm-code-muted: #9893a5;
+		--nm-code-subtle: #797593;
+
+		--nm-code-border: rgba(87, 82, 121, 0.15);
+		--nm-code-caret: #b4637a;
+		--nm-code-selection-bg: rgba(180, 99, 122, 0.14);
+		--nm-code-selection-fg: #575279;
+	}
 }
 
 .nm-code-editor {
@@ -716,7 +761,7 @@ button.nm-cert-status-btn {
 	margin: 0;
 	background: var(--nm-code-bg);
 	color: var(--nm-code-fg);
-	border: 1px solid rgba(224, 222, 244, 0.12);
+	border: 1px solid var(--nm-code-border);
 	border-radius: 6px;
 	color-scheme: dark;
 }
@@ -753,14 +798,14 @@ button.nm-cert-status-btn {
 	resize: none;
 	color: transparent;
 	-webkit-text-fill-color: transparent;
-	caret-color: #ebbcba;
+	caret-color: var(--nm-code-caret);
 	outline: none;
 	z-index: 1;
 }
 
 .nm-code-editor .nm-code-textarea::selection {
-	background: rgba(235, 188, 186, 0.22);
-	-webkit-text-fill-color: #e0def4;
+	background: var(--nm-code-selection-bg);
+	-webkit-text-fill-color: var(--nm-code-selection-fg);
 }
 
 .nm-code-editor .nm-code-highlight::-webkit-scrollbar,
