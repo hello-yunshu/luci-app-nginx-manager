@@ -163,11 +163,6 @@ button.nm-cert-status-btn {
 	font-family: monospace;
 	white-space: pre;
 	tab-size: 4;
-	background: #faf4ed;
-	color: #575279;
-	border: 1px solid rgba(87, 82, 121, 0.15);
-	border-radius: 6px;
-	color-scheme: light;
 }
 
 .nm-log-area.is-empty,
@@ -180,16 +175,9 @@ button.nm-cert-status-btn {
 	color: #d7827e;
 }
 
-/* === 深色主题：code-block / log-area 适配 === */
+/* === 深色主题：code-block 适配 === */
 @media (prefers-color-scheme: dark) {
 	.nm-code-block {
-		background: #191724;
-		color: #e0def4;
-		border-color: rgba(224, 222, 244, 0.12);
-		color-scheme: dark;
-	}
-
-	.nm-log-area {
 		background: #191724;
 		color: #e0def4;
 		border-color: rgba(224, 222, 244, 0.12);
@@ -207,13 +195,6 @@ button.nm-cert-status-btn {
 }
 
 body.nm-dark .nm-code-block {
-	background: #191724;
-	color: #e0def4;
-	border-color: rgba(224, 222, 244, 0.12);
-	color-scheme: dark;
-}
-
-body.nm-dark .nm-log-area {
 	background: #191724;
 	color: #e0def4;
 	border-color: rgba(224, 222, 244, 0.12);
