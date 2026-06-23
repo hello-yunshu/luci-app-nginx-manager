@@ -356,7 +356,6 @@ return view.extend({
 
 		return utils.appendFooter(container, {
 			project: 'Nginx Manager',
-			version: status.version || '-',
 			repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
 		});
 	},

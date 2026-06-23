@@ -83,7 +83,7 @@ is_nginx_running() {
 }
 
 get_nginx_version() {
-	nginx -v 2>&1 | sed 's/nginx\///'
+	nginx -v 2>&1 | sed 's|.*nginx/||; s| .*||'
 }
 
 has_ssl_module() {
