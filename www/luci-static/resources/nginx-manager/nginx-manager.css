@@ -96,6 +96,17 @@ button.nm-cert-status-btn {
 	word-break: break-word;
 }
 
+.nm-visit-link {
+	color: var(--main-color, #337ab7);
+	text-decoration: none;
+}
+
+.nm-visit-link:hover,
+.nm-visit-link:focus-visible {
+	text-decoration: underline;
+	text-underline-offset: 0.18em;
+}
+
 .nm-kv-table th {
 	width: 12em;
 	white-space: nowrap;

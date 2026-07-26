@@ -222,8 +222,8 @@ msgstr "Create Backup"
 msgid "Creating site..."
 msgstr "Creating site..."
 
-msgid "Custom Proxy Headers"
-msgstr "Custom Proxy Headers"
+msgid "Custom Location Directives"
+msgstr "Custom Location Directives"
 
 msgid "Custom SSL Directives"
 msgstr "Custom SSL Directives"
@@ -234,8 +234,8 @@ msgstr "Proxy Timeouts"
 msgid "gRPC Headers"
 msgstr "gRPC Headers"
 
-msgid "Use grpc_set_header instead of proxy_set_header. One directive per line."
-msgstr "Use grpc_set_header instead of proxy_set_header. One directive per line."
+msgid "Persistent directives added inside the main gRPC location. Use grpc_set_header for headers."
+msgstr "Persistent directives added inside the main gRPC location. Use grpc_set_header for headers."
 
 msgid "Connect Timeout"
 msgstr "Connect Timeout"
@@ -291,8 +291,8 @@ msgstr "Disable Dangerous Edit"
 msgid "Direct Edit"
 msgstr "Direct Edit"
 
-msgid "Direct edits will be overwritten when regenerating config. Use for temporary tweaks only."
-msgstr "Direct edits will be overwritten when regenerating config. Use for temporary tweaks only."
+msgid "Direct edits are temporary and will be overwritten whenever managed configuration is applied. Use Custom Location Directives for persistent reverse-proxy changes."
+msgstr "Direct edits are temporary and will be overwritten whenever managed configuration is applied. Use Custom Location Directives for persistent reverse-proxy changes."
 
 msgid "Disabled"
 msgstr "Disabled"
@@ -546,8 +546,8 @@ msgstr "Off"
 msgid "On"
 msgstr "On"
 
-msgid "One directive per line."
-msgstr "One directive per line."
+msgid "Persistent directives added inside location /. Supports proxy_set_header, sub_filter, and other location directives."
+msgstr "Persistent directives added inside location /. Supports proxy_set_header, sub_filter, and other location directives."
 
 msgid "One directive per line. These will be added inside the server block."
 msgstr "One directive per line. These will be added inside the server block."

@@ -75,6 +75,41 @@ function modeLabel(mode) {
 	}
 }
 
+function renderVisitLink(url, label) {
+	return E('a', {
+		'class': 'nm-visit-link',
+		'href': url,
+		'target': '_blank',
+		'rel': 'noopener noreferrer',
+		'title': url
+	}, label || url);
+}
+
+function renderDomainLink(site) {
+	var domain = site.server_name || '';
+	if (!domain)
+		return '-';
+
+	var protocol = site.has_ssl === '1' ? 'https' : 'http';
+	var port = site.listen_port || (protocol === 'https' ? '443' : '80');
+	var isDefaultPort = (protocol === 'https' && port === '443') ||
+		(protocol === 'http' && port === '80');
+	var url = protocol + '://' + domain + (isDefaultPort ? '' : ':' + port) + '/';
+
+	return renderVisitLink(url, domain);
+}
+
+function renderBackendLink(site) {
+	var backend = site.proxy_pass || site.root || '';
+	if (!backend)
+		return '-';
+
+	if (/^https?:\/\//i.test(backend))
+		return renderVisitLink(backend);
+
+	return backend;
+}
+
 return view.extend({
 	load: function() {
 		return callListSites();
@@ -184,7 +219,7 @@ return view.extend({
 			row.appendChild(enabledCell);
 
 			row.appendChild(E('td', { 'data-label': _('Name') }, site.name || '-'));
-			row.appendChild(E('td', { 'data-label': _('Domain') }, site.server_name || '-'));
+			row.appendChild(E('td', { 'data-label': _('Domain') }, renderDomainLink(site)));
 			row.appendChild(E('td', { 'data-label': _('Type') }, modeLabel(site.mode)));
 
 			var sslCell = E('td', { 'data-label': _('SSL') });
@@ -192,7 +227,7 @@ return view.extend({
 				site.has_ssl === '1' ? _('SSL') : '-'));
 			row.appendChild(sslCell);
 
-			row.appendChild(E('td', { 'data-label': _('Backend / Root') }, site.proxy_pass || site.root || '-'));
+			row.appendChild(E('td', { 'data-label': _('Backend / Root') }, renderBackendLink(site)));
 
 			var actionsCell = E('td', { 'class': 'nm-actions', 'data-label': _('Actions') });
 
@@ -262,7 +297,7 @@ return view.extend({
 								ui.showModal(_('Confirm Save'), [
 									E('p', {}, _('Save changes to the config file?')),
 									E('p', {}, _('A backup will be created before saving.')),
-									E('p', { 'style': 'margin-top:0.5em;' }, _('Direct edits will be overwritten when regenerating config. Use for temporary tweaks only.')),
+									E('p', { 'style': 'margin-top:0.5em;' }, _('Direct edits are temporary and will be overwritten whenever managed configuration is applied. Use Custom Location Directives for persistent reverse-proxy changes.')),
 									E('div', { 'class': 'right' }, [
 										E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 										E('button', {

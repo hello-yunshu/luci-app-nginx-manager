@@ -251,11 +251,12 @@ handle_list_sites() {
 
 _list_site() {
 	local section="$1"
-	local name mode server_name enabled ssl_cert
+	local name mode server_name listen_port enabled ssl_cert
 
 	name="$(uci -q get "nginx_manager.${section}.name")" || name="${section}"
 	mode="$(uci -q get "nginx_manager.${section}.mode")" || mode="reverse_proxy"
 	server_name="$(uci -q get "nginx_manager.${section}.server_name")" || server_name=""
+	listen_port="$(uci -q get "nginx_manager.${section}.listen_port")" || listen_port="80"
 	enabled="$(uci -q get "nginx_manager.${section}.enabled")" || enabled="1"
 	ssl_cert="$(uci -q get "nginx_manager.${section}.ssl_cert")" || ssl_cert=""
 
@@ -264,6 +265,7 @@ _list_site() {
 	json_add_string "name" "${name}"
 	json_add_string "mode" "${mode}"
 	json_add_string "server_name" "${server_name}"
+	json_add_string "listen_port" "${listen_port}"
 	json_add_string "enabled" "${enabled}"
 	json_add_string "ssl_cert" "${ssl_cert}"
 
@@ -1331,11 +1333,18 @@ handle_save_file() {
 			;;
 	esac
 
+	local backup_output
+	backup_output="$("${NGINX_MANAGER_GEN}" backup 2>&1)" || {
+		json_init
+		json_add_string "error" "backup failed"
+		json_add_string "detail" "${backup_output}"
+		json_dump
+		return
+	}
+
 	printf '%s\n' "${content}" > "${path}" || {
 		json_init; json_add_string "error" "failed to write file"; json_dump; return
 	}
-
-	nginx-manager-gen --backup-now 2>/dev/null || true
 
 	json_init
 	json_add_string "result" "ok"

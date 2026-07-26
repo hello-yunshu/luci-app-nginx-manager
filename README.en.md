@@ -265,7 +265,7 @@ www/luci-static/resources/
 | `proxy_type` | string | `http` | Proxy type: `http` / `grpc` |
 | `grpc_path` | string | — | gRPC path |
 | `grpc_pass` | string | — | gRPC backend address |
-| `custom_proxy_headers` | string | — | Custom proxy headers |
+| `custom_proxy_headers` | string | — | Persistent custom directives in the main location (legacy option name retained for compatibility) |
 | `redirect_https` | boolean | 0 | Auto HTTP→HTTPS redirect |
 | `redirect_http_port` | string | — | HTTP redirect listen port |
 | `redirect_target` | string | — | Redirect target URL (redirect mode) |

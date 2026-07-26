@@ -173,25 +173,43 @@ get_script_version() {
 }
 
 create_backup() {
-	[ "$AUTO_BACKUP" = "1" ] || return 0
+	local force="${1:-0}"
+	[ "${force}" = "1" ] || [ "${AUTO_BACKUP}" = "1" ] || return 0
 
 	local timestamp
 	timestamp="$(date '+%Y-%m-%d-%H%M%S')"
 	local backup_path="${BACKUP_DIR}/${timestamp}"
+	[ ! -e "${backup_path}" ] || backup_path="${backup_path}-$$"
 
-	mkdir -p "${backup_path}/nginx"
+	mkdir -p "${backup_path}/nginx" || return 1
 
 	if [ -d /etc/nginx ]; then
-		cp -a /etc/nginx/* "${backup_path}/nginx/" 2>/dev/null
+		cp -a /etc/nginx/. "${backup_path}/nginx/" 2>/dev/null || {
+			rm -rf "${backup_path}"
+			return 1
+		}
 	fi
 
-	[ -f /etc/config/nginx ] && cp -a /etc/config/nginx "${backup_path}/config-nginx"
-	[ -f "${NGINX_MANAGER_CONFIG}" ] && cp -a "${NGINX_MANAGER_CONFIG}" "${backup_path}/config-nginx-manager"
+	if [ -f /etc/config/nginx ]; then
+		cp -a /etc/config/nginx "${backup_path}/config-nginx" || {
+			rm -rf "${backup_path}"
+			return 1
+		}
+	fi
+	if [ -f "${NGINX_MANAGER_CONFIG}" ]; then
+		cp -a "${NGINX_MANAGER_CONFIG}" "${backup_path}/config-nginx-manager" || {
+			rm -rf "${backup_path}"
+			return 1
+		}
+	fi
 
 	printf '{"timestamp":"%s","source":"nginx-manager-gen","managed_dir":"%s"}\n' \
 		"$(json_escape "${timestamp}")" \
 		"$(json_escape "${MANAGED_DIR}")" \
-		> "${backup_path}/manifest.json"
+		> "${backup_path}/manifest.json" || {
+			rm -rf "${backup_path}"
+			return 1
+		}
 
 	cleanup_old_backups
 
@@ -421,10 +439,10 @@ generate_grpc_headers() {
 	[ "${proxy_xri}" = "1" ] && echo "        grpc_set_header X-Real-IP \$remote_addr;"
 }
 
-generate_custom_proxy_headers() {
-	local custom_headers="$1"
-	[ -z "${custom_headers}" ] && return 0
-	echo "${custom_headers}"
+generate_custom_location_directives() {
+	local custom_directives="$1"
+	[ -z "${custom_directives}" ] && return 0
+	printf '%s\n' "${custom_directives}" | sed 's/^/        /'
 }
 
 generate_reverse_proxy_site() {
@@ -516,7 +534,7 @@ generate_reverse_proxy_site() {
 			fi
 		fi
 
-		generate_custom_proxy_headers "${custom_proxy_headers}"
+		generate_custom_location_directives "${custom_proxy_headers}"
 
 		echo "    }"
 
@@ -1117,7 +1135,12 @@ apply_config() {
 		return 1
 	fi
 
-	create_backup
+	if ! create_backup; then
+		log_err "Failed to create configuration backup"
+		printf '{"success":false,"error":"backup_failed"}\n'
+		exec 9>&-
+		return 1
+	fi
 
 	generate_all
 
@@ -1435,7 +1458,7 @@ case "$1" in
 		;;
 	backup)
 		load_global_config
-		create_backup
+		create_backup 1
 		;;
 	--status)
 		do_status

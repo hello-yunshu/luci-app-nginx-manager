@@ -234,8 +234,8 @@ msgstr "创建备份"
 msgid "Creating site..."
 msgstr "正在创建站点..."
 
-msgid "Custom Proxy Headers"
-msgstr "自定义代理头"
+msgid "Custom Location Directives"
+msgstr "自定义 Location 指令"
 
 msgid "Custom SSL Directives"
 msgstr "自定义 SSL 指令"
@@ -246,8 +246,8 @@ msgstr "代理超时"
 msgid "gRPC Headers"
 msgstr "gRPC 请求头"
 
-msgid "Use grpc_set_header instead of proxy_set_header. One directive per line."
-msgstr "请使用 grpc_set_header 而非 proxy_set_header。每行一条指令。"
+msgid "Persistent directives added inside the main gRPC location. Use grpc_set_header for headers."
+msgstr "持久化添加到主 gRPC location 内；设置请求头请使用 grpc_set_header。"
 
 msgid "Connect Timeout"
 msgstr "连接超时"
@@ -306,8 +306,8 @@ msgstr "关闭危险编辑"
 msgid "Direct Edit"
 msgstr "直接编辑"
 
-msgid "Direct edits will be overwritten when regenerating config. Use for temporary tweaks only."
-msgstr "直接编辑的内容在重新生成配置时会被覆盖，仅适用于临时调整。"
+msgid "Direct edits are temporary and will be overwritten whenever managed configuration is applied. Use Custom Location Directives for persistent reverse-proxy changes."
+msgstr "直接编辑仅临时有效，应用托管配置时会被覆盖。反向代理的持久自定义请使用“自定义 Location 指令”。"
 
 msgid "Directory Name"
 msgstr "目录名"
@@ -603,8 +603,8 @@ msgstr "关闭"
 msgid "On"
 msgstr "开启"
 
-msgid "One directive per line."
-msgstr "每行一条指令。"
+msgid "Persistent directives added inside location /. Supports proxy_set_header, sub_filter, and other location directives."
+msgstr "持久化添加到 location / 内，支持 proxy_set_header、sub_filter 及其他 location 指令。"
 
 msgid "One directive per line. These will be added inside the server block."
 msgstr "每行一条指令，将添加到 server 块内。"

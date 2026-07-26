@@ -148,10 +148,10 @@ return view.extend({
 				if (proxyHeadersTitle) proxyHeadersTitle.textContent = isGrpc ? _('gRPC Headers') : _('Common Proxy Headers');
 				if (customHeadersInput) customHeadersInput.placeholder = isGrpc
 					? 'grpc_set_header X-Custom-Header "value";\ngrpc_set_header Authorization $http_authorization;'
-					: 'proxy_set_header X-Custom-Header "value";\nproxy_set_header Authorization $http_authorization;';
+					: 'proxy_set_header Accept-Encoding "";\nsub_filter_once on;';
 				if (customHeadersDesc) customHeadersDesc.textContent = isGrpc
-					? _('Use grpc_set_header instead of proxy_set_header. One directive per line.')
-					: _('One directive per line.');
+					? _('Persistent directives added inside the main gRPC location. Use grpc_set_header for headers.')
+					: _('Persistent directives added inside location /. Supports proxy_set_header, sub_filter, and other location directives.');
 			}
 		}
 
@@ -374,15 +374,16 @@ return view.extend({
 			!isNew && site ? site.proxy_xri === '1' : true);
 		proxySection.appendChild(proxyXriRow);
 
-		/* Custom Proxy Headers */
+		/* Persistent custom directives inside the main proxy location */
 		customHeadersInput = E('textarea', {
 			'class': 'cbi-input-textarea',
-			'rows': 4,
-			'placeholder': 'proxy_set_header X-Custom-Header "value";\nproxy_set_header Authorization $http_authorization;'
+			'rows': 5,
+			'placeholder': 'proxy_set_header Accept-Encoding "";\nsub_filter \'</head>\' \'<script src="https://example.com/inject.js"></script></head>\';\nsub_filter_once on;'
 		});
 		if (!isNew && site && site.custom_proxy_headers) customHeadersInput.value = site.custom_proxy_headers;
-		customHeadersField = makeField('opt-custom_proxy_headers', _('Custom Proxy Headers'), customHeadersInput, null);
-		customHeadersDesc = E('div', { 'class': 'cbi-value-description' }, _('One directive per line.'));
+		customHeadersField = makeField('opt-custom_proxy_headers', _('Custom Location Directives'), customHeadersInput, null);
+		customHeadersDesc = E('div', { 'class': 'cbi-value-description' },
+			_('Persistent directives added inside location /. Supports proxy_set_header, sub_filter, and other location directives.'));
 		customHeadersField.querySelector('.cbi-value-field').appendChild(customHeadersDesc);
 		proxySection.appendChild(customHeadersField);
 
@@ -487,7 +488,7 @@ return view.extend({
 
 			/* Warning */
 			var configWarning = E('div', { 'class': 'alert-message warning', 'style': 'display:none;' });
-			configWarning.appendChild(E('p', {}, _('Direct edits will be overwritten when regenerating config. Use for temporary tweaks only.')));
+			configWarning.appendChild(E('p', {}, _('Direct edits are temporary and will be overwritten whenever managed configuration is applied. Use Custom Location Directives for persistent reverse-proxy changes.')));
 
 			/* Code editor - wrapped in cbi-value row to align with form fields */
 			var configEditor = utils.createCodeEditor('', configPath || 'site.conf', { readonly: true });
@@ -574,7 +575,7 @@ return view.extend({
 								ui.showModal(_('Confirm Save'), [
 									E('p', {}, _('Save changes to the config file?')),
 									E('p', {}, _('A backup will be created before saving.')),
-									E('p', { 'style': 'margin-top:0.5em;' }, _('Direct edits will be overwritten when regenerating config. Use for temporary tweaks only.')),
+									E('p', { 'style': 'margin-top:0.5em;' }, _('Direct edits are temporary and will be overwritten whenever managed configuration is applied. Use Custom Location Directives for persistent reverse-proxy changes.')),
 									E('div', { 'class': 'right' }, [
 										E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 										E('button', {

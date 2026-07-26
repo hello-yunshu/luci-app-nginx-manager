@@ -265,7 +265,7 @@ www/luci-static/resources/
 | `proxy_type` | string | `http` | 代理类型：`http` / `grpc` |
 | `grpc_path` | string | — | gRPC 路径 |
 | `grpc_pass` | string | — | gRPC 后端地址 |
-| `custom_proxy_headers` | string | — | 自定义代理头 |
+| `custom_proxy_headers` | string | — | 主 Location 内的持久化自定义指令（保留旧选项名以兼容已有配置） |
 | `redirect_https` | boolean | 0 | HTTP→HTTPS 自动跳转 |
 | `redirect_http_port` | string | — | HTTP 跳转监听端口 |
 | `redirect_target` | string | — | 重定向目标地址（重定向模式） |
