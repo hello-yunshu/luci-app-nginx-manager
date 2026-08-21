@@ -110,6 +110,196 @@ function renderBackendLink(site) {
 	return backend;
 }
 
+function buildSiteTable(sites) {
+	var table = E('table', { 'class': 'table nm-responsive-table' });
+	var thead = E('thead');
+	var headerRow = E('tr');
+	[_('Enabled'), _('Name'), _('Domain'), _('Type'), _('SSL'), _('Backend / Root'), _('Actions')].forEach(function(title) {
+		headerRow.appendChild(E('th', {}, title));
+	});
+	thead.appendChild(headerRow);
+	table.appendChild(thead);
+
+	sites.forEach(function(site) {
+		var row = E('tr', site.enabled !== '1' ? { 'class': 'nm-row-disabled' } : {});
+
+		var enabledCell = E('td', { 'data-label': _('Enabled') });
+		enabledCell.appendChild(E('span', { 'class': 'nm-badge ' + (site.enabled === '1' ? 'success' : 'disabled') },
+			site.enabled === '1' ? _('Enabled') : _('Disabled')));
+		row.appendChild(enabledCell);
+
+		row.appendChild(E('td', { 'data-label': _('Name') }, site.name || '-'));
+		row.appendChild(E('td', { 'data-label': _('Domain') }, renderDomainLink(site)));
+		row.appendChild(E('td', { 'data-label': _('Type') }, modeLabel(site.mode)));
+
+		var sslCell = E('td', { 'data-label': _('SSL') });
+		sslCell.appendChild(E('span', { 'class': 'nm-badge ' + (site.has_ssl === '1' ? 'success' : 'disabled') },
+			site.has_ssl === '1' ? _('SSL') : '-'));
+		row.appendChild(sslCell);
+
+		row.appendChild(E('td', { 'data-label': _('Backend / Root') }, renderBackendLink(site)));
+
+		var actionsCell = E('td', { 'class': 'nm-actions', 'data-label': _('Actions') });
+
+		actionsCell.appendChild(E('button', {
+			'class': 'cbi-button',
+			'click': function() {
+				location.href = L.url('admin/services/nginx-manager/sites/edit', site.id);
+			}
+		}, _('Edit')));
+
+		actionsCell.appendChild(E('button', {
+			'class': 'cbi-button',
+			'click': function() {
+				ui.showModal(_('Clone Site'), [
+					E('p', {}, _('Clone this site with a new name? The clone will be disabled by default.')),
+					E('div', { 'class': 'right' }, [
+						E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+						E('button', {
+							'class': 'cbi-button cbi-button-apply',
+							'click': function() {
+								ui.hideModal();
+								ui.showModal(_('Cloning...'), [E('p', {}, _('Please wait...'))]);
+								callDuplicateSite(site.id).then(function(result) {
+									ui.hideModal();
+									if (result && result.error) {
+										ui.addNotification(null, E('p', {}, result.error), 'error');
+									} else {
+										ui.showModal(_('Redirecting'), [E('p', {}, _('Site cloned, redirecting to edit page...'))]);
+										setTimeout(function() {
+											ui.hideModal();
+											location.href = L.url('admin/services/nginx-manager/sites/edit', result.new_id);
+										}, 500);
+									}
+								});
+							}
+						}, _('Clone'))
+					])
+				]);
+			}
+		}, '\u29C9 ' + _('Clone')));
+
+		actionsCell.appendChild(E('button', {
+			'class': 'cbi-button',
+			'click': function() {
+				callRenderSite(site.id).then(function(result) {
+					var configText = (result && result.config) || '';
+					var configFilePath = (result && result.config_path) || '';
+					var editor = utils.createCodeEditor(configText, configFilePath || 'site.conf', { readonly: true });
+
+					var editBtn = E('button', {
+						'class': 'cbi-button',
+						'click': function() {
+							editor.setReadonly(false);
+							editBtn.style.display = 'none';
+							saveBtn.style.display = '';
+						}
+					}, _('Edit'));
+
+					var saveBtn = E('button', {
+						'class': 'cbi-button cbi-button-apply',
+						'style': 'display:none;',
+						'click': function() {
+							if (!configFilePath) {
+								ui.addNotification(null, E('p', {}, _('Config file path not available')), 'error');
+								return;
+							}
+							ui.showModal(_('Confirm Save'), [
+								E('p', {}, _('Save changes to the config file?')),
+								E('p', {}, _('A backup will be created before saving.')),
+								E('p', { 'style': 'margin-top:0.5em;' }, _('Direct edits are temporary and will be overwritten whenever managed configuration is applied. Use Custom Location Directives for persistent reverse-proxy changes.')),
+								E('div', { 'class': 'right' }, [
+									E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+									E('button', {
+										'class': 'cbi-button cbi-button-apply',
+										'click': function() {
+											ui.hideModal();
+											callSaveFile(configFilePath, editor.textarea.value).then(function(r) {
+												if (r && r.error) {
+													ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + r.error), 'error');
+												} else {
+													ui.addNotification(null, E('p', {}, _('Config file saved successfully')), 'info');
+												}
+											}).catch(function(err) {
+												ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || err)), 'error');
+											});
+										}
+									}, _('Save'))
+								])
+							]);
+						}
+					}, _('Save'));
+
+					ui.showModal(_('Generated Config'), [
+						editor.container,
+						E('div', { 'class': 'right' }, [
+							editBtn,
+							saveBtn,
+							E('button', {
+								'class': 'btn',
+								'click': function() { ui.hideModal(); }
+							}, _('Close'))
+						])
+					]);
+				});
+			}
+		}, _('View Config')));
+
+		if (site.enabled === '1') {
+			actionsCell.appendChild(E('button', {
+				'class': 'cbi-button cbi-button-reset',
+				'click': function() {
+					callDisableSite(site.id).then(function() {
+						ui.addNotification(null, E('p', {}, _('Site disabled')), 'info');
+						setTimeout(function() { location.reload(); }, 500);
+					});
+				}
+			}, _('Disable')));
+		} else {
+			actionsCell.appendChild(E('button', {
+				'class': 'cbi-button cbi-button-apply',
+				'click': function() {
+					callEnableSite(site.id).then(function() {
+						ui.addNotification(null, E('p', {}, _('Site enabled')), 'info');
+						setTimeout(function() { location.reload(); }, 500);
+					});
+				}
+			}, _('Enable')));
+		}
+
+		actionsCell.appendChild(E('button', {
+			'class': 'cbi-button cbi-button-reset',
+			'click': function() {
+				ui.showModal(_('Confirm Delete'), [
+					E('p', {}, _('Are you sure you want to delete this site?')),
+					E('div', { 'class': 'right' }, [
+						E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
+						E('button', {
+							'class': 'cbi-button cbi-button-reset',
+							'click': function() {
+								ui.hideModal();
+								callDeleteSite(site.id).then(function(result) {
+									if (result && result.error) {
+										ui.addNotification(null, E('p', {}, result.error), 'error');
+									} else {
+										ui.addNotification(null, E('p', {}, _('Site deleted successfully')), 'info');
+										setTimeout(function() { location.reload(); }, 500);
+									}
+								});
+							}
+						}, _('Delete'))
+					])
+				]);
+			}
+		}, _('Delete')));
+
+		row.appendChild(actionsCell);
+		table.appendChild(row);
+	});
+
+	return table;
+}
+
 return view.extend({
 	load: function() {
 		return callListSites();
@@ -201,193 +391,22 @@ return view.extend({
 			});
 		}
 
-		var table = E('table', { 'class': 'table nm-responsive-table' });
-		var thead = E('thead');
-		var headerRow = E('tr');
-		[_('Enabled'), _('Name'), _('Domain'), _('Type'), _('SSL'), _('Backend / Root'), _('Actions')].forEach(function(title) {
-			headerRow.appendChild(E('th', {}, title));
-		});
-		thead.appendChild(headerRow);
-		table.appendChild(thead);
+		var enabledSites = sites.filter(function(s) { return s.enabled === '1'; });
+		var disabledSites = sites.filter(function(s) { return s.enabled !== '1'; });
 
-		sites.forEach(function(site) {
-			var row = E('tr', site.enabled !== '1' ? { 'class': 'nm-row-disabled' } : {});
+		if (enabledSites.length > 0) {
+			container.appendChild(E('div', { 'class': 'cbi-section' }, [
+				E('h4', { 'class': 'nm-subsection-title' }, _('Enabled Sites')),
+				buildSiteTable(enabledSites)
+			]));
+		}
 
-			var enabledCell = E('td', { 'data-label': _('Enabled') });
-			enabledCell.appendChild(E('span', { 'class': 'nm-badge ' + (site.enabled === '1' ? 'success' : 'disabled') },
-				site.enabled === '1' ? _('Enabled') : _('Disabled')));
-			row.appendChild(enabledCell);
-
-			row.appendChild(E('td', { 'data-label': _('Name') }, site.name || '-'));
-			row.appendChild(E('td', { 'data-label': _('Domain') }, renderDomainLink(site)));
-			row.appendChild(E('td', { 'data-label': _('Type') }, modeLabel(site.mode)));
-
-			var sslCell = E('td', { 'data-label': _('SSL') });
-			sslCell.appendChild(E('span', { 'class': 'nm-badge ' + (site.has_ssl === '1' ? 'success' : 'disabled') },
-				site.has_ssl === '1' ? _('SSL') : '-'));
-			row.appendChild(sslCell);
-
-			row.appendChild(E('td', { 'data-label': _('Backend / Root') }, renderBackendLink(site)));
-
-			var actionsCell = E('td', { 'class': 'nm-actions', 'data-label': _('Actions') });
-
-			actionsCell.appendChild(E('button', {
-				'class': 'cbi-button',
-				'click': function() {
-					location.href = L.url('admin/services/nginx-manager/sites/edit', site.id);
-				}
-			}, _('Edit')));
-
-			actionsCell.appendChild(E('button', {
-				'class': 'cbi-button',
-				'click': function() {
-					ui.showModal(_('Clone Site'), [
-						E('p', {}, _('Clone this site with a new name? The clone will be disabled by default.')),
-						E('div', { 'class': 'right' }, [
-							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
-							E('button', {
-								'class': 'cbi-button cbi-button-apply',
-								'click': function() {
-									ui.hideModal();
-									ui.showModal(_('Cloning...'), [E('p', {}, _('Please wait...'))]);
-									callDuplicateSite(site.id).then(function(result) {
-										ui.hideModal();
-										if (result && result.error) {
-											ui.addNotification(null, E('p', {}, result.error), 'error');
-										} else {
-											ui.showModal(_('Redirecting'), [E('p', {}, _('Site cloned, redirecting to edit page...'))]);
-											setTimeout(function() {
-												ui.hideModal();
-												location.href = L.url('admin/services/nginx-manager/sites/edit', result.new_id);
-											}, 500);
-										}
-									});
-								}
-							}, _('Clone'))
-						])
-					]);
-				}
-			}, '\u29C9 ' + _('Clone')));
-
-			actionsCell.appendChild(E('button', {
-				'class': 'cbi-button',
-				'click': function() {
-					callRenderSite(site.id).then(function(result) {
-						var configText = (result && result.config) || '';
-						var configFilePath = (result && result.config_path) || '';
-						var editor = utils.createCodeEditor(configText, configFilePath || 'site.conf', { readonly: true });
-
-						var editBtn = E('button', {
-							'class': 'cbi-button',
-							'click': function() {
-								editor.setReadonly(false);
-								editBtn.style.display = 'none';
-								saveBtn.style.display = '';
-							}
-						}, _('Edit'));
-
-						var saveBtn = E('button', {
-							'class': 'cbi-button cbi-button-apply',
-							'style': 'display:none;',
-							'click': function() {
-								if (!configFilePath) {
-									ui.addNotification(null, E('p', {}, _('Config file path not available')), 'error');
-									return;
-								}
-								ui.showModal(_('Confirm Save'), [
-									E('p', {}, _('Save changes to the config file?')),
-									E('p', {}, _('A backup will be created before saving.')),
-									E('p', { 'style': 'margin-top:0.5em;' }, _('Direct edits are temporary and will be overwritten whenever managed configuration is applied. Use Custom Location Directives for persistent reverse-proxy changes.')),
-									E('div', { 'class': 'right' }, [
-										E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
-										E('button', {
-											'class': 'cbi-button cbi-button-apply',
-											'click': function() {
-												ui.hideModal();
-												callSaveFile(configFilePath, editor.textarea.value).then(function(r) {
-													if (r && r.error) {
-														ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + r.error), 'error');
-													} else {
-														ui.addNotification(null, E('p', {}, _('Config file saved successfully')), 'info');
-													}
-												}).catch(function(err) {
-													ui.addNotification(null, E('p', {}, _('Save failed') + ': ' + (err.message || err)), 'error');
-												});
-											}
-										}, _('Save'))
-									])
-								]);
-							}
-						}, _('Save'));
-
-						ui.showModal(_('Generated Config'), [
-							editor.container,
-							E('div', { 'class': 'right' }, [
-								editBtn,
-								saveBtn,
-								E('button', {
-									'class': 'btn',
-									'click': function() { ui.hideModal(); }
-								}, _('Close'))
-							])
-						]);
-					});
-				}
-			}, _('View Config')));
-
-			if (site.enabled === '1') {
-				actionsCell.appendChild(E('button', {
-					'class': 'cbi-button cbi-button-reset',
-					'click': function() {
-						callDisableSite(site.id).then(function() {
-							ui.addNotification(null, E('p', {}, _('Site disabled')), 'info');
-							setTimeout(function() { location.reload(); }, 500);
-						});
-					}
-				}, _('Disable')));
-			} else {
-				actionsCell.appendChild(E('button', {
-					'class': 'cbi-button cbi-button-apply',
-					'click': function() {
-						callEnableSite(site.id).then(function() {
-							ui.addNotification(null, E('p', {}, _('Site enabled')), 'info');
-							setTimeout(function() { location.reload(); }, 500);
-						});
-					}
-				}, _('Enable')));
-			}
-
-			actionsCell.appendChild(E('button', {
-				'class': 'cbi-button cbi-button-reset',
-				'click': function() {
-					ui.showModal(_('Confirm Delete'), [
-						E('p', {}, _('Are you sure you want to delete this site?')),
-						E('div', { 'class': 'right' }, [
-							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
-							E('button', {
-								'class': 'cbi-button cbi-button-reset',
-								'click': function() {
-									ui.hideModal();
-									callDeleteSite(site.id).then(function(result) {
-										if (result && result.error) {
-											ui.addNotification(null, E('p', {}, result.error), 'error');
-										} else {
-											ui.addNotification(null, E('p', {}, _('Site deleted successfully')), 'info');
-											setTimeout(function() { location.reload(); }, 500);
-										}
-									});
-								}
-							}, _('Delete'))
-						])
-					]);
-				}
-			}, _('Delete')));
-
-			row.appendChild(actionsCell);
-			table.appendChild(row);
-		});
-
-		container.appendChild(E('div', { 'class': 'cbi-section' }, [table]));
+		if (disabledSites.length > 0) {
+			container.appendChild(E('div', { 'class': 'cbi-section' }, [
+				E('h4', { 'class': 'nm-subsection-title' }, _('Disabled Sites')),
+				buildSiteTable(disabledSites)
+			]));
+		}
 
 		return utils.appendFooter(container, {
 			project: 'Nginx Manager',

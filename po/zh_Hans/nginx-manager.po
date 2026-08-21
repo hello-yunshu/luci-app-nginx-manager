@@ -327,6 +327,9 @@ msgstr "在以下目录创建新目录"
 msgid "Disabled"
 msgstr "已禁用"
 
+msgid "Disabled Sites"
+msgstr "未启用站点"
+
 msgid "Download"
 msgstr "下载"
 
@@ -356,6 +359,9 @@ msgstr "启用配置文件直接编辑"
 
 msgid "Enabled"
 msgstr "已启用"
+
+msgid "Enabled Sites"
+msgstr "已启用站点"
 
 msgid "Environment Detection"
 msgstr "环境检测"

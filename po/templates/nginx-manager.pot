@@ -303,6 +303,9 @@ msgstr ""
 msgid "Disabled"
 msgstr ""
 
+msgid "Disabled Sites"
+msgstr ""
+
 msgid "Domain"
 msgstr ""
 
@@ -328,6 +331,9 @@ msgid "Enable direct editing of the config file"
 msgstr ""
 
 msgid "Enabled"
+msgstr ""
+
+msgid "Enabled Sites"
 msgstr ""
 
 msgid "Environment Detection"

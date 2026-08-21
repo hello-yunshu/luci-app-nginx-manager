@@ -297,6 +297,9 @@ msgstr "Direct edits are temporary and will be overwritten whenever managed conf
 msgid "Disabled"
 msgstr "Disabled"
 
+msgid "Disabled Sites"
+msgstr "Disabled Sites"
+
 msgid "Domain"
 msgstr "Domain"
 
@@ -323,6 +326,9 @@ msgstr "Enable direct editing of the config file"
 
 msgid "Enabled"
 msgstr "Enabled"
+
+msgid "Enabled Sites"
+msgstr "Enabled Sites"
 
 msgid "Environment Detection"
 msgstr "Environment Detection"
