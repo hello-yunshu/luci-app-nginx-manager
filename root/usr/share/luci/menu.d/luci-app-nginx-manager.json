@@ -45,7 +45,7 @@
 		}
 	},
 	"admin/services/nginx-manager/files": {
-		"title": "文件",
+		"title": "Files",
 		"order": 25,
 		"action": {
 			"type": "view",
