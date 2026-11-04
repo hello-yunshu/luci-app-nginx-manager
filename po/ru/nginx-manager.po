@@ -1,0 +1,1643 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: luci-app-nginx-manager\n"
+"PO-Revision-Date: 2026-11-05 00:00+0000\n"
+"Last-Translator: Lyapnev\n"
+"Language-Team: Russian\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+msgid "-- None --"
+msgstr "-- None --"
+
+msgid "/etc/nginx/uci.conf.template"
+msgstr "/etc/nginx/uci.conf.template"
+
+msgid "ACME certificate issued successfully"
+msgstr "Сертификат ACME успешно выпущен"
+
+msgid "ACME certificate renewed successfully"
+msgstr "Сертификат ACME успешно обновлён"
+
+msgid "ACME operation timed out"
+msgstr "Время операции ACME истекло"
+
+msgid "Unknown ACME task status"
+msgstr "Неизвестный статус задачи ACME"
+
+msgid "ACME certificate requested"
+msgstr "Запрошен сертификат ACME"
+
+msgid "ACME operation already in progress for this certificate"
+msgstr "Операция ACME для этого сертификата уже выполняется"
+
+msgid "Access Log"
+msgstr "Журнал доступа"
+
+msgid "acme config not found"
+msgstr "конфигурация ACME не найдена"
+
+msgid "acme challenge config failed"
+msgstr "ошибка конфигурации проверки ACME"
+
+msgid "acme dns api package not installed"
+msgstr "пакет ACME DNS API не установлен"
+
+msgid "acme issue failed"
+msgstr "не удалось выпустить сертификат ACME"
+
+msgid "acme package not installed"
+msgstr "пакет acme не установлен"
+
+msgid "acme renew failed"
+msgstr "не удалось обновить сертификат ACME"
+
+msgid "not an acme certificate"
+msgstr "это не сертификат ACME"
+
+msgid "Actions"
+msgstr "Действия"
+
+msgid "Add Certificate"
+msgstr "Добавить сертификат"
+
+msgid "Add Site"
+msgstr "Добавить сайт"
+
+msgid "All Sites"
+msgstr "Все сайты"
+
+msgid "All interfaces"
+msgstr "Все интерфейсы"
+
+msgid "Are you sure you want to delete this backup?"
+msgstr "Вы уверены, что хотите удалить эту резервную копию?"
+
+msgid "Are you sure you want to delete this certificate?"
+msgstr "Вы уверены, что хотите удалить этот сертификат?"
+
+msgid "Are you sure you want to delete this site?"
+msgstr "Вы уверены, что хотите удалить этот сайт?"
+
+msgid "Are you sure you want to restore this backup? A backup of the current configuration will be created first."
+msgstr "Вы уверены, что хотите восстановить эту резервную копию? Сначала будет создана резервная копия текущей конфигурации."
+
+msgid "Auto (ACME)"
+msgstr "Авто (ACME)"
+
+msgid "SSL can be enabled on any port, no need to switch to 443."
+msgstr "SSL можно включить на любом порту, переключаться на 443 не нужно."
+
+msgid "Back to Sites"
+msgstr "Назад к сайтам"
+
+msgid "Backend Address"
+msgstr "Адрес бэкенда"
+
+msgid "Backend / Root"
+msgstr "Бэкенд / корень"
+
+msgid "Backup Management"
+msgstr "Управление резервными копиями"
+
+msgid "Backup Time"
+msgstr "Время резервной копии"
+
+msgid "Backup created"
+msgstr "Резервная копия создана"
+
+msgid "Backup deleted"
+msgstr "Резервная копия удалена"
+
+msgid "Backup restored"
+msgstr "Резервная копия восстановлена"
+
+msgid "Backup settings saved"
+msgstr "Настройки резервного копирования сохранены"
+
+msgid "Backups"
+msgstr "Резервные копии"
+
+msgid "Basic Settings"
+msgstr "Основные настройки"
+
+msgid "Both certificate and key are required"
+msgstr "Требуются и сертификат, и ключ"
+
+msgid "Cancel"
+msgstr "Отмена"
+
+msgid "Certificate (PEM)"
+msgstr "Сертификат (PEM)"
+
+msgid "Certificate Expiry"
+msgstr "Срок действия сертификата"
+
+msgid "Certificate Name"
+msgstr "Имя сертификата"
+
+msgid "Certificate deleted"
+msgstr "Сертификат удалён"
+
+msgid "certificate id already exists"
+msgstr "идентификатор сертификата уже существует"
+
+msgid "cert not found"
+msgstr "сертификат не найден"
+
+msgid "Certificate name is required"
+msgstr "Требуется имя сертификата"
+
+msgid "Certificate uploaded"
+msgstr "Сертификат загружен"
+
+msgid "Certificates"
+msgstr "Сертификаты"
+
+msgid "Clearing..."
+msgstr "Очистка..."
+
+msgid "Clear"
+msgstr "Очистить"
+
+msgid "Client Max Body Size"
+msgstr "Максимальный размер тела запроса"
+
+msgid "Close"
+msgstr "Закрыть"
+
+msgid "Common Proxy Headers"
+msgstr "Общие заголовки прокси"
+
+msgid "Compare"
+msgstr "Сравнить"
+
+msgid "Compare with Current"
+msgstr "Сравнить с текущим"
+
+msgid "Confirm Delete"
+msgstr "Подтвердить удаление"
+
+msgid "Confirm Restore"
+msgstr "Подтвердить восстановление"
+
+msgid "Confirm Save"
+msgstr "Подтвердить сохранение"
+
+msgid "Config Test Result"
+msgstr "Результат проверки конфигурации"
+
+msgid "Config File"
+msgstr "Файл конфигурации"
+
+msgid "Config file not found. It will be created after saving the site."
+msgstr "Файл конфигурации не найден. Он будет создан после сохранения сайта."
+
+msgid "Content"
+msgstr "Содержимое"
+
+msgid "Config file path not available"
+msgstr "Путь к файлу конфигурации недоступен"
+
+msgid "Config file saved successfully"
+msgstr "Файл конфигурации успешно сохранен."
+
+msgid "Configuration test failed"
+msgstr "Проверка конфигурации не удалась"
+
+msgid "Core Config"
+msgstr "Основная конфигурация"
+
+msgid "Core config saved and applied"
+msgstr "Основная конфигурация сохранена и применена."
+
+msgid "Create"
+msgstr "Создать"
+
+msgid "Create Backup"
+msgstr "Создать резервную копию"
+
+msgid "Creating site..."
+msgstr "Создание сайта..."
+
+msgid "Custom Location Directives"
+msgstr "Пользовательские директивы location"
+
+msgid "Custom SSL Directives"
+msgstr "Пользовательские директивы SSL"
+
+msgid "Proxy Timeouts"
+msgstr "Тайм-ауты прокси"
+
+msgid "gRPC Headers"
+msgstr "Заголовки gRPC"
+
+msgid "Persistent directives added inside the main gRPC location. Use grpc_set_header for headers."
+msgstr "Постоянные директивы добавляются внутрь основного location gRPC. Для заголовков используйте grpc_set_header."
+
+msgid "Connect Timeout"
+msgstr "Тайм-аут подключения"
+
+msgid "Timeout for establishing a connection to the backend. Default: 60s."
+msgstr "Таймаут для установления соединения с бэкендом. По умолчанию: 60 с."
+
+msgid "Read Timeout"
+msgstr "Тайм-аут чтения"
+
+msgid "Timeout for reading a response from the backend. Default: 60s."
+msgstr "Таймаут для чтения ответа от серверной части. По умолчанию: 60 с."
+
+msgid "Send Timeout"
+msgstr "Тайм-аут отправки"
+
+msgid "Send buffer size for SSL data, e.g. 4k, 8k, 16k. Leave empty for default."
+msgstr "Размер буфера отправки для данных SSL, например. 4к, 8к, 16к. Оставьте пустым по умолчанию."
+
+msgid "Shared memory zone for SSL sessions, e.g. shared:SSL:10m. Leave empty for default."
+msgstr "Зона общей памяти для сеансов SSL, например. общий: SSL: 10 м. Оставьте пустым по умолчанию."
+
+msgid "Timeout for sending a request to the backend. Default: 60s."
+msgstr "Таймаут отправки запроса на бэкенд. По умолчанию: 60 с."
+
+msgid "Custom Server Block"
+msgstr "Пользовательский блок сервера"
+
+msgid "Custom Server Block Content"
+msgstr "Содержимое пользовательского блока сервера"
+
+msgid "Danger Zone"
+msgstr "Опасная зона"
+
+msgid "Dangerous edit mode disabled"
+msgstr "Опасный режим редактирования отключен."
+
+msgid "Dangerous edit mode enabled"
+msgstr "Включен опасный режим редактирования"
+
+msgid "Default"
+msgstr "По умолчанию"
+
+msgid "Delete"
+msgstr "Удалить"
+
+msgid "Disable"
+msgstr "Отключить"
+
+msgid "Disable Dangerous Edit"
+msgstr "Отключить опасное редактирование"
+
+msgid "Direct Edit"
+msgstr "Прямое редактирование"
+
+msgid "Direct edits are temporary and will be overwritten whenever managed configuration is applied. Use Custom Location Directives for persistent reverse-proxy changes."
+msgstr "Прямые правки временны и будут перезаписаны при применении управляемой конфигурации. Для постоянных изменений reverse-proxy используйте «Пользовательские директивы location»."
+
+msgid "Disabled"
+msgstr "Отключено"
+
+msgid "Disabled Sites"
+msgstr "Отключённые сайты"
+
+msgid "Domain"
+msgstr "Домен"
+
+msgid "Domain is required for ACME certificates"
+msgstr "Для сертификатов ACME требуется домен"
+
+msgid "Domain is required for self-signed certificates"
+msgstr "Для самоподписанных сертификатов требуется домен"
+
+msgid "Edit"
+msgstr "Редактировать"
+
+msgid "Edit Site"
+msgstr "Редактировать сайт"
+
+msgid "Enable"
+msgstr "Включить"
+
+msgid "Enable Dangerous Edit"
+msgstr "Включить опасное редактирование"
+
+msgid "Enable direct editing of the config file"
+msgstr "Включить прямое редактирование файла конфигурации"
+
+msgid "Enabled"
+msgstr "Включено"
+
+msgid "Enabled Sites"
+msgstr "Включённые сайты"
+
+msgid "Environment Detection"
+msgstr "Проверка окружения"
+
+msgid "Duration for SSL session cache, e.g. 1d, 4h, 30m."
+msgstr "Продолжительность кэша сеанса SSL, например 1д, 4ч, 30м."
+
+msgid "Error Log"
+msgstr "Журнал ошибок"
+
+msgid "Error: "
+msgstr "Ошибка:  "
+
+msgid "Expired"
+msgstr "Истёк"
+
+msgid "Expiring Soon"
+msgstr "Скоро истекает"
+
+msgid "Failed to clear logs"
+msgstr "Не удалось очистить журналы"
+
+msgid "Failed to delete certificate"
+msgstr "Не удалось удалить сертификат"
+
+msgid "Failed to generate self-signed certificate"
+msgstr "Не удалось создать самоподписанный сертификат"
+
+msgid "Failed to issue ACME certificate"
+msgstr "Не удалось выпустить сертификат ACME"
+
+msgid "Failed to renew ACME certificate"
+msgstr "Не удалось обновить сертификат ACME"
+
+msgid "Failed to load logs"
+msgstr "Не удалось загрузить журналы"
+
+msgid "Failed to upload certificate"
+msgstr "Не удалось загрузить сертификат"
+
+msgid "File Missing"
+msgstr "Файл отсутствует"
+
+msgid "File Path"
+msgstr "Путь к файлу"
+
+msgid "File not found"
+msgstr "Файл не найден"
+
+msgid "File not found or not readable"
+msgstr "Файл не найден или не читается"
+
+msgid "File saved successfully"
+msgstr "Файл успешно сохранен"
+
+msgid "Filter"
+msgstr "Фильтр"
+
+msgid "General Settings"
+msgstr "Общие настройки"
+
+msgid "Generated Config"
+msgstr "Сгенерированная конфигурация"
+
+msgid "Generating..."
+msgstr "Генерация..."
+
+msgid "gRPC"
+msgstr "gRPC"
+
+msgid "Uses grpc:// or grpcs:// scheme."
+msgstr "Использует схему grpc:// или grpc://."
+
+msgid "Gzip"
+msgstr "Gzip"
+
+msgid "HTTP"
+msgstr "HTTP"
+
+msgid "HTTP to HTTPS Redirect"
+msgstr "Перенаправление HTTP на HTTPS"
+
+msgid "HTTP Redirect Port"
+msgstr "Порт HTTP-перенаправления"
+
+msgid "Index File"
+msgstr "Индексный файл"
+
+msgid "Invalid site name"
+msgstr "Неверное имя сайта"
+
+msgid "invalid domain"
+msgstr "неверный домен"
+
+msgid "invalid id"
+msgstr "недействительный идентификатор"
+
+msgid "Keepalive Timeout"
+msgstr "Тайм-аут keepalive"
+
+msgid "Last Config Test"
+msgstr "Последняя проверка конфигурации"
+
+msgid "Last Reload"
+msgstr "Последняя перезагрузка"
+
+msgid "Leave empty for all interfaces, or specify an IP (e.g. 127.0.0.1)."
+msgstr "Оставьте пустым для всех интерфейсов или укажите IP (например, 127.0.0.1)."
+
+msgid "Leave empty to use default ciphers."
+msgstr "Оставьте пустым, чтобы использовать шифры по умолчанию."
+
+msgid "Leave empty to use default: TLSv1.2 TLSv1.3"
+msgstr "Оставьте пустым, чтобы использовать значение по умолчанию: TLSv1.2 TLSv1.3."
+
+msgid "Leave empty to use same-port redirect."
+msgstr "Оставьте пустым, чтобы использовать перенаправление на тот же порт."
+
+msgid "Listen Address"
+msgstr "Адрес прослушивания"
+
+msgid "Listen Port"
+msgstr "Порт прослушивания"
+
+msgid "Listening Ports"
+msgstr "Прослушиваемые порты"
+
+msgid "Loading..."
+msgstr "Загрузка..."
+
+msgid "Log Output"
+msgstr "Вывод журнала"
+
+msgid "Log cleared"
+msgstr "Журнал очищен"
+
+msgid "Log Settings"
+msgstr "Настройки журналов"
+
+msgid "Logging"
+msgstr "Ведение журнала"
+
+msgid "Logs"
+msgstr "Журналы"
+
+msgid "Managed Sites"
+msgstr "Управляемые сайты"
+
+msgid "Manual"
+msgstr "Вручную"
+
+msgid "Maximum Backups"
+msgstr "Максимум резервных копий"
+
+msgid "Maximum backups must be between 1 and 100"
+msgstr "Максимальное количество резервных копий должно быть от 1 до 100."
+
+msgid "Missing"
+msgstr "Отсутствует"
+
+msgid "missing domain"
+msgstr "отсутствует домен"
+
+msgid "missing id"
+msgstr "отсутствует идентификатор"
+
+msgid "Modifying core configuration may prevent Nginx from starting and make LuCI inaccessible. Ensure SSH access is available."
+msgstr "Изменение основной конфигурации может помешать запуску Nginx и сделать LuCI недоступным. Убедитесь, что у вас есть доступ по SSH."
+
+msgid "Name"
+msgstr "Имя"
+
+msgid "Nginx Manager"
+msgstr "Менеджер Nginx"
+
+msgid "Nginx is running"
+msgstr "Nginx работает"
+
+msgid "Nginx is stopped"
+msgstr "Nginx остановлен"
+
+msgid "Nginx service is active and serving requests."
+msgstr "Служба Nginx активна и обслуживает запросы."
+
+msgid "Nginx service is not running. Click Start or Reload to begin."
+msgstr "Служба Nginx не запущена. Нажмите «Запустить» или «Перезагрузить»."
+
+msgid "No backups available."
+msgstr "Резервные копии отсутствуют."
+
+msgid "No certificates configured."
+msgstr "Сертификаты не настроены."
+
+msgid "No differences"
+msgstr "Никаких различий"
+
+msgid "No log entries found"
+msgstr "Записи журнала не найдены"
+
+msgid "No output"
+msgstr "Нет вывода"
+
+msgid "No sites configured. Click \"Add Site\" to create one."
+msgstr "Сайты не настроены. Нажмите «Добавить сайт», чтобы создать сайт."
+
+msgid "Non-Managed Configs"
+msgstr "Неуправляемые конфиги"
+
+msgid "OCSP Stapling"
+msgstr "OCSP Stapling"
+
+msgid "OCSP stapling for custom certificates only. ACME certs not supported — Let's Encrypt has discontinued OCSP."
+msgstr "Сшивание OCSP только для пользовательских сертификатов. Сертификаты ACME не поддерживаются — Let's Encrypt прекратила поддержку OCSP."
+
+msgid "OK"
+msgstr "ОК"
+
+msgid "Off"
+msgstr "Выкл."
+
+msgid "On"
+msgstr "Вкл."
+
+msgid "Persistent directives added inside location /. Supports proxy_set_header, sub_filter, and other location directives."
+msgstr "Постоянные директивы добавляются внутрь location /. Поддерживаются proxy_set_header, sub_filter и другие директивы location."
+
+msgid "One directive per line. These will be added inside the server block."
+msgstr "Одна директива на строку. Они будут добавлены внутри блока сервера."
+
+msgid "OpenWrt"
+msgstr "OpenWrt"
+
+msgid "Package Manager"
+msgstr "Менеджер пакетов"
+
+msgid "Path"
+msgstr "Путь"
+
+msgid "Permission denied. Make sure UCI changes are applied."
+msgstr "Доступ запрещен. Убедитесь, что изменения UCI применены."
+
+msgid "Please wait..."
+msgstr "Пожалуйста, подождите..."
+
+msgid "Please wait, ACME certificate issuance may take a while..."
+msgstr "Подождите, выпуск сертификата ACME может занять некоторое время..."
+
+msgid "Please wait, ACME renewal may take a while..."
+msgstr "Подождите, обновление сертификата ACME может занять некоторое время..."
+
+msgid "Plugin Version"
+msgstr "Версия плагина"
+
+msgid "Private Key (PEM)"
+msgstr "Закрытый ключ (PEM)"
+
+msgid "Proxy Host Header"
+msgstr "Заголовок Host прокси"
+
+msgid "Proxy Type"
+msgstr "Тип прокси"
+
+msgid "Read-only View"
+msgstr "Просмотр только для чтения"
+
+msgid "Redirect"
+msgstr "Перенаправление"
+
+msgid "Redirect Target"
+msgstr "Цель перенаправления"
+
+msgid "Redirecting"
+msgstr "Перенаправление"
+
+msgid "Refresh"
+msgstr "Обновить"
+
+msgid "Reload"
+msgstr "Перезагрузить"
+
+msgid "Requesting..."
+msgstr "Запрос..."
+
+msgid "Renew"
+msgstr "Обновить"
+
+msgid "Renewing..."
+msgstr "Обновление..."
+
+msgid "Restoring..."
+msgstr "Восстановление..."
+
+msgid "Restart"
+msgstr "Перезапустить"
+
+msgid "Restore"
+msgstr "Восстановить"
+
+msgid "Restore failed"
+msgstr "Восстановление не удалось"
+
+msgid "Reverse Proxy"
+msgstr "Обратный прокси"
+
+msgid "Root Directory"
+msgstr "Корневой каталог"
+
+msgid "SSL"
+msgstr "SSL"
+
+msgid "SSL Certificate"
+msgstr "SSL-сертификат"
+
+msgid "SSL Ciphers"
+msgstr "Шифры SSL"
+
+msgid "SSL Module"
+msgstr "Модуль SSL"
+
+msgid "SSL Protocols"
+msgstr "Протоколы SSL"
+
+msgid "SSL Session Cache"
+msgstr "Кэш SSL-сессий"
+
+msgid "SSL Session Timeout"
+msgstr "Тайм-аут SSL-сессии"
+
+msgid "SSL Buffer Size"
+msgstr "Размер буфера SSL"
+
+msgid "SSL Settings"
+msgstr "Настройки SSL"
+
+msgid "Save"
+msgstr "Сохранить"
+
+msgid "Save Config File"
+msgstr "Сохранить файл конфигурации"
+
+msgid "Save changes to the config file?"
+msgstr "Сохранить изменения в файле конфигурации?"
+
+msgid "A backup will be created before saving."
+msgstr "Перед сохранением будет создана резервная копия."
+
+msgid "Save failed"
+msgstr "Сохранить не удалось"
+
+msgid "Saving this file may break Nginx configuration. A backup will be created first. Continue?"
+msgstr "Сохранение этого файла может привести к нарушению конфигурации Nginx. Сначала будет создана резервная копия. Продолжать?"
+
+msgid "Self-Signed Certificate"
+msgstr "Самоподписанный сертификат"
+
+msgid "Self-signed certificate generated"
+msgstr "Самоподписанный сертификат создан"
+
+msgid "TCP NOPUSH"
+msgstr "TCP NOPUSH"
+
+msgid "Optimizes sending large files. Works best with Sendfile enabled."
+msgstr "Оптимизирует отправку больших файлов. Лучше всего работает с включенной функцией Sendfile."
+
+msgid "TCP NODELAY"
+msgstr "TCP NODELAY"
+
+msgid "Disables Nagle algorithm for low-latency delivery. Useful for real-time applications."
+msgstr "Отключает алгоритм Нэгла для доставки с малой задержкой. Полезно для приложений реального времени."
+
+msgid "Sendfile"
+msgstr "Sendfile"
+
+msgid "Server Tokens"
+msgstr "Токены сервера"
+
+msgid "Service Control"
+msgstr "Управление службой"
+
+msgid "Service Information"
+msgstr "Информация о службе"
+
+msgid "Site"
+msgstr "Сайт"
+
+msgid "Site Name"
+msgstr "Имя сайта"
+
+msgid "Site created, redirecting to edit page..."
+msgstr "Сайт создан, перенаправление на страницу редактирования..."
+
+msgid "Site deleted successfully"
+msgstr "Сайт успешно удален"
+
+msgid "Site disabled"
+msgstr "Сайт отключен"
+
+msgid "Site enabled"
+msgstr "Сайт включен"
+
+msgid "Site name is required"
+msgstr "Укажите название сайта."
+
+msgid "Site saved successfully"
+msgstr "Сайт успешно сохранен"
+
+msgid "Sites"
+msgstr "Сайты"
+
+msgid "Source"
+msgstr "Источник"
+
+msgid "Start"
+msgstr "Запустить"
+
+msgid "Static Website"
+msgstr "Статический сайт"
+
+msgid "Status"
+msgstr "Статус"
+
+msgid "Test Config"
+msgstr "Проверить конфигурацию"
+
+msgid "This certificate has expired."
+msgstr "Срок действия этого сертификата истек."
+
+msgid "This certificate is expiring soon."
+msgstr "Срок действия этого сертификата скоро истекает."
+
+msgid "Type"
+msgstr "Тип"
+
+msgid "Upload"
+msgstr "Загрузить"
+
+msgid "Upload Certificate"
+msgstr "Загрузить сертификат"
+
+msgid "Unknown"
+msgstr "Неизвестно"
+
+msgid "Valid"
+msgstr "Действителен"
+
+msgid "Version"
+msgstr "Версия"
+
+msgid "View Config"
+msgstr "Просмотреть конфигурацию"
+
+msgid "View Full Config"
+msgstr "Просмотреть полную конфигурацию"
+
+msgid "View Generated Config"
+msgstr "Просмотреть сгенерированную конфигурацию"
+
+msgid "View nginx -T"
+msgstr "Просмотреть вывод nginx -T"
+
+msgid "View uci.conf.template"
+msgstr "Просмотреть uci.conf.template"
+
+msgid "Certificate name must start with a letter, number or underscore, and can contain letters, numbers, dots, hyphens and underscores"
+msgstr "Имя сертификата должно начинаться с буквы, цифры или подчёркивания и может содержать буквы, цифры, точки, дефисы и подчёркивания"
+
+msgid "Wildcard domains are not supported for ACME certificates"
+msgstr "Подстановочные домены не поддерживаются для сертификатов ACME"
+
+msgid "wildcard domains not supported for acme"
+msgstr "подстановочные домены не поддерживаются для ACME"
+
+msgid "WebSocket"
+msgstr "WebSocket"
+
+msgid "WebSocket Support"
+msgstr "Поддержка WebSocket"
+
+msgid "gRPC Passthrough"
+msgstr "Проброс gRPC"
+
+msgid "gRPC Path"
+msgstr "Путь gRPC"
+
+msgid "URL path for gRPC traffic, e.g. /grpc or /api.Service"
+msgstr "URL-путь для трафика gRPC, например. /grpc или /api.Service"
+
+msgid "gRPC Backend Address"
+msgstr "Адрес бэкенда gRPC"
+
+msgid "X-Forwarded-For"
+msgstr "X-Forwarded-For"
+
+msgid "X-Forwarded-Proto"
+msgstr "X-Forwarded-Proto"
+
+msgid "X-Real-IP"
+msgstr "X-Real-IP"
+
+msgid "days remaining"
+msgstr "дней осталось"
+
+msgid "nginx -T Output"
+msgstr "nginx -T вывод"
+
+msgid "ACME Validation"
+msgstr "Проверка ACME"
+
+msgid "ACME Task"
+msgstr "Задача ACME"
+
+msgid "ACME Account Email"
+msgstr "Эл. почта учётной записи ACME"
+
+msgid "A real email address is required for ACME account registration."
+msgstr "Для регистрации учётной записи ACME требуется реальный адрес эл. почты."
+
+msgid "ACME account email is required"
+msgstr "Требуется эл. почта учётной записи ACME"
+
+msgid "Invalid ACME account email"
+msgstr "Недопустимая эл. почта учётной записи ACME"
+
+msgid "Command"
+msgstr "Команда"
+
+msgid "Output"
+msgstr "Выход"
+
+msgid "Recent ACME Log"
+msgstr "Последний журнал ACME"
+
+msgid "No output yet."
+msgstr "Выхода пока нет."
+
+msgid "No ACME log entries yet."
+msgstr "Записей в журнале ACME пока нет."
+
+msgid "Failed"
+msgstr "Не удалось"
+
+msgid "Regenerate"
+msgstr "Перегенерировать"
+
+msgid "Edit Certificate"
+msgstr "Изменить сертификат"
+
+msgid "Automatic Renewal"
+msgstr "Автоматическое обновление"
+
+msgid "Enable automatic renewal"
+msgstr "Включить автоматическое обновление"
+
+msgid "Manual Renewal"
+msgstr "Ручное обновление"
+
+msgid "Manual renewal will disable automatic renewal. You can re-enable it via Edit."
+msgstr "Продление вручную отключит автоматическое продление. Вы можете снова включить его через Edit."
+
+msgid "Continue"
+msgstr "Продолжить"
+
+msgid "Automatic renewal enabled"
+msgstr "Автоматическое обновление включено"
+
+msgid "Automatic renewal disabled"
+msgstr "Автоматическое обновление отключено"
+
+msgid "Failed to update automatic renewal"
+msgstr "Не удалось обновить автоматическое продление."
+
+msgid "Failed to update certificate"
+msgstr "Не удалось обновить сертификат"
+
+msgid "Auto (ACME DNS-01)"
+msgstr "Авто (ACME DNS-01)"
+
+msgid "Auto (ACME HTTP-01)"
+msgstr "Авто (ACME HTTP-01)"
+
+msgid "Auto (ACME Standalone)"
+msgstr "Авто (автономный ACME)"
+
+msgid "DNS API"
+msgstr "DNS API"
+
+msgid "DNS API is required for DNS-01 validation"
+msgstr "DNS API необходим для проверки DNS-01."
+
+msgid "DNS Credentials"
+msgstr "Учётные данные DNS"
+
+msgid "Leave empty to keep existing credentials."
+msgstr "Оставьте пустым, чтобы сохранить существующие учетные данные."
+
+msgid "DNS credentials are required for DNS-01 validation"
+msgstr "Для проверки DNS-01 необходимы учетные данные DNS."
+
+msgid "DNS Provider"
+msgstr "DNS-провайдер"
+
+msgid "-- Please choose --"
+msgstr "-- Пожалуйста, выберите --"
+
+msgid "DNS Wait Seconds"
+msgstr "Ожидание DNS в секундах"
+
+msgid "Seconds to wait for DNS propagation before validation."
+msgstr "Секунды ожидания распространения DNS перед проверкой."
+
+msgid "Custom DNS API Name"
+msgstr "Имя пользовательского API DNS"
+
+msgid "acme.sh DNS API script name, e.g. dns_myapi"
+msgstr "acme.sh Имя сценария DNS API, например. dns_myapi"
+
+msgid "Custom..."
+msgstr "Пользовательский..."
+
+msgid "Optional"
+msgstr "Необязательно"
+
+msgid "Configured"
+msgstr "Настроен"
+
+msgid "One credential per line in KEY=VALUE format"
+msgstr "По одному удостоверению в строке в формате KEY=VALUE."
+
+msgid "API Token from Cloudflare dashboard > My Profile > API Tokens"
+msgstr "Токен API из панели управления Cloudflare > Мой профиль > Токены API"
+
+msgid "Cloudflare Account ID (optional, needed for some tokens)"
+msgstr "Идентификатор учетной записи Cloudflare (необязательно, необходим для некоторых токенов)"
+
+msgid "Cloudflare Zone ID (optional, needed for some tokens)"
+msgstr "Идентификатор зоны Cloudflare (необязательно, необходим для некоторых токенов)"
+
+msgid "DNSPod API ID from console.dnspod.cn"
+msgstr "Идентификатор API DNSPod из console.dnspod.cn"
+
+msgid "DNSPod API Token from console.dnspod.cn"
+msgstr "Токен API DNSPod из console.dnspod.cn"
+
+msgid "AccessKey ID from Alibaba Cloud RAM console"
+msgstr "Идентификатор AccessKey из консоли Alibaba Cloud RAM"
+
+msgid "AccessKey Secret from Alibaba Cloud RAM console"
+msgstr "Секретный ключ доступа от консоли Alibaba Cloud RAM"
+
+msgid "AWS IAM Access Key ID with Route53 permissions"
+msgstr "Идентификатор ключа доступа AWS IAM с разрешениями Route53"
+
+msgid "AWS IAM Secret Access Key"
+msgstr "Секретный ключ доступа AWS IAM"
+
+msgid "IAM username from Huawei Cloud console > My Credentials"
+msgstr "Имя пользователя IAM из консоли Huawei Cloud > Мои учетные данные"
+
+msgid "Password for the IAM user"
+msgstr "Пароль для пользователя IAM"
+
+msgid "Account name from Huawei Cloud console > My Credentials"
+msgstr "Имя учетной записи в консоли Huawei Cloud > Мои учетные данные"
+
+msgid "API Key from developer.godaddy.com (Production key)"
+msgstr "Ключ API с сайта Developer.godaddy.com (рабочий ключ)"
+
+msgid "API Secret from developer.godaddy.com"
+msgstr "Секрет API с сайта Developer.godaddy.com."
+
+msgid "Namecheap account username"
+msgstr "Имя пользователя учетной записи Namecheap"
+
+msgid "API Key from Namecheap dashboard > Profile > Tools"
+msgstr "Ключ API из панели управления Namecheap > Профиль > Инструменты"
+
+msgid "Whitelisted IP address for API access"
+msgstr "IP-адрес в белом списке для доступа к API"
+
+msgid "DNS-01"
+msgstr "ДНС-01"
+
+msgid "HTTP-01 Webroot"
+msgstr "HTTP-01 Веб-рут"
+
+msgid "HTTP-01 Standalone"
+msgstr "HTTP-01 Автономный"
+
+msgid "invalid acme validation method"
+msgstr "недопустимый метод проверки ACME"
+
+msgid "invalid acme account email"
+msgstr "недопустимая эл. почта учётной записи ACME"
+
+msgid "missing acme account email"
+msgstr "не указана эл. почта учётной записи ACME"
+
+msgid "invalid auto renew"
+msgstr "недопустимое автоматическое обновление"
+
+msgid "invalid dns api"
+msgstr "недопустимый DNS API"
+
+msgid "invalid dns credentials"
+msgstr "недопустимые учётные данные DNS"
+
+msgid "invalid dns wait seconds"
+msgstr "недопустимое время ожидания DNS"
+
+msgid "missing dns api"
+msgstr "не указан DNS API"
+
+msgid "missing dns credentials"
+msgstr "не указаны учётные данные DNS"
+
+msgid "wildcard domains not supported for webroot acme"
+msgstr "подстановочные домены не поддерживаются для ACME Webroot"
+
+msgid "wildcard domains not supported for http acme"
+msgstr "подстановочные домены не поддерживаются для ACME HTTP"
+
+msgid "Configuration saved"
+msgstr "Конфигурация сохранена."
+
+msgid "Configuration reset"
+msgstr "Сброс конфигурации"
+
+msgid "Reset failed"
+msgstr "Сбросить не удалось"
+
+msgid "Apply failed"
+msgstr "Применить не удалось"
+
+msgid "System Behavior"
+msgstr "Поведение системы"
+
+msgid "Auto Backup"
+msgstr "Автоматическое резервное копирование"
+
+msgid "Automatically create a backup before applying configuration changes."
+msgstr "Автоматически создавать резервную копию перед применением изменений конфигурации."
+
+msgid "Max Backups"
+msgstr "Макс. резервных копий"
+
+msgid "Maximum number of backups to keep. Older backups will be automatically deleted."
+msgstr "Максимальное количество сохраняемых резервных копий. Старые резервные копии будут автоматически удалены."
+
+msgid "Test Before Reload"
+msgstr "Проверять перед перезагрузкой"
+
+msgid "Certificate Directory"
+msgstr "Каталог сертификатов"
+
+msgid "Managed Config Directory"
+msgstr "Управляемый каталог конфигурации"
+
+msgid "Directory for managed site configuration files."
+msgstr "Каталог для файлов конфигурации управляемого сайта."
+
+msgid "Backup Directory"
+msgstr "Каталог резервного копирования"
+
+msgid "Directory for storing configuration backups."
+msgstr "Каталог для хранения резервных копий конфигурации."
+
+msgid "Run nginx -t to test configuration before reloading. Prevents invalid config from breaking the server."
+msgstr "Запустите nginx -t, чтобы проверить конфигурацию перед перезагрузкой. Предотвращает повреждение сервера недействительной конфигурацией."
+
+msgid "Changes saved but not applied because dangerous edit mode is enabled. Disable it to apply changes."
+msgstr "Изменения сохранены, но не применены, поскольку включен опасный режим редактирования. Отключите его, чтобы применить изменения."
+
+msgid "HSTS Max-Age"
+msgstr "HSTS Max-Age"
+
+msgid "HSTS max-age in seconds. Default: 31536000 (1 year). Set to 0 to disable."
+msgstr "Максимальный возраст HSTS в секундах. По умолчанию: 31536000 (1 год). Установите значение 0, чтобы отключить."
+
+msgid "HTTP/2"
+msgstr "HTTP/2"
+
+msgid "Enable HTTP/2 for SSL sites. Uses the http2 directive (nginx 1.25.1+)."
+msgstr "Включите HTTP/2 для сайтов SSL. Использует директиву http2 (nginx 1.25.1+)."
+
+msgid "HTTP/3 (QUIC)"
+msgstr "HTTP/3 (QUIC)"
+
+msgid "Enable HTTP/3 over QUIC. Adds quic reuseport to listen directives and Alt-Svc header. Requires nginx built with QUIC support."
+msgstr "Включите HTTP/3 через QUIC. Добавляет quic reuseport для прослушивания директив и заголовка Alt-Svc. Требуется nginx с поддержкой QUIC."
+
+msgid "Security Headers"
+msgstr "Заголовки безопасности"
+
+msgid "Add X-Frame-Options, CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy to SSL sites."
+msgstr "Добавьте параметры X-Frame, CSP, параметры типа X-Content, политику реферера, политику разрешений на сайты SSL."
+
+msgid "is managed by HSTS settings. Set HSTS Max Age to 0 to disable it."
+msgstr "управляется настройками HSTS. Установите для HSTS Max Age значение 0, чтобы отключить его."
+
+msgid "is managed by HTTP/3 settings. Disable HTTP/3 to customize it."
+msgstr "управляется настройками HTTP/3. Отключите HTTP/3, чтобы настроить его."
+
+msgid "is managed by Security Headers. Disable Security Headers to customize it."
+msgstr "управляется заголовками безопасности. Отключите заголовки безопасности, чтобы настроить их."
+
+msgid "SSL Session Tickets"
+msgstr "SSL-тикеты сессий"
+
+msgid "Files"
+msgstr "Файлы"
+
+msgid "New File"
+msgstr "Новый файл"
+
+msgid "Create a new file in"
+msgstr "Создайте новый файл в"
+
+msgid "File Name"
+msgstr "Имя файла"
+
+msgid "Creating..."
+msgstr "Создание..."
+
+msgid "File created"
+msgstr "Файл создан"
+
+msgid "Failed to create file"
+msgstr "Не удалось создать файл"
+
+msgid "Failed to load directory"
+msgstr "Не удалось загрузить каталог"
+
+msgid "Failed to load file"
+msgstr "Не удалось загрузить файл"
+
+msgid "Failed to save file"
+msgstr "Не удалось сохранить файл"
+
+msgid "File name is required"
+msgstr "Требуется имя файла"
+
+msgid "No file selected"
+msgstr "Файл не выбран"
+
+msgid "Saving..."
+msgstr "Сохранение..."
+
+msgid "Clear All"
+msgstr "Очистить все"
+
+msgid "Clear All Logs"
+msgstr "Очистить все журналы"
+
+msgid "Are you sure you want to clear ALL access and error logs for all sites? This cannot be undone."
+msgstr "Вы уверены, что хотите очистить ВСЕ журналы доступа и ошибок для всех сайтов? Это невозможно отменить."
+
+msgid "Cleared"
+msgstr "Очищено"
+
+msgid "log file(s)"
+msgstr "файл(ы) журнала"
+
+msgid "Clone Site"
+msgstr "Клонировать сайт"
+
+msgid "Clone this site with a new name? The clone will be disabled by default."
+msgstr "Клонировать этот сайт под новым именем? По умолчанию клон будет отключен."
+
+msgid "Cloning..."
+msgstr "Клонирование..."
+
+msgid "Clone"
+msgstr "Клонировать"
+
+msgid "Site cloned, redirecting to edit page..."
+msgstr "Сайт клонирован, перенаправление на страницу редактирования..."
+
+msgid "e.g. my-cert"
+msgstr "например мой сертификат"
+
+msgid "Invalid certificate name"
+msgstr "Недопустимое имя сертификата"
+
+msgid "Letters, digits, underscore to start; dots and hyphens are also allowed after that."
+msgstr "Буквы, цифры, подчеркивание для начала; После этого также разрешены точки и дефисы."
+
+msgid "e.g. my-site, my_site_01"
+msgstr "например мой сайт, my_site_01"
+
+msgid "Enable to improve TLS resumption performance, or disable for stricter forward secrecy."
+msgstr "Включите, чтобы улучшить производительность возобновления TLS, или отключите, чтобы обеспечить более строгую секретность пересылки."
+
+msgid "Change Permissions"
+msgstr "Изменить разрешения"
+
+msgid "Octal"
+msgstr "Восьмеричный"
+
+msgid "Owner"
+msgstr "Владелец"
+
+msgid "Group"
+msgstr "Группа"
+
+msgid "Other"
+msgstr "Остальные"
+
+msgid "Read"
+msgstr "Чтение"
+
+msgid "Write"
+msgstr "Запись"
+
+msgid "Execute"
+msgstr "Выполнение"
+
+msgid "Permissions updated"
+msgstr "Разрешения обновлены"
+
+msgid "Failed to change permissions"
+msgstr "Не удалось изменить разрешения."
+
+msgid "Invalid permissions"
+msgstr "Неверные разрешения"
+
+msgid "Apply"
+msgstr "Применить"
+
+msgid "Archive"
+msgstr "Архив"
+
+msgid "Package"
+msgstr "Пакет"
+
+msgid "Shell"
+msgstr "Ракушка"
+
+msgid "Image"
+msgstr "Изображение"
+
+msgid "Backup"
+msgstr "Резервное копирование"
+
+msgid "Binary"
+msgstr "Двоичный"
+
+msgid "Certificate bundle"
+msgstr "Пакет сертификатов"
+
+msgid "Certificate"
+msgstr "Сертификат"
+
+msgid "Certificate chain"
+msgstr "Цепочка сертификатов"
+
+msgid "Nginx config"
+msgstr "Конфигурация Nginx"
+
+msgid "Certificate request"
+msgstr "Запрос сертификата"
+
+msgid "Environment file"
+msgstr "Файл среды"
+
+msgid "OpenWrt package"
+msgstr "пакет OpenWrt"
+
+msgid "Private key"
+msgstr "Закрытый ключ"
+
+msgid "PEM certificate"
+msgstr "сертификат ПЕМ"
+
+msgid "Public key"
+msgstr "Открытый ключ"
+
+msgid "Service unit"
+msgstr "Сервисный блок"
+
+msgid "SQLite database"
+msgstr "База данных SQLite"
+
+msgid "SVG image"
+msgstr "SVG-изображение"
+
+msgid "Dockerfile"
+msgstr "Докерфайл"
+
+msgid "Makefile"
+msgstr "Makefile"
+
+msgid "Authorized keys"
+msgstr "Авторизованные ключи"
+
+msgid "Group file"
+msgstr "Групповой файл"
+
+msgid "Hosts file"
+msgstr "Файл хостов"
+
+msgid "Hostname file"
+msgstr "Файл имени хоста"
+
+msgid "Known hosts"
+msgstr "Известные хосты"
+
+msgid "Password file"
+msgstr "Файл паролей"
+
+msgid "Shadow password file"
+msgstr "Теневой файл паролей"
+
+msgid "UCI config"
+msgstr "Конфигурация UCI"
+
+msgid "File"
+msgstr "Файл"
+
+msgid "Database"
+msgstr "База данных"
+
+msgid "Example file"
+msgstr "Пример файла"
+
+msgid "C header"
+msgstr "C header"
+
+msgid "C++ header"
+msgstr "C++ header"
+
+msgid "Icon"
+msgstr "Значок"
+
+msgid "Config"
+msgstr "Конфигурация"
+
+msgid "JavaScript"
+msgstr "JavaScript"
+
+msgid "TypeScript"
+msgstr "TypeScript"
+
+msgid "Markdown"
+msgstr "Уценка"
+
+msgid "List"
+msgstr "Список"
+
+msgid "Log"
+msgstr "Журнал"
+
+msgid "Sample file"
+msgstr "Образец файла"
+
+msgid "Text"
+msgstr "Текст"
+
+msgid "Certificate is valid and active."
+msgstr "Сертификат действителен и активен."
+
+msgid "Certificate is expiring soon. Consider renewing it."
+msgstr "Срок действия сертификата скоро истекает. Рекомендуется обновить его."
+
+msgid "Certificate has expired. Please renew or replace it."
+msgstr "Срок действия сертификата истёк. Обновите или замените его."
+
+msgid "Certificate file is missing. The certificate may have been issued but the file link is broken. Try regenerating."
+msgstr "Файл сертификата отсутствует. Сертификат мог быть выпущен, но ссылка на файл нарушена. Попробуйте перегенерировать."
+
+msgid "Details"
+msgstr "Подробности"
+
+msgid "Certificate Status"
+msgstr "Статус сертификата"
+
+msgid "Changing domain, validation method, or DNS provider requires re-issuing the certificate."
+msgstr "Изменение домена, метода проверки или DNS-провайдера требует перевыпуска сертификата."
+
+msgid "Domain is required"
+msgstr "Требуется домен"
+
+msgid "Re-issue Required"
+msgstr "Требуется перевыпуск"
+
+msgid "The changes you made require re-issuing the certificate. Would you like to re-issue now?"
+msgstr "Внесённые изменения требуют перевыпуска сертификата. Перевыпустить сейчас?"
+
+msgid "Settings saved. Certificate will be re-issued on next renewal."
+msgstr "Настройки сохранены. Сертификат будет перевыпущен при следующем обновлении."
+
+msgid "Later"
+msgstr "Позже"
+
+msgid "Re-issue Now"
+msgstr "Перевыпустить сейчас"
+
+msgid "Certificate settings updated"
+msgstr "Настройки сертификата обновлены"
+
+msgid "certificate path generated by site settings"
+msgstr "путь сертификата, созданный настройками сайта"
+
+msgid "certificate key path generated by site settings"
+msgstr "путь ключа сертификата, созданный настройками сайта"
+
+msgid "SSL protocol settings generated by site settings"
+msgstr "Настройки протокола SSL, созданные настройками сайта"
+
+msgid "SSL cipher settings generated by site settings"
+msgstr "Настройки SSL-шифра, созданные настройками сайта"
+
+msgid "SSL cipher preference generated by Nginx Manager"
+msgstr "Предпочтение шифрования SSL, созданное Nginx Manager"
+
+msgid "SSL Session Timeout field"
+msgstr "Поле «Тайм-аут SSL-сессии»"
+
+msgid "SSL Session Tickets field"
+msgstr "Поле Билеты сеанса SSL"
+
+msgid "OCSP trusted certificate generated by Nginx Manager"
+msgstr "Доверенный сертификат OCSP, созданный Nginx Manager."
+
+msgid "HTTP/2 field"
+msgstr "Поле HTTP/2"
+
+msgid "SSL Buffer Size field"
+msgstr "Поле размера буфера SSL"
+
+msgid "OCSP Stapling field"
+msgstr "Поле сшивания OCSP"
+
+msgid "OCSP Stapling generated resolver"
+msgstr "Резолвер, созданный сшиванием OCSP"
+
+msgid "OCSP Stapling generated resolver timeout"
+msgstr "Тайм-аут преобразователя, сгенерированный сшиванием OCSP"
+
+msgid "Line"
+msgstr "Линия"
+
+msgid "reuses shared zone"
+msgstr "повторно использует общую зону"
+
+msgid "with size"
+msgstr "с размером"
+
+msgid "but SSL Session Cache uses"
+msgstr "но кэш сеансов SSL использует"
+
+msgid "Use a different zone name or change the SSL Session Cache field."
+msgstr "Используйте другое имя зоны или измените поле «Кэш сеанса SSL»."
+
+msgid "is already managed by"
+msgstr "уже управляется"
+
+msgid "Remove this line from Custom SSL Directives and use the dedicated field instead."
+msgstr "Удалите эту строку из пользовательских директив SSL и используйте вместо нее специальное поле."
+
+msgid "Custom SSL Directives Conflict"
+msgstr "Конфликт пользовательских директив SSL"
+
+msgid "Please adjust Custom SSL Directives before saving. These lines conflict with settings generated by Nginx Manager:"
+msgstr "Перед сохранением настройте пользовательские директивы SSL. Эти строки конфликтуют с настройками, созданными Nginx Manager:"
+
+msgid "Line Count"
+msgstr "Количество строк"
+
+msgid "HTTP/3 Stream Buffer Size"
+msgstr "Размер буфера потока HTTP/3"
+
+msgid "QUIC stream buffer size, e.g. 64k, 256k. Leave empty for default."
+msgstr "Размер буфера потока QUIC, например 64к, 256к. Оставьте пустым по умолчанию."
+
+msgid "HTTP/3 Stream Buffer Size field"
+msgstr "Поле размера буфера потока HTTP/3"
+
+msgid "<br/><strong style=\"color:var(--red)\">Warning:</strong> "
+msgstr "<br/><strong style=\"color:var(--red)\">Предупреждение:</strong>  "
+
+msgid "Nginx HTTP/3 module has a known bug where POST requests may trigger a massive memory allocation (8GB), causing 500 errors. If you encounter this issue, disable HTTP/3 until nginx fixes the bug."
+msgstr "В модуле Nginx HTTP/3 есть известная ошибка, из-за которой запросы POST могут вызвать выделение большого количества памяти (8 ГБ), что приводит к 500 ошибкам. Если вы столкнулись с этой проблемой, отключите HTTP/3, пока nginx не исправит ошибку."
+
+msgid "Are you sure you want to delete"
+msgstr "Вы уверены, что хотите удалить"
+
+msgid "Back"
+msgstr "Назад"
+
+msgid "Cannot delete root directory"
+msgstr "Не могу удалить корневой каталог"
+
+msgid "Confirm Overwrite"
+msgstr "Подтвердить перезапись"
+
+msgid "Confirm Path"
+msgstr "Подтвердить путь"
+
+msgid "Create a new directory in"
+msgstr "Создайте новый каталог в"
+
+msgid "Deleted successfully"
+msgstr "Удален успешно"
+
+msgid "Directory"
+msgstr "Каталог"
+
+msgid "Directory Name"
+msgstr "Имя каталога"
+
+msgid "Directory created"
+msgstr "Каталог создан"
+
+msgid "Directory name is required"
+msgstr "Укажите имя каталога."
+
+msgid "Download"
+msgstr "Скачать"
+
+msgid "Expired %d days ago"
+msgstr "Истёк %d дн. назад"
+
+msgid "Expires in %d days"
+msgstr "Истекает через %d дн."
+
+msgid "Expires today"
+msgstr "Истекает сегодня"
+
+msgid "Expiry Date"
+msgstr "Дата истечения срока действия"
+
+msgid "Failed to create directory"
+msgstr "Не удалось создать каталог"
+
+msgid "Failed to delete"
+msgstr "Не удалось удалить"
+
+msgid "Failed to download"
+msgstr "Не удалось скачать"
+
+msgid "Failed to rename"
+msgstr "Не удалось переименовать"
+
+msgid "File uploaded successfully"
+msgstr "Файл успешно загружен"
+
+msgid "Go"
+msgstr "Перейти"
+
+msgid "Modified"
+msgstr "Изменён"
+
+msgid "Name cannot contain slashes or parent directory references"
+msgstr "Имя не может содержать косую черту или ссылки на родительский каталог."
+
+msgid "Name is required"
+msgstr "Требуется имя"
+
+msgid "Network error"
+msgstr "Ошибка сети"
+
+msgid "New Directory"
+msgstr "Новый каталог"
+
+msgid "New Name"
+msgstr "Новое имя"
+
+msgid "No files"
+msgstr "Нет файлов"
+
+msgid "Open"
+msgstr "Открыть"
+
+msgid "Path confirmation does not match"
+msgstr "Подтверждение пути не совпадает"
+
+msgid "Perms"
+msgstr "Права"
+
+msgid "Remaining"
+msgstr "Осталось"
+
+msgid "Rename"
+msgstr "Переименовать"
+
+msgid "Renamed successfully"
+msgstr "Переименовано успешно"
+
+msgid "Size"
+msgstr "Размер"
+
+msgid "System virtual directories cannot be modified"
+msgstr "Виртуальные каталоги системы не могут быть изменены"
+
+msgid "System virtual directories cannot be opened"
+msgstr "Системные виртуальные каталоги не могут быть открыты"
+
+msgid "Type the full path to confirm deletion. This operation cannot be undone."
+msgstr "Введите полный путь, чтобы подтвердить удаление. Эту операцию невозможно отменить."
+
+msgid "Type the full path to confirm overwriting the existing file."
+msgstr "Введите полный путь, чтобы подтвердить перезапись существующего файла."
+
+msgid "Upload failed"
+msgstr "Загрузка не удалась"
+
+msgid "Uploading..."
+msgstr "Загрузка..."
+
+msgid "items"
+msgstr "предметы"
