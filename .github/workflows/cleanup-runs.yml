@@ -9,6 +9,10 @@ permissions:
   actions: write
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   cleanup:
     name: Cleanup old workflow runs
@@ -16,7 +20,7 @@ jobs:
 
     steps:
       - name: Delete old workflow runs
-        uses: Mattraks/delete-workflow-runs@v2
+        uses: Mattraks/delete-workflow-runs@0cf693bc9909e5e867ee8f27b813224ba862939c # v2
         with:
           token: ${{ github.token }}
           retain_days: 30
