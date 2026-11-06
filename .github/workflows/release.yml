@@ -25,7 +25,7 @@ jobs:
       version: ${{ steps.check.outputs.version }}
       release: ${{ steps.check.outputs.release }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
       - id: check
@@ -76,7 +76,7 @@ jobs:
       image: ghcr.io/openwrt/sdk:${{ matrix.arch }}-${{ matrix.branch }}
       options: --user root
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           path: ${{ env.REPO_NAME }}
 
@@ -87,14 +87,14 @@ jobs:
           ln -sf "$SDKDIR" "$SDKDIR/shared-workdir/build"
 
       - name: Cache SDK build
-        uses: HiGarfield/cachewrtbuild@main
+        uses: HiGarfield/cachewrtbuild@3c396d6d42253c392a1c7c2ca996869c3d5b5853 # main @ 2026-11-05
         with:
           mixkey: ${{ matrix.branch }}
           prefix: ${{ env.SDKDIR }}
 
       - name: Cache feeds
         id: cache-feeds
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ${{ env.SDKDIR }}/feeds
           key: feeds-${{ matrix.branch }}-${{ hashFiles('feeds.conf') }}
@@ -163,7 +163,7 @@ jobs:
           ls -la "$GITHUB_WORKSPACE/output/"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@main
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # main @ 2026-11-05
         with:
           name: ${{ matrix.pkgtype }}
           path: output/
@@ -172,7 +172,7 @@ jobs:
     needs: [check-version, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@main
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # main @ 2026-11-05
         with:
           path: release/
 
@@ -194,7 +194,7 @@ jobs:
           gh release delete "$TAG" --yes --cleanup-tag 2>/dev/null || true
 
       - name: Create Release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3
         with:
           tag_name: v${{ needs.check-version.outputs.version }}-${{ needs.check-version.outputs.release }}
           name: v${{ needs.check-version.outputs.version }}-${{ needs.check-version.outputs.release }}
