@@ -84,6 +84,7 @@ jobs:
 
       - name: Build package
         working-directory: ${{ env.SDKDIR }}
+        shell: bash
         run: |
           set -euo pipefail
           target="package/$PKG_NAME/compile"
