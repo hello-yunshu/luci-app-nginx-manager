@@ -360,7 +360,7 @@ body.nm-dark .nm-log-area.is-error {
 	gap: 0.8em 1em;
 	margin-top: 2em;
 	padding: 1em 0 0;
-	border-top: 1px solid var(--border-color);
+	border-top: 1px solid var(--hairline, var(--border-color, #d9e0e7));
 	color: var(--subtext-color, #666);
 	font-size: 0.875em;
 }
