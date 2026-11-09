@@ -87,7 +87,7 @@
 ### 前置条件
 
 - OpenWrt 24.10.x 或 snapshot
-- 已安装 `nginx-ssl`
+- 已安装 `nginx-ssl` 或 `nginx-full`
 
 ### 下载安装
 
@@ -109,7 +109,7 @@ sha256sum -c sha256sums.txt
 ### 依赖
 
 ```
-luci-base  nginx-ssl  rpcd  rpcd-mod-file  openssl-util  acme  acme-acmesh-dnsapi  diffutils  flock
+luci-base  nginx (nginx-ssl / nginx-full)  rpcd  rpcd-mod-file  openssl-util  acme  acme-acmesh-dnsapi  diffutils  flock
 ```
 
 ## 使用指南

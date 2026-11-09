@@ -228,7 +228,7 @@ jobs:
 
             ## Requirements
             - OpenWrt 23.05+
-            - nginx-ssl, rpcd, rpcd-mod-file, openssl-util, acme, acme-acmesh-dnsapi, diffutils, flock installed
+            - nginx (provided by nginx-ssl or nginx-full), rpcd, rpcd-mod-file, openssl-util, acme, acme-acmesh-dnsapi, diffutils, flock installed
           files: |
             release/ipk/*.ipk
             release/apk/*.apk
