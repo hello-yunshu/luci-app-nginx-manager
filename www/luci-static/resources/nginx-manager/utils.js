@@ -47,7 +47,7 @@ function loadSharedCSS() {
 		var link = E('link', {
 			'id': 'nm-shared-css',
 			'rel': 'stylesheet',
-			'href': L.resource('nginx-manager/nginx-manager.css') + '?v=@PKG_VERSION@'
+			'href': L.resource('nginx-manager/nginx-manager.css') + '?v=@PKG_FULL_VERSION@'
 		});
 		document.head.appendChild(link);
 	}
