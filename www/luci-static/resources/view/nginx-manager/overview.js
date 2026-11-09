@@ -283,7 +283,7 @@ return view.extend({
 			]));
 
 			var depChecks = [
-				{ key: 'nginx_ssl', label: 'nginx-ssl' },
+				{ key: 'nginx_ssl', label: 'nginx (+ssl)' },
 				{ key: 'openssl_util', label: 'openssl-util' },
 				{ key: 'acme', label: 'acme' },
 				{ key: 'acme_dnsapi', label: 'acme-acmesh-dnsapi' },

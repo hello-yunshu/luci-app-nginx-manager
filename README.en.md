@@ -87,7 +87,7 @@ Adjust common parameters through a visual editor — no manual file editing need
 ### Prerequisites
 
 - OpenWrt 24.10.x or snapshot
-- `nginx-ssl` installed
+- `nginx-ssl` or `nginx-full` installed
 
 ### Download & Install
 
@@ -109,7 +109,7 @@ sha256sum -c sha256sums.txt
 ### Dependencies
 
 ```
-luci-base  nginx-ssl  rpcd  rpcd-mod-file  openssl-util  acme  acme-acmesh-dnsapi  diffutils  flock
+luci-base  nginx (nginx-ssl / nginx-full)  rpcd  rpcd-mod-file  openssl-util  acme  acme-acmesh-dnsapi  diffutils  flock
 ```
 
 ## Usage Guide
