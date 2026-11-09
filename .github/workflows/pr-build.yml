@@ -110,12 +110,13 @@ jobs:
 
       - name: Report dependency metadata
         working-directory: ${{ env.SDKDIR }}
+        shell: bash
         run: |
           for f in $(find ./bin/ -type f -name "${PKG_NAME}*.${{ matrix.pkgtype }}"); do
             echo "::group::$f"
             case "$f" in
               *.ipk) tar -xzOf "$f" ./control.tar.gz | tar -xzO ./control | grep -E '^(Package|Version|Depends|Provides):' ;;
-              *.apk) tar -xzOf "$f" .PKGINFO | grep -E '^(pkgname|pkgver|depend|provides)' ;;
+              *.apk) ls -l "$f"; echo "(apk v3 format; dependency metadata is checked on device with apk)" ;;
             esac
             echo "::endgroup::"
           done
