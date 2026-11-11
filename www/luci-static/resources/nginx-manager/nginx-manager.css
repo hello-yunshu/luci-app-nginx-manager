@@ -31,6 +31,12 @@
 .modal .right button,
 .modal .right .cbi-button { margin: 0; }
 
+/* === Modal Textarea === */
+.nm-modal-textarea {
+	width: 100%;
+	font-family: var(--font-mono);
+}
+
 /* === Code Block (modals) === */
 .nm-code-block {
 	border: 1px solid; border-radius: 6px;
@@ -68,10 +74,6 @@
 .nm-stat-card .nm-stat-value.red,
 .nm-stat-card .nm-stat-value.orange { color: inherit; }
 .nm-stat-card .nm-stat-label { margin-top: 0.3em; font-size: 0.85em; }
-.nm-stat-card .nm-stat-detail {
-	margin-top: 0.4em; font-size: 0.75em;
-	word-break: break-all;
-}
 
 /* === File Manager === */
 .nm-file-toolbar { display: flex; flex-direction: column; gap: 0.75em; }
