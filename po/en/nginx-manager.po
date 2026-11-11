@@ -1640,3 +1640,6 @@ msgstr "Uploading..."
 
 msgid "items"
 msgstr "items"
+
+msgid "Overview"
+msgstr "Overview"

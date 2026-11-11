@@ -1640,3 +1640,6 @@ msgstr "<br/><strong style=\"color:var(--red)\">警告：</strong>"
 
 msgid "Nginx HTTP/3 module has a known bug where POST requests may trigger a massive memory allocation (8GB), causing 500 errors. If you encounter this issue, disable HTTP/3 until nginx fixes the bug."
 msgstr "Nginx HTTP/3 模块存在已知缺陷，POST 请求可能触发大量内存分配（8GB），导致 500 错误。如遇此问题，请禁用 HTTP/3，直到 Nginx 修复该缺陷。"
+
+msgid "Overview"
+msgstr "概览"
