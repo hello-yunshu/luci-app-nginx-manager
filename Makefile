@@ -24,6 +24,10 @@ define Package/luci-app-nginx-manager
   PKGARCH:=$(LUCI_PKGARCH)
 endef
 
+define Package/luci-app-nginx-manager/conffiles
+/etc/config/nginx_manager
+endef
+
 define Package/luci-app-nginx-manager/description
   Complete Nginx management plugin for OpenWrt LuCI.
   Provides site management, reverse proxy, SSL certificates,

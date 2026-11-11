@@ -14,7 +14,6 @@ validate_nginx_manager_global() {
         'auto_backup:bool:1' \
         'test_before_reload:bool:1' \
         'max_backups:uint:5' \
-
         'client_max_body_size:string:' \
         'keepalive_timeout:string:' \
         'gzip:bool:0' \
