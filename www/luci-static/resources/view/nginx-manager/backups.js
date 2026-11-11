@@ -59,13 +59,13 @@ return view.extend({
 
 		utils.loadSharedCSS();
 
-		page.appendChild(E('h2', { 'class': 'cbi-map-title' }, _('Backups')));
+		page.appendChild(E('h2', { 'name': 'content' }, _('Backups')));
 
 		var section = E('div', { 'class': 'cbi-section' });
 		section.appendChild(E('h3', {}, _('Backup Management')));
 
 		var settingsRow = E('div', {
-			'class': 'cbi-value nm-inline-setting'
+			'class': 'cbi-value'
 		}, [
 			E('label', {
 				'class': 'cbi-value-title',
@@ -78,8 +78,7 @@ return view.extend({
 					'class': 'cbi-input-text',
 					'min': '1',
 					'max': '100',
-					'value': maxBackups,
-					'style': 'width: 6em;'
+					'value': maxBackups
 				}),
 				E('button', {
 					'class': 'cbi-button cbi-button-apply',
@@ -118,19 +117,16 @@ return view.extend({
 			}
 		}, '\u271A ' + _('Create Backup'));
 
-		section.appendChild(E('div', { 'class': 'nm-btn-group', 'style': 'margin-bottom: 12px;' }, [ createBtn, settingsRow ]));
+		section.appendChild(E('div', {}, [ createBtn, settingsRow ]));
 
 		if (backups.length === 0) {
-			section.appendChild(E('div', { 'class': 'nm-empty-state' },
+			section.appendChild(E('div', {},
 				_('No backups available.')));
 			page.appendChild(section);
-			return utils.appendFooter(page, {
-			project: 'Nginx Manager',
-			repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
-		});
+			return page;
 		}
 
-		var table = E('table', { 'class': 'table nm-responsive-table' });
+		var table = E('table', { 'class': 'table' });
 		var thead = E('thead');
 		var headerRow = E('tr');
 		[_('Backup Time'), _('Source'), _('Actions')].forEach(function(title) {
@@ -143,10 +139,10 @@ return view.extend({
 
 		backups.forEach(function(backup) {
 			var row = E('tr');
-			row.appendChild(E('td', { 'data-label': _('Backup Time') }, backup.timestamp || '-'));
-			row.appendChild(E('td', { 'data-label': _('Source') }, backup.source || '-'));
+			row.appendChild(E('td', { 'data-title': _('Backup Time') }, backup.timestamp || '-'));
+			row.appendChild(E('td', { 'data-title': _('Source') }, backup.source || '-'));
 
-			var actionsCell = E('td', { 'class': 'nm-actions', 'data-label': _('Actions') });
+			var actionsCell = E('td', { 'class': 'nm-actions', 'data-title': _('Actions') });
 
 			actionsCell.appendChild(E('button', {
 				'class': 'cbi-button',
@@ -226,10 +222,7 @@ return view.extend({
 		section.appendChild(table);
 		page.appendChild(section);
 
-		return utils.appendFooter(page, {
-			project: 'Nginx Manager',
-			repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
-		});
+		return page;
 	},
 
 	handleSave: null,

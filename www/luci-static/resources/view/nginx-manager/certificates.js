@@ -118,25 +118,13 @@ function certStatusLabel(status) {
 
 function certStatusClass(status) {
 	switch (status) {
-		case 'valid': return 'nm-badge success';
-		case 'expiring': return 'nm-badge warning';
-		case 'expired': return 'nm-badge error';
-		case 'missing': return 'nm-badge error';
-		case 'acme_running': return 'nm-badge warning';
-		case 'acme_failed': return 'nm-badge error';
-		default: return 'nm-badge disabled';
-	}
-}
-
-function certStatusBtnClass(status) {
-	switch (status) {
-		case 'valid': return 'nm-cert-status-valid';
-		case 'expiring': return 'nm-cert-status-expiring';
-		case 'expired': return 'nm-cert-status-expired';
-		case 'missing': return 'nm-cert-status-missing';
-		case 'acme_running': return 'nm-cert-status-running';
-		case 'acme_failed': return 'nm-cert-status-failed';
-		default: return 'nm-cert-status-unknown';
+		case 'valid': return 'label success';
+		case 'expiring': return 'label warning';
+		case 'expired': return 'label important';
+		case 'missing': return 'label important';
+		case 'acme_running': return 'label warning';
+		case 'acme_failed': return 'label important';
+		default: return 'label';
 	}
 }
 
@@ -237,11 +225,11 @@ function showAcmeTaskModal(cert) {
 			E('label', { 'class': 'cbi-value-title' }, _('Command')),
 			E('div', { 'class': 'cbi-value-field' }, commandNode)
 		]),
-		E('div', { 'class': 'cbi-value nm-value-full' }, [
+		E('div', { 'class': 'cbi-value' }, [
 			E('label', { 'class': 'cbi-value-title' }, _('Output')),
 			E('div', { 'class': 'cbi-value-field' }, detailNode)
 		]),
-		E('div', { 'class': 'cbi-value nm-value-full' }, [
+		E('div', { 'class': 'cbi-value' }, [
 			E('label', { 'class': 'cbi-value-title' }, _('Recent ACME Log')),
 			E('div', { 'class': 'cbi-value-field' }, logNode)
 		]),
@@ -418,7 +406,7 @@ function showEditCertModal(cert) {
 	var autoRenewInput = E('input', { 'type': 'checkbox', 'class': 'cbi-input-checkbox' });
 	autoRenewInput.checked = cert.auto_renew === '1';
 
-	var methodSelect = E('select', { 'class': 'cbi-input-select' }, [
+	var methodSelect = E('select', {}, [
 		E('option', { 'value': 'webroot' }, _('HTTP-01 Webroot')),
 		E('option', { 'value': 'dns' }, _('DNS-01')),
 		E('option', { 'value': 'standalone' }, _('HTTP-01 Standalone'))
@@ -432,7 +420,7 @@ function showEditCertModal(cert) {
 		dnsApiSelectOptions.push(E('option', { 'value': apiId }, apiId + ' (' + DNS_API_INFO[apiId].name + ')'));
 	}
 	dnsApiSelectOptions.push(E('option', { 'value': '_custom' }, _('Custom...')));
-	var dnsApiSelect = E('select', { 'class': 'cbi-input-select' }, dnsApiSelectOptions);
+	var dnsApiSelect = E('select', {}, dnsApiSelectOptions);
 	if (cert.dns_api && DNS_API_INFO[cert.dns_api]) {
 		dnsApiSelect.value = cert.dns_api;
 	} else if (cert.dns_api) {
@@ -462,7 +450,7 @@ function showEditCertModal(cert) {
 	});
 	dnsWaitInput.value = cert.dns_wait || '';
 
-	var customRow = E('div', { 'class': 'cbi-value', 'id': 'edit-dns-api-custom-row', 'style': 'display:none' }, [
+	var customRow = E('div', { 'class': 'cbi-value', 'id': 'edit-dns-api-custom-row' }, [
 		E('label', { 'class': 'cbi-value-title' }, _('Custom DNS API Name')),
 		E('div', { 'class': 'cbi-value-field' }, [
 			dnsApiCustomInput,
@@ -470,13 +458,13 @@ function showEditCertModal(cert) {
 		])
 	]);
 
-	var credsRow = E('div', { 'class': 'cbi-value', 'id': 'edit-dns-creds-row', 'style': 'display:none' }, [
+	var credsRow = E('div', { 'class': 'cbi-value', 'id': 'edit-dns-creds-row' }, [
 		E('label', { 'class': 'cbi-value-title' }, _('DNS Credentials')),
 		E('div', { 'class': 'cbi-value-field' }, [
-			E('div', { 'class': 'cbi-value-description', 'style': 'margin-bottom:0.5em;font-weight:bold;' }, _('Leave empty to keep existing credentials.')),
+			E('div', { 'class': 'cbi-value-description' }, _('Leave empty to keep existing credentials.')),
 			dnsCredsContainer,
 			dnsCredentialsInput,
-			E('div', { 'class': 'cbi-value-description', 'id': 'edit-dns-creds-desc', 'style': 'display:none' }, _('One credential per line in KEY=VALUE format'))
+			E('div', { 'class': 'cbi-value-description', 'id': 'edit-dns-creds-desc' }, _('One credential per line in KEY=VALUE format'))
 		])
 	]);
 
@@ -520,8 +508,8 @@ function showEditCertModal(cert) {
 					'placeholder': hasExisting ? '••••••••' : keyInfo.key + '=...',
 					'autocomplete': 'new-password'
 				};
-				var row = E('div', { 'class': 'nm-cred-field' }, [
-					E('label', { 'class': 'nm-cred-label' }, keyInfo.key + (keyInfo.optional ? ' (' + _('Optional') + ')' : '') + (hasExisting ? ' (' + _('Configured') + ')' : '')),
+				var row = E('div', {}, [
+					E('label', {}, keyInfo.key + (keyInfo.optional ? ' (' + _('Optional') + ')' : '') + (hasExisting ? ' (' + _('Configured') + ')' : '')),
 					E('input', inputAttrs),
 					keyInfo.desc ? E('div', { 'class': 'cbi-value-description' }, keyInfo.desc) : null
 				]);
@@ -545,7 +533,7 @@ function showEditCertModal(cert) {
 	methodSelect.addEventListener('change', updateMethodRows);
 	dnsApiSelect.addEventListener('change', updateDnsCredsFields);
 
-	var reissueNote = E('div', { 'class': 'cbi-value-description', 'style': 'display:none; color: #c44; font-weight: bold' },
+	var reissueNote = E('div', { 'class': 'cbi-value-description' },
 		_('Changing domain, validation method, or DNS provider requires re-issuing the certificate.'));
 
 	function checkReissueNeeded() {
@@ -581,13 +569,13 @@ function showEditCertModal(cert) {
 			E('label', { 'class': 'cbi-value-title' }, _('ACME Validation')),
 			E('div', { 'class': 'cbi-value-field' }, methodSelect)
 		]),
-		E('div', { 'class': 'cbi-value edit-dns-row', 'style': 'display:none' }, [
+		E('div', { 'class': 'cbi-value edit-dns-row' }, [
 			E('label', { 'class': 'cbi-value-title' }, _('DNS Provider')),
 			E('div', { 'class': 'cbi-value-field' }, dnsApiSelect)
 		]),
 		customRow,
 		credsRow,
-		E('div', { 'class': 'cbi-value edit-dns-row', 'style': 'display:none' }, [
+		E('div', { 'class': 'cbi-value edit-dns-row' }, [
 			E('label', { 'class': 'cbi-value-title' }, _('DNS Wait Seconds')),
 			E('div', { 'class': 'cbi-value-field' }, [
 				dnsWaitInput,
@@ -707,7 +695,7 @@ return view.extend({
 
 		utils.loadSharedCSS();
 
-		container.appendChild(E('h2', { 'class': 'cbi-map-title' }, _('Certificates')));
+		container.appendChild(E('h2', { 'name': 'content' }, _('Certificates')));
 
 		var headerSection = E('div', { 'class': 'cbi-section' });
 
@@ -717,7 +705,7 @@ return view.extend({
 				var certNameInput = E('input', { 'type': 'text', 'id': 'new-cert-name', 'class': 'cbi-input-text' });
 				var certNameDesc = E('div', { 'class': 'cbi-value-description' }, utils.NAME_TIP + ' ' + _('e.g. my-cert'));
 				utils.validateNameInput(certNameInput, certNameDesc);
-				var certTypeSelect = E('select', { 'id': 'new-cert-type', 'class': 'cbi-input-select' }, [
+				var certTypeSelect = E('select', { 'id': 'new-cert-type' }, [
 					E('option', { 'value': 'manual' }, _('Manual')),
 					E('option', { 'value': 'self_signed' }, _('Self-Signed Certificate')),
 					E('option', { 'value': 'acme' }, _('Auto (ACME)'))
@@ -735,7 +723,7 @@ return view.extend({
 					'class': 'cbi-input-checkbox'
 				});
 				acmeAutoRenewInput.checked = true;
-				var acmeMethodSelect = E('select', { 'id': 'new-acme-method', 'class': 'cbi-input-select' }, [
+				var acmeMethodSelect = E('select', { 'id': 'new-acme-method' }, [
 					E('option', { 'value': 'webroot' }, _('HTTP-01 Webroot')),
 					E('option', { 'value': 'dns' }, _('DNS-01')),
 					E('option', { 'value': 'standalone' }, _('HTTP-01 Standalone'))
@@ -747,21 +735,19 @@ return view.extend({
 					dnsApiSelectOptions.push(E('option', { 'value': apiId }, apiId + ' (' + DNS_API_INFO[apiId].name + ')'));
 				}
 				dnsApiSelectOptions.push(E('option', { 'value': '_custom' }, _('Custom...')));
-				var dnsApiSelect = E('select', { 'id': 'new-acme-dns-api', 'class': 'cbi-input-select' }, dnsApiSelectOptions);
+				var dnsApiSelect = E('select', { 'id': 'new-acme-dns-api' }, dnsApiSelectOptions);
 				var dnsApiCustomInput = E('input', {
 					'type': 'text',
 					'id': 'new-acme-dns-api-custom',
 					'class': 'cbi-input-text',
-					'placeholder': 'dns_xx',
-					'style': 'display:none'
+					'placeholder': 'dns_xx'
 				});
 				var dnsCredsContainer = E('div', { 'id': 'new-acme-dns-creds-container' });
 				var dnsCredentialsInput = E('textarea', {
 					'id': 'new-acme-dns-credentials',
 					'class': 'cbi-input-textarea nm-modal-textarea',
 					'rows': 5,
-					'placeholder': 'KEY=VALUE\nKEY2=VALUE2',
-					'style': 'display:none'
+					'placeholder': 'KEY=VALUE\nKEY2=VALUE2'
 				});
 				var dnsWaitInput = E('input', {
 					'type': 'number',
@@ -802,8 +788,8 @@ return view.extend({
 						for (var i = 0; i < info.keys.length; i++) {
 							var keyInfo = info.keys[i];
 							var keyName = keyInfo.key;
-							var row = E('div', { 'class': 'nm-cred-field' }, [
-								E('label', { 'class': 'nm-cred-label' }, keyName + (keyInfo.optional ? ' (' + _('Optional') + ')' : '')),
+							var row = E('div', {}, [
+								E('label', {}, keyName + (keyInfo.optional ? ' (' + _('Optional') + ')' : '')),
 								E('input', { 'type': 'password', 'class': 'cbi-input-text', 'data-cred-key': keyName, 'placeholder': keyName + '=...', 'autocomplete': 'new-password' }),
 								keyInfo.desc ? E('div', { 'class': 'cbi-value-description' }, keyInfo.desc) : null
 							]);
@@ -855,14 +841,14 @@ return view.extend({
 						E('label', { 'class': 'cbi-value-title' }, _('Domain')),
 						E('div', { 'class': 'cbi-value-field' }, certDomainInput)
 					]),
-					E('div', { 'class': 'cbi-value', 'id': 'cert-acme-email-row', 'style': 'display:none' }, [
+					E('div', { 'class': 'cbi-value', 'id': 'cert-acme-email-row' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('ACME Account Email')),
 						E('div', { 'class': 'cbi-value-field' }, [
 							acmeAccountEmailInput,
 							E('div', { 'class': 'cbi-value-description' }, _('A real email address is required for ACME account registration.'))
 						])
 					]),
-					E('div', { 'class': 'cbi-value', 'id': 'cert-acme-auto-renew-row', 'style': 'display:none' }, [
+					E('div', { 'class': 'cbi-value', 'id': 'cert-acme-auto-renew-row' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('Automatic Renewal')),
 						E('div', { 'class': 'cbi-value-field' }, [
 							E('label', {}, [
@@ -872,30 +858,30 @@ return view.extend({
 							])
 						])
 					]),
-					E('div', { 'class': 'cbi-value', 'id': 'cert-acme-method-row', 'style': 'display:none' }, [
+					E('div', { 'class': 'cbi-value', 'id': 'cert-acme-method-row' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('ACME Validation')),
 						E('div', { 'class': 'cbi-value-field' }, acmeMethodSelect)
 					]),
-					E('div', { 'class': 'cbi-value cert-dns-row', 'style': 'display:none' }, [
+					E('div', { 'class': 'cbi-value cert-dns-row' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('DNS Provider')),
 						E('div', { 'class': 'cbi-value-field' }, dnsApiSelect)
 					]),
-					E('div', { 'class': 'cbi-value', 'id': 'cert-dns-api-custom-row', 'style': 'display:none' }, [
+					E('div', { 'class': 'cbi-value', 'id': 'cert-dns-api-custom-row' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('Custom DNS API Name')),
 						E('div', { 'class': 'cbi-value-field' }, [
 							dnsApiCustomInput,
 							E('div', { 'class': 'cbi-value-description' }, _('acme.sh DNS API script name, e.g. dns_myapi'))
 						])
 					]),
-					E('div', { 'class': 'cbi-value', 'id': 'cert-dns-creds-row', 'style': 'display:none' }, [
+					E('div', { 'class': 'cbi-value', 'id': 'cert-dns-creds-row' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('DNS Credentials')),
 						E('div', { 'class': 'cbi-value-field' }, [
 							dnsCredsContainer,
 							dnsCredentialsInput,
-							E('div', { 'class': 'cbi-value-description', 'id': 'cert-dns-creds-desc', 'style': 'display:none' }, _('One credential per line in KEY=VALUE format'))
+							E('div', { 'class': 'cbi-value-description', 'id': 'cert-dns-creds-desc' }, _('One credential per line in KEY=VALUE format'))
 						])
 					]),
-					E('div', { 'class': 'cbi-value cert-dns-row', 'style': 'display:none' }, [
+					E('div', { 'class': 'cbi-value cert-dns-row' }, [
 						E('label', { 'class': 'cbi-value-title' }, _('DNS Wait Seconds')),
 						E('div', { 'class': 'cbi-value-field' }, [
 							dnsWaitInput,
@@ -1059,16 +1045,13 @@ return view.extend({
 
 		if (certs.length === 0) {
 			container.appendChild(E('div', { 'class': 'cbi-section' }, [
-				E('p', { 'class': 'nm-empty-state' },
+				E('p', {},
 					_('No certificates configured.'))
 			]));
-			return utils.appendFooter(container, {
-			project: 'Nginx Manager',
-			repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
-		});
+			return container;
 		}
 
-		var table = E('table', { 'class': 'table nm-responsive-table' });
+		var table = E('table', { 'class': 'table' });
 		var thead = E('thead');
 		var headerRow = E('tr');
 		[_('Name'), _('Type'), _('Domain'), _('Status'), _('Actions')].forEach(function(title) {
@@ -1080,21 +1063,21 @@ return view.extend({
 		certs.forEach(function(cert) {
 			var row = E('tr');
 
-			row.appendChild(E('td', { 'data-label': _('Name') }, cert.name || '-'));
-			row.appendChild(E('td', { 'data-label': _('Type') }, acmeModeLabel(cert)));
+			row.appendChild(E('td', { 'data-title': _('Name') }, cert.name || '-'));
+			row.appendChild(E('td', { 'data-title': _('Type') }, acmeModeLabel(cert)));
 
-			var domainCell = E('td', { 'data-label': _('Domain') });
+			var domainCell = E('td', { 'data-title': _('Domain') });
 			domainCell.textContent = cert.domain || '-';
 			row.appendChild(domainCell);
 
-			var statusCell = E('td', { 'data-label': _('Status') });
+			var statusCell = E('td', { 'data-title': _('Status') });
 			statusCell.appendChild(E('button', {
-				'class': 'cbi-button nm-cert-status-btn ' + certStatusBtnClass(cert.status),
+				'class': 'cbi-button',
 				'click': function() { showCertStatusModal(cert); }
 			}, certStatusIcon(cert.status) + ' ' + certStatusLabel(cert.status)));
 			row.appendChild(statusCell);
 
-			var actionsCell = E('td', { 'class': 'nm-actions', 'data-label': _('Actions') });
+			var actionsCell = E('td', { 'class': 'nm-actions', 'data-title': _('Actions') });
 
 			if (cert.type === 'acme') {
 				actionsCell.appendChild(E('button', {
@@ -1142,10 +1125,7 @@ return view.extend({
 
 		container.appendChild(E('div', { 'class': 'cbi-section' }, [table]));
 
-		return utils.appendFooter(container, {
-			project: 'Nginx Manager',
-			repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
-		});
+		return container;
 	},
 
 	handleSave: null,

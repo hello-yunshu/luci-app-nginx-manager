@@ -93,22 +93,17 @@ return view.extend({
 
 		utils.loadSharedCSS();
 
-		container.appendChild(E('h2', { 'class': 'cbi-map-title' }, _('Nginx Manager')));
+		container.appendChild(E('h2', { 'name': 'content' }, _('Nginx Manager')));
 
 		/* Status Banner */
 		var banner = E('div', {
-			'class': 'cbi-section nm-status-banner ' + (running ? 'running' : 'stopped')
+			'class': 'cbi-section alert-message' + (running ? 'success' : 'warning')
 		});
-		banner.appendChild(E('div', {
-			'class': 'nm-status-icon ' + (running ? 'running' : 'stopped')
-		}, running ? '\u25CF' : '\u25CB'));
-		var bannerText = E('div', { 'class': 'nm-status-text' });
-		bannerText.appendChild(E('h3', { 'class': running ? 'running' : 'stopped' },
+		banner.appendChild(E('h3', {},
 			running ? _('Nginx is running') : _('Nginx is stopped')));
-		bannerText.appendChild(E('p', {},
+		banner.appendChild(E('p', {},
 			running ? _('Nginx service is active and serving requests.')
 				: _('Nginx service is not running. Click Start or Reload to begin.')));
-		banner.appendChild(bannerText);
 		container.appendChild(banner);
 
 		/* Stats Grid */
@@ -125,7 +120,6 @@ return view.extend({
 		var nonManagedValueAttrs = { 'class': 'nm-stat-value' + (nonManagedCount > 0 ? ' orange' : '') };
 		if (nonManagedCount > 0 && nonManagedNames.length > 0) {
 			nonManagedValueAttrs['title'] = nonManagedNames.join(', ');
-			nonManagedValueAttrs['style'] = 'cursor: help;';
 		}
 		var nonManagedChildren = [
 			E('div', nonManagedValueAttrs, String(nonManagedCount)),
@@ -155,7 +149,7 @@ return view.extend({
 		var controlSection = E('div', { 'class': 'cbi-section' });
 		controlSection.appendChild(E('h3', {}, _('Service Control')));
 
-		var btnGroup = E('div', { 'class': 'nm-btn-group' });
+		var btnGroup = E('div', {});
 
 		if (!running) {
 			btnGroup.appendChild(E('button', {
@@ -242,21 +236,21 @@ return view.extend({
 		var infoSection = E('div', { 'class': 'cbi-section' });
 		infoSection.appendChild(E('h3', {}, _('Service Information')));
 
-		var infoTable = E('table', { 'class': 'table nm-kv-table' });
+		var infoTable = E('table', { 'class': 'table' });
 
-		infoTable.appendChild(E('tr', { 'class': 'tr' }, [
+		infoTable.appendChild(E('tr', {}, [
 			E('th', { 'class': 'th' }, _('Version')),
-			E('td', { 'class': 'td' }, status.version || '-')
+			E('td', {}, status.version || '-')
 		]));
 
-		infoTable.appendChild(E('tr', { 'class': 'tr' }, [
+		infoTable.appendChild(E('tr', {}, [
 			E('th', { 'class': 'th' }, _('Listening Ports')),
-			E('td', { 'class': 'td' }, status.listening_ports || '-')
+			E('td', {}, status.listening_ports || '-')
 		]));
 
-		infoTable.appendChild(E('tr', { 'class': 'tr' }, [
+		infoTable.appendChild(E('tr', {}, [
 			E('th', { 'class': 'th' }, _('Last Reload')),
-			E('td', { 'class': 'td' }, status.last_reload || '-')
+			E('td', {}, status.last_reload || '-')
 		]));
 
 		infoSection.appendChild(infoTable);
@@ -267,19 +261,19 @@ return view.extend({
 			while (envTable.firstChild)
 				envTable.removeChild(envTable.firstChild);
 
-			envTable.appendChild(E('tr', { 'class': 'tr' }, [
+			envTable.appendChild(E('tr', {}, [
 				E('th', { 'class': 'th' }, _('OpenWrt')),
-				E('td', { 'class': 'td' }, envData.openwrt_version || '-')
+				E('td', {}, envData.openwrt_version || '-')
 			]));
 
-			envTable.appendChild(E('tr', { 'class': 'tr' }, [
+			envTable.appendChild(E('tr', {}, [
 				E('th', { 'class': 'th' }, _('Package Manager')),
-				E('td', { 'class': 'td' }, envData.package_manager || '-')
+				E('td', {}, envData.package_manager || '-')
 			]));
 
-			envTable.appendChild(E('tr', { 'class': 'tr' }, [
+			envTable.appendChild(E('tr', {}, [
 				E('th', { 'class': 'th' }, _('Plugin Version')),
-				E('td', { 'class': 'td' }, envData.version || status.version || '-')
+				E('td', {}, envData.version || status.version || '-')
 			]));
 
 			var depChecks = [
@@ -296,11 +290,11 @@ return view.extend({
 				var hasValue = envData[dep.key] !== undefined;
 				var passed = envData[dep.key] === 1 || envData[dep.key] === '1';
 				var badge = E('span', {
-					'class': 'nm-badge ' + (hasValue ? (passed ? 'success' : 'error') : '')
+					'class': (hasValue ? (passed ? 'label success' : 'label important') : 'label')
 				}, hasValue ? ((passed ? '\u2714 ' : '\u2718 ') + (passed ? _('OK') : _('Missing'))) : _('Loading...'));
-				envTable.appendChild(E('tr', { 'class': 'tr' }, [
+				envTable.appendChild(E('tr', {}, [
 					E('th', { 'class': 'th' }, dep.label),
-					E('td', { 'class': 'td' }, badge)
+					E('td', {}, badge)
 				]));
 			});
 		}
@@ -337,7 +331,7 @@ return view.extend({
 		var envSection = E('div', { 'class': 'cbi-section' });
 		envSection.appendChild(E('h3', {}, _('Environment Detection')));
 
-		var envTable = E('table', { 'class': 'table nm-kv-table' });
+		var envTable = E('table', { 'class': 'table' });
 		renderEnvTable({});
 		envSection.appendChild(envTable);
 		container.appendChild(envSection);
@@ -354,10 +348,7 @@ return view.extend({
 			});
 		}, 0);
 
-		return utils.appendFooter(container, {
-			project: 'Nginx Manager',
-			repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
-		});
+		return container;
 	},
 
 	handleSave: null,
