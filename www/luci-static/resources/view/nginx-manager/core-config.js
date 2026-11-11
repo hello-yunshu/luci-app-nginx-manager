@@ -341,7 +341,7 @@ return view.extend({
 			var readonlySection = E('div', { 'class': 'cbi-section' });
 			readonlySection.appendChild(E('h3', {}, _('Read-only View')));
 
-			var readonlyBtns = E('div', { 'class': 'nm-btn-group', 'style': 'margin-bottom: 0.5em;' });
+			var readonlyBtns = E('div', {});
 
 			readonlyBtns.appendChild(E('button', {
 				'type': 'button',
@@ -383,7 +383,7 @@ return view.extend({
 			/* ========== Danger Zone Section ========== */
 			var dangerous = (uci.get('nginx_manager', 'global', 'dangerous_core_edit') || '0') === '1';
 
-			var dangerZone = E('div', { 'class': 'cbi-section nm-danger-zone' });
+			var dangerZone = E('div', { 'class': 'cbi-section' });
 			dangerZone.appendChild(E('h3', {}, _('Danger Zone')));
 
 			var dangerWarning = E('div', { 'class': 'alert-message warning' });
@@ -393,7 +393,6 @@ return view.extend({
 			var dangerToggle = E('button', {
 				'type': 'button',
 				'class': 'cbi-button cbi-button-reset',
-				'style': 'margin-bottom: 1em;',
 				'click': function() {
 					var button = this;
 					var current = uci.get('nginx_manager', 'global', 'dangerous_core_edit') || '0';
@@ -423,7 +422,7 @@ return view.extend({
 				];
 
 				files.forEach(function(file) {
-					var fileDiv = E('div', { 'class': 'nm-danger-file' });
+					var fileDiv = E('div', {});
 					fileDiv.appendChild(E('h5', {}, file.label));
 
 					var editorWidget = utils.createCodeEditor('', file.path, { readonly: false });
@@ -476,10 +475,7 @@ return view.extend({
 			node.appendChild(dangerZone);
 
 			/* ========== Footer ========== */
-			utils.appendFooter(node, {
-				project: 'Nginx Manager',
-				repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
-			});
+			node;
 
 			return node;
 		});

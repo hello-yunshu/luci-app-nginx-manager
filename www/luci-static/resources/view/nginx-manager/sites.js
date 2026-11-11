@@ -111,7 +111,7 @@ function renderBackendLink(site) {
 }
 
 function buildSiteTable(sites) {
-	var table = E('table', { 'class': 'table nm-responsive-table' });
+	var table = E('table', { 'class': 'table' });
 	var thead = E('thead');
 	var headerRow = E('tr');
 	[_('Enabled'), _('Name'), _('Domain'), _('Type'), _('SSL'), _('Backend / Root'), _('Actions')].forEach(function(title) {
@@ -123,23 +123,23 @@ function buildSiteTable(sites) {
 	sites.forEach(function(site) {
 		var row = E('tr', site.enabled !== '1' ? { 'class': 'nm-row-disabled' } : {});
 
-		var enabledCell = E('td', { 'data-label': _('Enabled') });
-		enabledCell.appendChild(E('span', { 'class': 'nm-badge ' + (site.enabled === '1' ? 'success' : 'disabled') },
+		var enabledCell = E('td', { 'data-title': _('Enabled') });
+		enabledCell.appendChild(E('span', { 'class': (site.enabled === '1' ? 'label success' : 'label') },
 			site.enabled === '1' ? _('Enabled') : _('Disabled')));
 		row.appendChild(enabledCell);
 
-		row.appendChild(E('td', { 'data-label': _('Name') }, site.name || '-'));
-		row.appendChild(E('td', { 'data-label': _('Domain') }, renderDomainLink(site)));
-		row.appendChild(E('td', { 'data-label': _('Type') }, modeLabel(site.mode)));
+		row.appendChild(E('td', { 'data-title': _('Name') }, site.name || '-'));
+		row.appendChild(E('td', { 'data-title': _('Domain') }, renderDomainLink(site)));
+		row.appendChild(E('td', { 'data-title': _('Type') }, modeLabel(site.mode)));
 
-		var sslCell = E('td', { 'data-label': _('SSL') });
-		sslCell.appendChild(E('span', { 'class': 'nm-badge ' + (site.has_ssl === '1' ? 'success' : 'disabled') },
+		var sslCell = E('td', { 'data-title': _('SSL') });
+		sslCell.appendChild(E('span', { 'class': (site.has_ssl === '1' ? 'label success' : 'label') },
 			site.has_ssl === '1' ? _('SSL') : '-'));
 		row.appendChild(sslCell);
 
-		row.appendChild(E('td', { 'data-label': _('Backend / Root') }, renderBackendLink(site)));
+		row.appendChild(E('td', { 'data-title': _('Backend / Root') }, renderBackendLink(site)));
 
-		var actionsCell = E('td', { 'class': 'nm-actions', 'data-label': _('Actions') });
+		var actionsCell = E('td', { 'class': 'nm-actions', 'data-title': _('Actions') });
 
 		actionsCell.appendChild(E('button', {
 			'class': 'cbi-button',
@@ -198,7 +198,6 @@ function buildSiteTable(sites) {
 
 					var saveBtn = E('button', {
 						'class': 'cbi-button cbi-button-apply',
-						'style': 'display:none;',
 						'click': function() {
 							if (!configFilePath) {
 								ui.addNotification(null, E('p', {}, _('Config file path not available')), 'error');
@@ -207,7 +206,7 @@ function buildSiteTable(sites) {
 							ui.showModal(_('Confirm Save'), [
 								E('p', {}, _('Save changes to the config file?')),
 								E('p', {}, _('A backup will be created before saving.')),
-								E('p', { 'style': 'margin-top:0.5em;' }, _('Direct edits are temporary and will be overwritten whenever managed configuration is applied. Use Custom Location Directives for persistent reverse-proxy changes.')),
+								E('p', {}, _('Direct edits are temporary and will be overwritten whenever managed configuration is applied. Use Custom Location Directives for persistent reverse-proxy changes.')),
 								E('div', { 'class': 'right' }, [
 									E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 									E('button', {
@@ -312,7 +311,7 @@ return view.extend({
 
 		utils.loadSharedCSS();
 
-		container.appendChild(E('h2', { 'class': 'cbi-map-title' }, _('Sites')));
+		container.appendChild(E('h2', { 'name': 'content' }, _('Sites')));
 
 		var headerSection = E('div', { 'class': 'cbi-section' });
 
@@ -327,7 +326,7 @@ return view.extend({
 				});
 				var nameDesc = E('div', { 'class': 'cbi-value-description' }, utils.NAME_TIP + ' ' + _('e.g. my-site, my_site_01'));
 				utils.validateNameInput(nameInput, nameDesc);
-				var modeSelect = E('select', { 'id': 'new-site-mode', 'class': 'cbi-input-select' }, [
+				var modeSelect = E('select', { 'id': 'new-site-mode' }, [
 					E('option', { 'value': 'reverse_proxy' }, _('Reverse Proxy')),
 					E('option', { 'value': 'static' }, _('Static Website')),
 					E('option', { 'value': 'custom' }, _('Custom Server Block')),
@@ -382,13 +381,10 @@ return view.extend({
 
 		if (sites.length === 0) {
 			container.appendChild(E('div', { 'class': 'cbi-section' }, [
-				E('p', { 'class': 'nm-empty-state' },
+				E('p', {},
 					_('No sites configured. Click "Add Site" to create one.'))
 			]));
-			return utils.appendFooter(container, {
-				project: 'Nginx Manager',
-				repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
-			});
+			return container;
 		}
 
 		var enabledSites = sites.filter(function(s) { return s.enabled === '1'; });
@@ -396,22 +392,19 @@ return view.extend({
 
 		if (enabledSites.length > 0) {
 			container.appendChild(E('div', { 'class': 'cbi-section' }, [
-				E('h4', { 'class': 'nm-subsection-title' }, _('Enabled Sites')),
+				E('h4', {}, _('Enabled Sites')),
 				buildSiteTable(enabledSites)
 			]));
 		}
 
 		if (disabledSites.length > 0) {
 			container.appendChild(E('div', { 'class': 'cbi-section' }, [
-				E('h4', { 'class': 'nm-subsection-title' }, _('Disabled Sites')),
+				E('h4', {}, _('Disabled Sites')),
 				buildSiteTable(disabledSites)
 			]));
 		}
 
-		return utils.appendFooter(container, {
-			project: 'Nginx Manager',
-			repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
-		});
+		return container;
 	},
 
 	handleSave: null,

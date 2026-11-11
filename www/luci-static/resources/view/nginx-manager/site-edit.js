@@ -81,7 +81,7 @@ return view.extend({
 
 		utils.loadSharedCSS();
 
-		page.appendChild(E('h2', { 'class': 'cbi-map-title' }, isNew ? _('Add Site') : _('Edit Site')));
+		page.appendChild(E('h2', { 'name': 'content' }, isNew ? _('Add Site') : _('Edit Site')));
 
 		/* ---- helpers ---- */
 
@@ -168,7 +168,7 @@ return view.extend({
 		basicSection.appendChild(makeField('opt-name', _('Site Name'), nameInput, utils.NAME_TIP));
 		utils.validateNameInput(nameInput);
 
-		var modeSelect = E('select', { 'class': 'cbi-input-select' }, [
+		var modeSelect = E('select', {}, [
 			E('option', { 'value': 'reverse_proxy' }, _('Reverse Proxy')),
 			E('option', { 'value': 'static' },        _('Static Website')),
 			E('option', { 'value': 'custom' },        _('Custom Server Block')),
@@ -204,7 +204,7 @@ return view.extend({
 		sslSection = E('div', { 'class': 'cbi-section' });
 		sslSection.appendChild(E('h3', {}, _('SSL Settings')));
 
-		var sslCertSelect = E('select', { 'class': 'cbi-input-select' }, [
+		var sslCertSelect = E('select', {}, [
 			E('option', { 'value': '' }, _('-- None --'))
 		]);
 		certs.forEach(function(cert) {
@@ -214,7 +214,7 @@ return view.extend({
 		if (!isNew && site && site.ssl_cert) sslCertSelect.value = site.ssl_cert;
 		sslSection.appendChild(makeField('opt-ssl_cert', _('SSL Certificate'), sslCertSelect));
 
-		var sslWarning = E('div', { 'class': 'alert-message warning', 'style': 'display:none;' });
+		var sslWarning = E('div', { 'class': 'alert-message warning' });
 		sslSection.appendChild(sslWarning);
 
 		sslCertSelect.addEventListener('change', function() {
@@ -254,7 +254,8 @@ return view.extend({
 		updateRedirectHttpPortVisibility();
 
 		/* SSL Advanced Options */
-		var sslAdvancedWrapper = E('div', { 'style': 'display:none;' });
+		var sslAdvancedWrapper = E('div');
+		sslAdvancedWrapper.style.display = 'none';
 
 		var sslProtocolsInput = E('input', {
 			'type': 'text', 'class': 'cbi-input-text',
@@ -301,7 +302,7 @@ return view.extend({
 		proxySection.appendChild(E('h3', {}, _('Reverse Proxy')));
 
 		/* Proxy Type: HTTP / gRPC (WebSocket is a checkbox under HTTP) */
-		proxyTypeSelect = E('select', { 'class': 'cbi-input-select' }, [
+		proxyTypeSelect = E('select', {}, [
 			E('option', { 'value': 'http' }, _('HTTP')),
 			E('option', { 'value': 'grpc' }, _('gRPC'))
 		]);
@@ -334,7 +335,8 @@ return view.extend({
 		var grpcPassthroughCb = grpcPassthroughRow.querySelector('input[type="checkbox"]');
 		proxySection.appendChild(grpcPassthroughRow);
 
-		grpcPassthroughFields = E('div', { 'style': 'display:none;' });
+		grpcPassthroughFields = E('div');
+		grpcPassthroughFields.style.display = 'none';
 
 		var grpcPathInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': '/grpc' });
 		if (!isNew && site && site.grpc_path) grpcPathInput.value = site.grpc_path;
@@ -355,7 +357,7 @@ return view.extend({
 		grpcPassthroughCb.addEventListener('change', updateGrpcPassthroughVisibility);
 
 		/* Common Proxy Headers */
-		proxyHeadersTitle = E('h4', { 'class': 'nm-subsection-title' }, _('Common Proxy Headers'));
+		proxyHeadersTitle = E('h4', {}, _('Common Proxy Headers'));
 		proxySection.appendChild(proxyHeadersTitle);
 
 		proxyHostRow = makeFlag('opt-proxy_host', _('Proxy Host Header'),
@@ -388,7 +390,7 @@ return view.extend({
 		proxySection.appendChild(customHeadersField);
 
 		/* Proxy Timeouts */
-		proxySection.appendChild(E('h4', { 'class': 'nm-subsection-title' }, _('Proxy Timeouts')));
+		proxySection.appendChild(E('h4', {}, _('Proxy Timeouts')));
 
 		var proxyConnectTimeoutInput = E('input', { 'type': 'text', 'class': 'cbi-input-text', 'placeholder': '60s' });
 		if (!isNew && site && site.proxy_connect_timeout) proxyConnectTimeoutInput.value = site.proxy_connect_timeout;
@@ -472,7 +474,7 @@ return view.extend({
 			var configPathRow = E('div', { 'class': 'cbi-value' });
 			configPathRow.appendChild(E('label', { 'class': 'cbi-value-title' }, _('File Path')));
 			var configPathField = E('div', { 'class': 'cbi-value-field' });
-			configPathField.appendChild(E('code', { 'style': 'word-break:break-all;' }, configPath || '-'));
+			configPathField.appendChild(E('code', {}, configPath || '-'));
 			configPathRow.appendChild(configPathField);
 			configSection.appendChild(configPathRow);
 
@@ -482,12 +484,12 @@ return view.extend({
 			var enableEditField = E('div', { 'class': 'cbi-value-field' });
 			var enableEditCb = E('input', { 'type': 'checkbox', 'id': 'opt-enable_config_edit', 'class': 'cbi-input-checkbox' });
 			enableEditField.appendChild(enableEditCb);
-			enableEditField.appendChild(E('label', { 'for': 'opt-enable_config_edit', 'style': 'margin-left:0.4em;cursor:pointer;' }, _('Enable direct editing of the config file')));
+			enableEditField.appendChild(E('label', { 'for': 'opt-enable_config_edit' }, _('Enable direct editing of the config file')));
 			enableEditRow.appendChild(enableEditField);
 			configSection.appendChild(enableEditRow);
 
 			/* Warning */
-			var configWarning = E('div', { 'class': 'alert-message warning', 'style': 'display:none;' });
+			var configWarning = E('div', { 'class': 'alert-message warning' });
 			configWarning.appendChild(E('p', {}, _('Direct edits are temporary and will be overwritten whenever managed configuration is applied. Use Custom Location Directives for persistent reverse-proxy changes.')));
 
 			/* Code editor - wrapped in cbi-value row to align with form fields */
@@ -496,7 +498,6 @@ return view.extend({
 			/* Save button for config file */
 			var configSaveBtn = E('button', {
 				'class': 'cbi-button cbi-button-apply',
-				'style': 'display:none; margin-top:0.5em;',
 				'click': function() {
 					if (!configPath) {
 						ui.addNotification(null, E('p', {}, _('Config file path not available')), 'error');
@@ -544,7 +545,7 @@ return view.extend({
 		}
 
 		/* ========== Actions ========== */
-		var actionsDiv = E('div', { 'class': 'nm-btn-group', 'style': 'justify-content: flex-end; margin-top: 1.5em;' });
+		var actionsDiv = E('div', {});
 
 		if (!isNew) {
 			actionsDiv.appendChild(E('button', {
@@ -566,7 +567,6 @@ return view.extend({
 
 						var saveBtn = E('button', {
 							'class': 'cbi-button cbi-button-apply',
-							'style': 'display:none;',
 							'click': function() {
 								if (!configFilePath) {
 									ui.addNotification(null, E('p', {}, _('Config file path not available')), 'error');
@@ -575,7 +575,7 @@ return view.extend({
 								ui.showModal(_('Confirm Save'), [
 									E('p', {}, _('Save changes to the config file?')),
 									E('p', {}, _('A backup will be created before saving.')),
-									E('p', { 'style': 'margin-top:0.5em;' }, _('Direct edits are temporary and will be overwritten whenever managed configuration is applied. Use Custom Location Directives for persistent reverse-proxy changes.')),
+									E('p', {}, _('Direct edits are temporary and will be overwritten whenever managed configuration is applied. Use Custom Location Directives for persistent reverse-proxy changes.')),
 									E('div', { 'class': 'right' }, [
 										E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Cancel')),
 										E('button', {
@@ -726,10 +726,7 @@ return view.extend({
 			});
 		}
 
-		return utils.appendFooter(page, {
-			project: 'Nginx Manager',
-			repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
-		});
+		return page;
 	},
 
 	handleSave: null,
