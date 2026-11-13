@@ -59,7 +59,10 @@ function parseSharedZone(value) {
 
 return view.extend({
 	load: function() {
-		return callSyncCoreFromNginx();
+		return callSyncCoreFromNginx().catch(function(err) {
+			console.error('nginx-manager: core-config load failed', err);
+			return { _loadError: err };
+		});
 	},
 
 	formValue: function(option, fallback) {
@@ -188,8 +191,15 @@ return view.extend({
 		return true;
 	},
 
-	render: function() {
+	render: function(data) {
 		utils.loadSharedCSS();
+
+		if (data && data._loadError) {
+			var page = E('div', { 'class': 'cbi-map' });
+			page.appendChild(E('h2', { 'name': 'content' }, _('Core Config')));
+			page.appendChild(utils.errorPanel(_('Unable to load core config'), _('Retry the page; if it keeps failing, check the service log.'), data._loadError));
+			return page;
+		}
 
 		var m = new form.Map('nginx_manager', _('Core Config'));
 		this.map = m;
@@ -475,7 +485,7 @@ return view.extend({
 			node.appendChild(dangerZone);
 
 			/* ========== Footer ========== */
-			node;
+			utils.appendFooter(node, utils.FOOTER_OPTIONS);
 
 			return node;
 		});

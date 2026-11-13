@@ -347,10 +347,30 @@ function showChmodModal(path, currentPerms) {
 	}
 
 	var table = E('table', { 'class': 'table' }, [
-		E('tr', {}, [ E('th', {}), E('th', {}, _('Owner')), E('th', {}, _('Group')), E('th', {}, _('Other')) ]),
-		E('tr', {}, [ E('td', {}, _('Read')), E('td', {}, makeBox('u', 'r', 'r')), E('td', {}, makeBox('g', 'r', 'r')), E('td', {}, makeBox('o', 'r', 'r')) ]),
-		E('tr', {}, [ E('td', {}, _('Write')), E('td', {}, makeBox('u', 'w', 'w')), E('td', {}, makeBox('g', 'w', 'w')), E('td', {}, makeBox('o', 'w', 'w')) ]),
-		E('tr', {}, [ E('td', {}, _('Execute')), E('td', {}, makeBox('u', 'x', 'x')), E('td', {}, makeBox('g', 'x', 'x')), E('td', {}, makeBox('o', 'x', 'x')) ])
+		E('tr', { 'class': 'tr' }, [
+			E('th', { 'class': 'th', 'data-title': _('Permission') }, _('Permission')),
+			E('th', { 'class': 'th', 'data-title': _('Owner') }, _('Owner')),
+			E('th', { 'class': 'th', 'data-title': _('Group') }, _('Group')),
+			E('th', { 'class': 'th', 'data-title': _('Other') }, _('Other'))
+		]),
+		E('tr', { 'class': 'tr' }, [
+			E('td', { 'class': 'td', 'data-title': _('Permission') }, _('Read')),
+			E('td', { 'class': 'td', 'data-title': _('Owner') }, makeBox('u', 'r', 'r')),
+			E('td', { 'class': 'td', 'data-title': _('Group') }, makeBox('g', 'r', 'r')),
+			E('td', { 'class': 'td', 'data-title': _('Other') }, makeBox('o', 'r', 'r'))
+		]),
+		E('tr', { 'class': 'tr' }, [
+			E('td', { 'class': 'td', 'data-title': _('Permission') }, _('Write')),
+			E('td', { 'class': 'td', 'data-title': _('Owner') }, makeBox('u', 'w', 'w')),
+			E('td', { 'class': 'td', 'data-title': _('Group') }, makeBox('g', 'w', 'w')),
+			E('td', { 'class': 'td', 'data-title': _('Other') }, makeBox('o', 'w', 'w'))
+		]),
+		E('tr', { 'class': 'tr' }, [
+			E('td', { 'class': 'td', 'data-title': _('Permission') }, _('Execute')),
+			E('td', { 'class': 'td', 'data-title': _('Owner') }, makeBox('u', 'x', 'x')),
+			E('td', { 'class': 'td', 'data-title': _('Group') }, makeBox('g', 'x', 'x')),
+			E('td', { 'class': 'td', 'data-title': _('Other') }, makeBox('o', 'x', 'x'))
+		])
 	]);
 
 	octalInput.addEventListener('input', syncCheckboxes);
@@ -471,25 +491,27 @@ function renderRows(tbody) {
 					E('span', { 'class': 'nm-file-name-text' }, '..')
 				])
 			]),
-			E('td', { 'data-title': _('Type') }, _('Directory')),
-			E('td', { 'data-title': _('Size') }, '-'),
-			E('td', { 'data-title': _('Perms') }, '-'),
-			E('td', { 'data-title': _('Modified') }, '-'),
-			E('td', { 'class': 'td nowrap nm-actions', 'data-title': _('Actions') }, [
-				E('button', {
-					'class': 'cbi-button',
-					'click': function(ev) {
-						ev.stopPropagation();
-						loadDirectory(parentPath(currentPath));
-					}
-				}, _('Open'))
+			E('td', { 'class': 'td', 'data-title': _('Type') }, _('Directory')),
+			E('td', { 'class': 'td', 'data-title': _('Size') }, '-'),
+			E('td', { 'class': 'td', 'data-title': _('Perms') }, '-'),
+			E('td', { 'class': 'td', 'data-title': _('Modified') }, '-'),
+			E('td', { 'class': 'td nowrap nm-actions-cell', 'data-title': _('Actions') }, [
+				E('div', { 'class': 'nm-actions' }, [
+					E('button', {
+						'class': 'cbi-button',
+						'click': function(ev) {
+							ev.stopPropagation();
+							loadDirectory(parentPath(currentPath));
+						}
+					}, _('Open'))
+				])
 			])
 		]));
 	}
 
 	if (!currentEntries.length) {
-		tbody.appendChild(E('tr', {}, [
-			E('td', { 'class': 'td center', 'colspan': '6' }, _('No files'))
+		tbody.appendChild(E('tr', { 'class': 'tr' }, [
+			E('td', { 'class': 'td center', 'colspan': '6', 'data-title': _('Name') }, _('No files'))
 		]));
 		return;
 	}
@@ -560,7 +582,7 @@ function renderRows(tbody) {
 					E('span', { 'class': 'nm-file-name-text' }, entry.name)
 				])
 			]),
-			E('td', { 'data-title': _('Type') }, entry.type || '-'),
+			E('td', { 'class': 'td', 'data-title': _('Type') }, entry.type || '-'),
 			E('td', { 'class': 'td nowrap', 'data-title': _('Size') }, isDir ? '-' : formatSize(entry.size)),
 			E('td', {
 				'class': 'td nowrap nm-file-perms',
@@ -572,7 +594,9 @@ function renderRows(tbody) {
 				}
 			}, perms),
 			E('td', { 'class': 'td nowrap', 'data-title': _('Modified') }, formatTime(entry.mtime)),
-			E('td', { 'class': 'td nowrap nm-actions', 'data-title': _('Actions') }, actions)
+			E('td', { 'class': 'td nowrap nm-actions-cell', 'data-title': _('Actions') }, [
+				E('div', { 'class': 'nm-actions' }, actions)
+			])
 		]);
 		tbody.appendChild(row);
 	});
@@ -849,12 +873,21 @@ return view.extend({
 			return fs.list('/').then(function(entries) {
 				return { path: '/', entries: entries };
 			});
+		}).catch(function(err) {
+			console.error('nginx-manager: files load failed', err);
+			return { _loadError: err };
 		});
 	},
 
 	render: function(data) {
 		var container = E('div', { 'class': 'cbi-map' });
 		utils.loadSharedCSS();
+
+		if (data && data._loadError) {
+			container.appendChild(E('h2', { 'name': 'content' }, _('Files')));
+			container.appendChild(utils.errorPanel(_('Unable to load files'), _('Retry the page; if it keeps failing, check the service log.'), data._loadError));
+			return utils.appendFooter(container, utils.FOOTER_OPTIONS);
+		}
 
 		if (data && Array.isArray(data.entries)) {
 			currentPath = data.path || DEFAULT_DIR;
@@ -897,18 +930,20 @@ return view.extend({
 		]));
 
 		container.appendChild(E('div', { 'class': 'cbi-section' }, [
-			E('table', { 'class': 'table nm-file-table' }, [
-				E('thead', {}, [
-					E('tr', {}, [
-						E('th', {}, _('Name')),
-						E('th', {}, _('Type')),
-						E('th', {}, _('Size')),
-						E('th', {}, _('Perms')),
-						E('th', {}, _('Modified')),
-						E('th', {}, _('Actions'))
-					])
-				]),
-				tbody
+			E('div', { 'class': 'nm-table-scroll' }, [
+				E('table', { 'class': 'table nm-file-table' }, [
+					E('thead', {}, [
+						E('tr', { 'class': 'tr' }, [
+							E('th', { 'class': 'th' }, _('Name')),
+							E('th', { 'class': 'th' }, _('Type')),
+							E('th', { 'class': 'th' }, _('Size')),
+							E('th', { 'class': 'th' }, _('Perms')),
+							E('th', { 'class': 'th' }, _('Modified')),
+							E('th', { 'class': 'th' }, _('Actions'))
+						])
+					]),
+					tbody
+				])
 			])
 		]));
 
@@ -917,7 +952,7 @@ return view.extend({
 			setStatus(currentEntries.length + ' ' + _('items'));
 		}, 0);
 
-		return container;
+		return utils.appendFooter(container, utils.FOOTER_OPTIONS);
 	},
 
 	handleSave: null,

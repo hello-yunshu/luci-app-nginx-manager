@@ -82,7 +82,10 @@ function reloadSoon(ms) {
 
 return view.extend({
 	load: function() {
-		return callStatus();
+		return callStatus().catch(function(err) {
+			console.error('nginx-manager: status load failed', err);
+			return { _loadError: err };
+		});
 	},
 
 	render: function(data) {
@@ -92,6 +95,12 @@ return view.extend({
 		var container = E('div', { 'class': 'cbi-map' });
 
 		utils.loadSharedCSS();
+
+		if (status._loadError) {
+			container.appendChild(E('h2', { 'name': 'content' }, _('Nginx Manager')));
+			container.appendChild(utils.errorPanel(_('Unable to load status'), _('Retry the page; if it keeps failing, check the service log.'), status._loadError));
+			return utils.appendFooter(container, utils.FOOTER_OPTIONS);
+		}
 
 		container.appendChild(E('h2', { 'name': 'content' }, _('Nginx Manager')));
 
@@ -238,19 +247,19 @@ return view.extend({
 
 		var infoTable = E('table', { 'class': 'table' });
 
-		infoTable.appendChild(E('tr', {}, [
+		infoTable.appendChild(E('tr', { 'class': 'tr' }, [
 			E('th', { 'class': 'th' }, _('Version')),
-			E('td', {}, status.version || '-')
+			E('td', { 'class': 'td', 'data-title': _('Version') }, status.version || '-')
 		]));
 
-		infoTable.appendChild(E('tr', {}, [
+		infoTable.appendChild(E('tr', { 'class': 'tr' }, [
 			E('th', { 'class': 'th' }, _('Listening Ports')),
-			E('td', {}, status.listening_ports || '-')
+			E('td', { 'class': 'td', 'data-title': _('Listening Ports') }, status.listening_ports || '-')
 		]));
 
-		infoTable.appendChild(E('tr', {}, [
+		infoTable.appendChild(E('tr', { 'class': 'tr' }, [
 			E('th', { 'class': 'th' }, _('Last Reload')),
-			E('td', {}, status.last_reload || '-')
+			E('td', { 'class': 'td', 'data-title': _('Last Reload') }, status.last_reload || '-')
 		]));
 
 		infoSection.appendChild(infoTable);
@@ -261,19 +270,19 @@ return view.extend({
 			while (envTable.firstChild)
 				envTable.removeChild(envTable.firstChild);
 
-			envTable.appendChild(E('tr', {}, [
+			envTable.appendChild(E('tr', { 'class': 'tr' }, [
 				E('th', { 'class': 'th' }, _('OpenWrt')),
-				E('td', {}, envData.openwrt_version || '-')
+				E('td', { 'class': 'td', 'data-title': _('OpenWrt') }, envData.openwrt_version || '-')
 			]));
 
-			envTable.appendChild(E('tr', {}, [
+			envTable.appendChild(E('tr', { 'class': 'tr' }, [
 				E('th', { 'class': 'th' }, _('Package Manager')),
-				E('td', {}, envData.package_manager || '-')
+				E('td', { 'class': 'td', 'data-title': _('Package Manager') }, envData.package_manager || '-')
 			]));
 
-			envTable.appendChild(E('tr', {}, [
+			envTable.appendChild(E('tr', { 'class': 'tr' }, [
 				E('th', { 'class': 'th' }, _('Plugin Version')),
-				E('td', {}, envData.version || status.version || '-')
+				E('td', { 'class': 'td', 'data-title': _('Plugin Version') }, envData.version || status.version || '-')
 			]));
 
 			var depChecks = [
@@ -292,9 +301,9 @@ return view.extend({
 				var badge = E('span', {
 					'class': (hasValue ? (passed ? 'label success' : 'label important') : 'label')
 				}, hasValue ? ((passed ? '\u2714 ' : '\u2718 ') + (passed ? _('OK') : _('Missing'))) : _('Loading...'));
-				envTable.appendChild(E('tr', {}, [
+				envTable.appendChild(E('tr', { 'class': 'tr' }, [
 					E('th', { 'class': 'th' }, dep.label),
-					E('td', {}, badge)
+					E('td', { 'class': 'td', 'data-title': dep.label }, badge)
 				]));
 			});
 		}
@@ -348,7 +357,7 @@ return view.extend({
 			});
 		}, 0);
 
-		return container;
+		return utils.appendFooter(container, utils.FOOTER_OPTIONS);
 	},
 
 	handleSave: null,

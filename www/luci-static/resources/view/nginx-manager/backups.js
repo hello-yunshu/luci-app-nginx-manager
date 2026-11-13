@@ -48,7 +48,10 @@ var callDeleteBackup = rpc.declare({
 
 return view.extend({
 	load: function() {
-		return callListBackups();
+		return callListBackups().catch(function(err) {
+			console.error('nginx-manager: backups load failed', err);
+			return { _loadError: err };
+		});
 	},
 
 	render: function(data) {
@@ -58,6 +61,12 @@ return view.extend({
 		var page = E('div', { 'class': 'cbi-map' });
 
 		utils.loadSharedCSS();
+
+		if (data && data._loadError) {
+			page.appendChild(E('h2', { 'name': 'content' }, _('Backups')));
+			page.appendChild(utils.errorPanel(_('Unable to load backups'), _('Retry the page; if it keeps failing, check the service log.'), data._loadError));
+			return utils.appendFooter(page, utils.FOOTER_OPTIONS);
+		}
 
 		page.appendChild(E('h2', { 'name': 'content' }, _('Backups')));
 
@@ -123,14 +132,14 @@ return view.extend({
 			section.appendChild(E('div', {},
 				_('No backups available.')));
 			page.appendChild(section);
-			return page;
+			return utils.appendFooter(page, utils.FOOTER_OPTIONS);
 		}
 
 		var table = E('table', { 'class': 'table' });
 		var thead = E('thead');
-		var headerRow = E('tr');
+		var headerRow = E('tr', { 'class': 'tr' });
 		[_('Backup Time'), _('Source'), _('Actions')].forEach(function(title) {
-			headerRow.appendChild(E('th', {}, title));
+			headerRow.appendChild(E('th', { 'class': 'th' }, title));
 		});
 		thead.appendChild(headerRow);
 		table.appendChild(thead);
@@ -138,13 +147,14 @@ return view.extend({
 		var tbody = E('tbody');
 
 		backups.forEach(function(backup) {
-			var row = E('tr');
-			row.appendChild(E('td', { 'data-title': _('Backup Time') }, backup.timestamp || '-'));
-			row.appendChild(E('td', { 'data-title': _('Source') }, backup.source || '-'));
+			var row = E('tr', { 'class': 'tr' });
+			row.appendChild(E('td', { 'class': 'td', 'data-title': _('Backup Time') }, backup.timestamp || '-'));
+			row.appendChild(E('td', { 'class': 'td', 'data-title': _('Source') }, backup.source || '-'));
 
-			var actionsCell = E('td', { 'class': 'nm-actions', 'data-title': _('Actions') });
+			var actionsCell = E('td', { 'class': 'td nm-actions-cell', 'data-title': _('Actions') });
+			var actions = E('div', { 'class': 'nm-actions' });
 
-			actionsCell.appendChild(E('button', {
+			actions.appendChild(E('button', {
 				'class': 'cbi-button',
 				'click': function() {
 					callDiffBackup(backup.id).then(function(result) {
@@ -159,7 +169,7 @@ return view.extend({
 				}
 			}, _('Compare')));
 
-			actionsCell.appendChild(E('button', {
+			actions.appendChild(E('button', {
 				'class': 'cbi-button cbi-button-apply',
 				'click': function() {
 					ui.showModal(_('Confirm Restore'), [
@@ -188,7 +198,7 @@ return view.extend({
 			}
 		}, '\u21A9 ' + _('Restore')));
 
-			actionsCell.appendChild(E('button', {
+			actions.appendChild(E('button', {
 				'class': 'cbi-button cbi-button-reset',
 				'click': function() {
 					ui.showModal(_('Confirm Delete'), [
@@ -214,15 +224,16 @@ return view.extend({
 				}
 			}, _('Delete')));
 
+			actionsCell.appendChild(actions);
 			row.appendChild(actionsCell);
 			tbody.appendChild(row);
 		});
 
 		table.appendChild(tbody);
-		section.appendChild(table);
+		section.appendChild(E('div', { 'class': 'nm-table-scroll' }, [table]));
 		page.appendChild(section);
 
-		return page;
+		return utils.appendFooter(page, utils.FOOTER_OPTIONS);
 	},
 
 	handleSave: null,
