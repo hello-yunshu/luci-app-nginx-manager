@@ -41,7 +41,10 @@ var callListSites = rpc.declare({
 
 return view.extend({
 	load: function() {
-		return callListSites();
+		return callListSites().catch(function(err) {
+			console.error('nginx-manager: logs load failed', err);
+			return { _loadError: err };
+		});
 	},
 
 	render: function(data) {
@@ -50,6 +53,12 @@ return view.extend({
 		var page = E('div', { 'class': 'cbi-map' });
 
 		utils.loadSharedCSS();
+
+		if (data && data._loadError) {
+			page.appendChild(E('h2', { 'name': 'content' }, _('Logs')));
+			page.appendChild(utils.errorPanel(_('Unable to load logs'), _('Retry the page; if it keeps failing, check the service log.'), data._loadError));
+			return utils.appendFooter(page, utils.FOOTER_OPTIONS);
+		}
 
 		page.appendChild(E('h2', { 'name': 'content' }, _('Logs')));
 
@@ -267,7 +276,7 @@ return view.extend({
 
 		window.setTimeout(loadLogs, 0);
 
-		return page;
+		return utils.appendFooter(page, utils.FOOTER_OPTIONS);
 	},
 
 	handleSave: null,

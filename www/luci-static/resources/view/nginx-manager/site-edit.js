@@ -61,7 +61,12 @@ return view.extend({
 			promises.push(Promise.resolve(null));
 		}
 
-		return Promise.all(promises);
+		return Promise.all(promises.map(function(p) {
+			return p.catch(function(err) {
+				console.error('nginx-manager: site-edit load failed', err);
+				return { _loadError: err };
+			});
+		}));
 	},
 
 	render: function(data) {
@@ -80,6 +85,12 @@ return view.extend({
 		var page = E('div', { 'class': 'cbi-map' });
 
 		utils.loadSharedCSS();
+
+		if ((data[0] && data[0]._loadError) || (data[1] && data[1]._loadError)) {
+			page.appendChild(E('h2', { 'name': 'content' }, _('Edit Site')));
+			page.appendChild(utils.errorPanel(_('Unable to load site'), _('Retry the page; if it keeps failing, check the service log.'), (data[0] && data[0]._loadError) || data[1]._loadError));
+			return utils.appendFooter(page, utils.FOOTER_OPTIONS);
+		}
 
 		page.appendChild(E('h2', { 'name': 'content' }, isNew ? _('Add Site') : _('Edit Site')));
 
@@ -214,23 +225,32 @@ return view.extend({
 		if (!isNew && site && site.ssl_cert) sslCertSelect.value = site.ssl_cert;
 		sslSection.appendChild(makeField('opt-ssl_cert', _('SSL Certificate'), sslCertSelect));
 
-		var sslWarning = E('div', { 'class': 'alert-message warning' });
-		sslSection.appendChild(sslWarning);
+		/* 只在证书即将过期/已过期时才把提示条挂进 DOM，避免正常态留一个空提示条 */
+		var sslWarning = null;
+		function updateSslWarning(cert) {
+			var text = cert && cert.status === 'expired' ? _('This certificate has expired.')
+				: cert && cert.status === 'expiring' ? _('This certificate is expiring soon.')
+				: '';
+			if (!text) {
+				if (sslWarning) sslWarning.style.display = 'none';
+				return;
+			}
+			if (!sslWarning) {
+				sslWarning = E('div', { 'class': 'alert-message warning' });
+				sslSection.appendChild(sslWarning);
+			}
+			sslWarning.style.display = '';
+			sslWarning.textContent = text;
+		}
 
 		sslCertSelect.addEventListener('change', function() {
-			var sel = certs.find(function(c) { return c.id === sslCertSelect.value; });
-			if (sel && (sel.status === 'expiring' || sel.status === 'expired')) {
-				sslWarning.style.display = '';
-				sslWarning.textContent = sel.status === 'expired'
-					? _('This certificate has expired.')
-					: _('This certificate is expiring soon.');
-			} else {
-				sslWarning.style.display = 'none';
-			}
+			updateSslWarning(certs.find(function(c) { return c.id === sslCertSelect.value; }));
 
 			/* Auto-update listen defaults when SSL is toggled */
 			updateListenDefaults();
 		});
+
+		updateSslWarning(certs.find(function(c) { return c.id === sslCertSelect.value; }));
 
 		var redirectHttpsRow = makeFlag('opt-redirect_https', _('HTTP to HTTPS Redirect'),
 			!isNew && site ? site.redirect_https === '1' : true);
@@ -726,7 +746,7 @@ return view.extend({
 			});
 		}
 
-		return page;
+		return utils.appendFooter(page, utils.FOOTER_OPTIONS);
 	},
 
 	handleSave: null,

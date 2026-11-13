@@ -685,7 +685,10 @@ function showEditCertModal(cert) {
 
 return view.extend({
 	load: function() {
-		return callListCerts();
+		return callListCerts().catch(function(err) {
+			console.error('nginx-manager: certificates load failed', err);
+			return { _loadError: err };
+		});
 	},
 
 	render: function(data) {
@@ -694,6 +697,12 @@ return view.extend({
 		var container = E('div', { 'class': 'cbi-map' });
 
 		utils.loadSharedCSS();
+
+		if (data && data._loadError) {
+			container.appendChild(E('h2', { 'name': 'content' }, _('Certificates')));
+			container.appendChild(utils.errorPanel(_('Unable to load certificates'), _('Retry the page; if it keeps failing, check the service log.'), data._loadError));
+			return utils.appendFooter(container, utils.FOOTER_OPTIONS);
+		}
 
 		container.appendChild(E('h2', { 'name': 'content' }, _('Certificates')));
 
@@ -1048,50 +1057,51 @@ return view.extend({
 				E('p', {},
 					_('No certificates configured.'))
 			]));
-			return container;
+			return utils.appendFooter(container, utils.FOOTER_OPTIONS);
 		}
 
 		var table = E('table', { 'class': 'table' });
 		var thead = E('thead');
-		var headerRow = E('tr');
+		var headerRow = E('tr', { 'class': 'tr' });
 		[_('Name'), _('Type'), _('Domain'), _('Status'), _('Actions')].forEach(function(title) {
-			headerRow.appendChild(E('th', {}, title));
+			headerRow.appendChild(E('th', { 'class': 'th' }, title));
 		});
 		thead.appendChild(headerRow);
 		table.appendChild(thead);
 
 		certs.forEach(function(cert) {
-			var row = E('tr');
+			var row = E('tr', { 'class': 'tr' });
 
-			row.appendChild(E('td', { 'data-title': _('Name') }, cert.name || '-'));
-			row.appendChild(E('td', { 'data-title': _('Type') }, acmeModeLabel(cert)));
+			row.appendChild(E('td', { 'class': 'td', 'data-title': _('Name') }, cert.name || '-'));
+			row.appendChild(E('td', { 'class': 'td', 'data-title': _('Type') }, acmeModeLabel(cert)));
 
-			var domainCell = E('td', { 'data-title': _('Domain') });
+			var domainCell = E('td', { 'class': 'td', 'data-title': _('Domain') });
 			domainCell.textContent = cert.domain || '-';
 			row.appendChild(domainCell);
 
-			var statusCell = E('td', { 'data-title': _('Status') });
+			var statusCell = E('td', { 'class': 'td', 'data-title': _('Status') });
 			statusCell.appendChild(E('button', {
 				'class': 'cbi-button',
 				'click': function() { showCertStatusModal(cert); }
 			}, certStatusIcon(cert.status) + ' ' + certStatusLabel(cert.status)));
 			row.appendChild(statusCell);
 
-			var actionsCell = E('td', { 'class': 'nm-actions', 'data-title': _('Actions') });
+			var actionsCell = E('td', { 'class': 'td nm-actions-cell', 'data-title': _('Actions') });
+			var actions = E('div', { 'class': 'nm-actions' });
 
 			if (cert.type === 'acme') {
-				actionsCell.appendChild(E('button', {
+				actions.appendChild(E('button', {
 					'class': 'cbi-button',
 					'click': function() { showEditCertModal(cert); }
 				}, _('Edit')));
 
-				actionsCell.appendChild(E('button', {
+				actions.appendChild(E('button', {
 					'class': 'cbi-button cbi-button-apply',
 					'click': function() { requestAcmeRenew(cert); }
 				}, '\u21BB ' + (cert.status === 'acme_failed' || cert.status === 'missing' ? _('Regenerate') : _('Renew'))));
 			}
 
-			actionsCell.appendChild(E('button', {
+			actions.appendChild(E('button', {
 				'class': 'cbi-button cbi-button-reset',
 				'click': function() {
 					ui.showModal(_('Confirm Delete'), [
@@ -1119,13 +1129,16 @@ return view.extend({
 				}
 			}, '\u2718 ' + _('Delete')));
 
+			actionsCell.appendChild(actions);
 			row.appendChild(actionsCell);
 			table.appendChild(row);
 		});
 
-		container.appendChild(E('div', { 'class': 'cbi-section' }, [table]));
+		container.appendChild(E('div', { 'class': 'cbi-section' }, [
+			E('div', { 'class': 'nm-table-scroll' }, [table])
+		]));
 
-		return container;
+		return utils.appendFooter(container, utils.FOOTER_OPTIONS);
 	},
 
 	handleSave: null,

@@ -90,7 +90,7 @@
 .nm-file-table .active { background: color-mix(in srgb, currentColor 14%, transparent); }
 .nm-file-openable:hover .nm-file-name,
 .nm-file-openable:hover .nm-file-icon { cursor: pointer; }
-.nm-file-name { min-width: 220px; }
+.nm-file-name { min-width: 0; }
 .nm-file-name-main {
 	display: inline-flex; align-items: center;
 	gap: 0.55em; min-width: 0; max-width: 100%;
@@ -160,13 +160,13 @@
 	--nm-code-surface: #fffaf3;
 	--nm-code-overlay: #f2e9e1;
 	--nm-code-fg: #575279;
-	--nm-code-muted: #9893a5;
-	--nm-code-subtle: #797593;
-	--nm-code-keyword: #907aa9;
-	--nm-code-string: #ea9d34;
-	--nm-code-function: #b4637a;
-	--nm-code-type: #2996b2;
-	--nm-code-number: #d7827e;
+	--nm-code-muted: #676275;
+	--nm-code-subtle: #65617c;
+	--nm-code-keyword: #715a8c;
+	--nm-code-string: #8f580f;
+	--nm-code-function: #9b4a61;
+	--nm-code-type: #1e6c80;
+	--nm-code-number: #b13c37;
 	--nm-code-operator: #286983;
 	--nm-code-error: #d7827e;
 	--nm-code-warning: #ea9d34;
@@ -184,13 +184,13 @@
 	--nm-code-overlay: #26233a;
 	--nm-code-fg: #e0def4;
 	--nm-code-muted: #908caa;
-	--nm-code-subtle: #6e6a86;
+	--nm-code-subtle: #89859e;
 	--nm-code-keyword: #c4a7e7;
 	--nm-code-string: #f6c177;
 	--nm-code-function: #ebbcba;
 	--nm-code-type: #9ccfd8;
 	--nm-code-number: #eb6f92;
-	--nm-code-operator: #31748f;
+	--nm-code-operator: #3e93b5;
 	--nm-code-error: #eb6f92;
 	--nm-code-warning: #f6c177;
 	--nm-code-info: #9ccfd8;
@@ -271,4 +271,165 @@
 .nm-code-editor:focus-within {
 	border-color: var(--nm-code-type);
 	box-shadow: 0 0 0 0.18rem color-mix(in srgb, var(--nm-code-type) 20%, transparent);
+}
+
+/* ===== 表格移动契约 / 窄屏 ===== */
+
+/* 外层滚动容器：表格在窄视口可横向滚动，不撑破文档 */
+.nm-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+
+/* 长域名 / 长后端地址允许任意位置断行，压掉列的内在最小宽 */
+.nm-cell-wrap { overflow-wrap: anywhere; word-break: break-word; max-width: 28ch; }
+
+/* 站点表：主题默认 nowrap 会把表推到 1457px，这里允许换行 */
+.nm-site-table td.td,
+.nm-site-table th.th { white-space: normal; vertical-align: middle; }
+.nm-actions-cell { white-space: nowrap; }
+.nm-site-table .nm-actions button,
+.nm-site-table .nm-actions .cbi-button { min-height: 32px; padding: 0.35rem 0.6rem; font-size: 0.9em; }
+
+@media (max-width: 700px) {
+	.nm-table-scroll > table.table { min-width: 0; width: 100%; }
+	.nm-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+/* 主题 mobile.css 给 .tr 加了 margin:0 -3px，概览的键值表未套滚动容器，
+ * 窄屏每行右侧多出 3px 撑出 section（V8）；插件页内收回负边距。 */
+@media (max-width: 600px) {
+	#view .cbi-section table.table .tr { margin: 0; }
+}
+
+/* 文件路径栏 “Go” 按钮不被输入框挤压截断 */
+.nm-file-path-row .cbi-button { flex: 0 0 auto; min-width: 44px; }
+
+/* 模态限宽：bootstrap 主题的固定宽度在窄视口会超出视口 */
+@media (max-width: 1048px) {
+	#modal_overlay > .modal { width: calc(100vw - 24px); max-width: calc(100vw - 24px); }
+}
+.nm-modal-textarea { max-width: 100%; }
+
+/* ===== bootstrap 主题兼容段 =====
+ * 仅当 body.nm-theme-bootstrap（由 utils.loadSharedCSS 按主题样式表探测）时生效，
+ * aurora 与其他主题完全不受影响。 */
+
+/* 触摸目标 >= 32px（主题按钮 28–30px） */
+body.nm-theme-bootstrap .cbi-button,
+body.nm-theme-bootstrap .btn,
+body.nm-theme-bootstrap .cbi-page-actions button { min-height: 32px; line-height: 30px; }
+
+/* 模态内文本框/下拉在 bootstrap 下只有 30px，同样低于 32px 触摸底线 */
+body.nm-theme-bootstrap #modal_overlay :is(input.cbi-input-text, select) { min-height: 32px; }
+
+/* 对比度补偿（WCAG AA 正文 >= 4.5）。Save 会被主题
+ * `.cbi-page-actions .cbi-button-apply + .cbi-button-save`（0,4,0）覆盖，需提高一级。 */
+body.nm-theme-bootstrap .cbi-page-actions .cbi-button-save.cbi-button,
+body.nm-theme-bootstrap .cbi-button-add {
+	background: #00713d; border-color: #006635; color: #fff; /* 6.1:1 */
+}
+body.nm-theme-bootstrap .cbi-button-reset,
+body.nm-theme-bootstrap .cbi-button-remove { color: #b3261e; } /* 6.0:1 */
+html[data-darkmode="true"] body.nm-theme-bootstrap .cbi-button-reset,
+html[data-darkmode="true"] body.nm-theme-bootstrap .cbi-button-remove { color: #ff9d97; } /* 8.0:1 */
+body.nm-theme-bootstrap .cbi-button-edit,
+body.nm-theme-bootstrap .cbi-button-action,
+body.nm-theme-bootstrap .cbi-dropdown > .open {
+	background: #2a6a80; border-color: #255d70; color: #fff; /* 6.1:1 */
+}
+body.nm-theme-bootstrap .cbi-dropdown > ul > li { background: #2a6a80; color: #fff; } /* 6.1:1 */
+body.nm-theme-bootstrap .label.success { background: #00713d; border-color: #006635; color: #fff; } /* 6.1:1 */
+body.nm-theme-bootstrap .alert-message.success { background: #007a4a; color: #fff; } /* 5.4:1 */
+body.nm-theme-bootstrap .alert-message.success :is(h3,h4,h5,p,b,strong,li) { color: #fff; }
+/* danger 的渐变底在白字下最浅处 ~4.5:1，暗色主题还给深灰字；统一纯深红白字 */
+body.nm-theme-bootstrap .alert-message.danger { background: #8c1d18; color: #fff; } /* 7.1:1 */
+body.nm-theme-bootstrap .alert-message.danger :is(h3,h4,h5,p,b,strong,li,summary,pre) { color: #fff; }
+body.nm-theme-bootstrap .alert-message.danger .cbi-button {
+	background: rgba(0, 0, 0, 0.28); border-color: rgba(255, 255, 255, 0.45); color: #fff; /* 9.7:1 */
+}
+/* 主题 summary 只有 ~23px，达不到 32px 触摸目标（错误详情折叠） */
+#view .alert-message details > summary { display: flex; align-items: center; min-height: 32px; }
+body.nm-theme-bootstrap span.more { color: #595959; } /* 6.4:1 on #f8f8f8 */
+html[data-darkmode="true"] body.nm-theme-bootstrap span.more { color: #a0a0a0; } /* 5.6:1 on #282828 */
+
+/* Shared Yunshu OpenWrt plugin footer. Keep this block identical across
+ * sibling LuCI plugins so every page shows the same version bar. */
+.ys-tool-footer {
+	--ys-footer-blue: #2f7df6;
+	--ys-footer-blue-bg: rgba(47, 125, 246, 0.12);
+	--ys-footer-blue-bg-hover: rgba(47, 125, 246, 0.18);
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: .8em 1em;
+	margin-top: 2em;
+	padding: 1em 0 0;
+	border-top: 1px solid var(--border-color, #d8dee8);
+	color: var(--subtext-color, #666);
+	font-size: .875em;
+}
+.ys-tool-footer-brand,
+.ys-tool-footer-links {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: center;
+	gap: .35em;
+}
+.ys-tool-footer-brand { flex-wrap: wrap; }
+.ys-tool-footer-links { white-space: nowrap; }
+.ys-tool-footer-mark {
+	padding: .18em .5em;
+	border-radius: 4px;
+	background-color: var(--ys-footer-blue-bg);
+	background: color-mix(in srgb, var(--ys-footer-blue) 12%, transparent);
+	color: var(--ys-footer-blue);
+	font-size: .86em;
+	font-weight: 700;
+	line-height: 1.6;
+}
+.ys-tool-footer-title { color: inherit; font-weight: 600; }
+.ys-tool-footer-separator {
+	margin: 0 .15em;
+	color: color-mix(in srgb, var(--subtext-color, #666) 65%, transparent);
+}
+.ys-tool-footer-version { color: inherit; }
+.ys-tool-footer-link,
+.ys-tool-footer a.ys-tool-footer-link {
+	display: inline-flex;
+	align-items: center;
+	gap: .35em;
+	padding: .18em .5em;
+	border: 0;
+	border-radius: 4px;
+	background-color: var(--ys-footer-blue-bg);
+	background: color-mix(in srgb, var(--ys-footer-blue) 12%, transparent);
+	color: var(--ys-footer-blue);
+	font-size: .86em;
+	font-weight: 700;
+	line-height: 1.6;
+	text-decoration: none;
+}
+.ys-tool-footer-link:hover,
+.ys-tool-footer a.ys-tool-footer-link:hover {
+	background-color: var(--ys-footer-blue-bg-hover);
+	background: color-mix(in srgb, var(--ys-footer-blue) 18%, transparent);
+	text-decoration: none;
+}
+.ys-tool-footer-link-icon {
+	width: 1em;
+	height: 1em;
+	max-width: 1em;
+	max-height: 1em;
+	display: inline-block;
+	flex: 0 0 auto;
+	vertical-align: -.125em;
+}
+
+@media (max-width: 600px) {
+	.ys-tool-footer { gap: .5em; }
+	.ys-tool-footer-title,
+	.ys-tool-footer-title-separator,
+	.ys-tool-footer-project-link,
+	.ys-tool-footer-project-separator { display: none; }
+	.ys-tool-footer-links { flex-wrap: wrap; white-space: normal; }
+	.ys-tool-footer-links .ys-tool-footer-link.github .ys-tool-footer-link-label,
+	.ys-tool-footer-links .ys-tool-footer-link.x .ys-tool-footer-link-label { display: none; }
 }
