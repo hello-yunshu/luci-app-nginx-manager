@@ -59,7 +59,7 @@ function safeApply(fn) {
 		if (err.code === 5) {
 			ui.addNotification(null, E('p', _('Permission denied. Make sure UCI changes are applied.')));
 		} else {
-			ui.addNotification(null, E('p', _('Error: ') + (err.message || JSON.stringify(err))));
+			ui.addNotification(null, E('p', _('Error:') + ' ' + (err.message || JSON.stringify(err))));
 		}
 	});
 }
@@ -217,7 +217,7 @@ return view.extend({
 					]);
 				}).catch(function(err) {
 					resetBusy(btn);
-					ui.addNotification(null, E('p', {}, _('Error: ') + (err.message || JSON.stringify(err))));
+					ui.addNotification(null, E('p', {}, _('Error:') + ' ' + (err.message || JSON.stringify(err))));
 				});
 			}
 		}, _('Test Config')));
@@ -259,7 +259,7 @@ return view.extend({
 
 		infoTable.appendChild(E('tr', { 'class': 'tr' }, [
 			E('th', { 'class': 'th' }, _('Last Reload')),
-			E('td', { 'class': 'td', 'data-title': _('Last Reload') }, status.last_reload || '-')
+			E('td', { 'class': 'td', 'data-title': _('Last Reload') }, !status.last_reload || status.last_reload === 'unknown' ? _('Unknown') : status.last_reload)
 		]));
 
 		infoSection.appendChild(infoTable);

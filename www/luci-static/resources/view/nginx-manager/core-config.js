@@ -312,7 +312,7 @@ return view.extend({
 
 		o = s2.option(form.Flag, 'http3', _('HTTP/3 (QUIC)'),
 			_('Enable HTTP/3 over QUIC. Adds quic reuseport to listen directives and Alt-Svc header. Requires nginx built with QUIC support.') +
-			_('<br/><strong style="color:var(--red)">Warning:</strong> ') +
+			_('<br/><strong style="color:var(--red)">Warning:</strong>') + ' ' +
 			_('Nginx HTTP/3 module has a known bug where POST requests may trigger a massive memory allocation (8GB), causing 500 errors. If you encounter this issue, disable HTTP/3 until nginx fixes the bug.'));
 		o.rmempty = true;
 		this.customSslOptions.http3 = o;

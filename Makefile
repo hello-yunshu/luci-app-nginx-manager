@@ -44,7 +44,10 @@ define Build/Compile
 		lmo_lang="$$$$lang"; \
 		[ "$$$$lmo_lang" = "zh_Hans" ] && lmo_lang="zh-cn"; \
 		if [ -x "$(STAGING_DIR_HOSTPKG)/bin/po2lmo" ]; then \
-			"$(STAGING_DIR_HOSTPKG)/bin/po2lmo" "$$$$po_dir/nginx-manager.po" "$(PKG_BUILD_DIR)/lmo/nginx-manager.$$$$lmo_lang.lmo"; \
+			"$(STAGING_DIR_HOSTPKG)/bin/po2lmo" "$$$$po_dir/nginx-manager.po" "$(PKG_BUILD_DIR)/lmo/nginx-manager.$$$$lmo_lang.lmo" || exit 1; \
+		else \
+			echo "ERROR: po2lmo not found at $(STAGING_DIR_HOSTPKG)/bin; build luci-base/host first" >&2; \
+			exit 1; \
 		fi; \
 	done
 endef
@@ -88,10 +91,8 @@ define Package/luci-app-nginx-manager/install
 	$(INSTALL_DATA) ./www/luci-static/resources/view/nginx-manager/backups.js $(1)/www/luci-static/resources/view/nginx-manager/backups.js
 	$(INSTALL_DATA) ./www/luci-static/resources/view/nginx-manager/files.js $(1)/www/luci-static/resources/view/nginx-manager/files.js
 
-	if [ -n "$$$$(ls $(PKG_BUILD_DIR)/lmo/*.lmo 2>/dev/null)" ]; then \
-		$(INSTALL_DIR) $(1)/usr/lib/lua/luci/i18n; \
-		$(INSTALL_DATA) $(PKG_BUILD_DIR)/lmo/*.lmo $(1)/usr/lib/lua/luci/i18n/; \
-	fi
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/i18n
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/lmo/*.lmo $(1)/usr/lib/lua/luci/i18n/
 endef
 
 define Package/luci-app-nginx-manager/postinst

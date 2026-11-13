@@ -340,8 +340,8 @@ msgstr "Продолжительность кэша сеанса SSL, напри
 msgid "Error Log"
 msgstr "Журнал ошибок"
 
-msgid "Error: "
-msgstr "Ошибка:  "
+msgid "Error:"
+msgstr "Ошибка:"
 
 msgid "Expired"
 msgstr "Истёк"
@@ -1507,8 +1507,8 @@ msgstr "Размер буфера потока QUIC, например 64к, 256�
 msgid "HTTP/3 Stream Buffer Size field"
 msgstr "Поле размера буфера потока HTTP/3"
 
-msgid "<br/><strong style=\"color:var(--red)\">Warning:</strong> "
-msgstr "<br/><strong style=\"color:var(--red)\">Предупреждение:</strong>  "
+msgid "<br/><strong style=\"color:var(--red)\">Warning:</strong>"
+msgstr "<br/><strong style=\"color:var(--red)\">Предупреждение:</strong>"
 
 msgid "Nginx HTTP/3 module has a known bug where POST requests may trigger a massive memory allocation (8GB), causing 500 errors. If you encounter this issue, disable HTTP/3 until nginx fixes the bug."
 msgstr "В модуле Nginx HTTP/3 есть известная ошибка, из-за которой запросы POST могут вызвать выделение большого количества памяти (8 ГБ), что приводит к 500 ошибкам. Если вы столкнулись с этой проблемой, отключите HTTP/3, пока nginx не исправит ошибку."

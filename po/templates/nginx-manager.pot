@@ -345,7 +345,7 @@ msgstr ""
 msgid "Error Log"
 msgstr ""
 
-msgid "Error: "
+msgid "Error:"
 msgstr ""
 
 msgid "Expired"
@@ -1128,7 +1128,7 @@ msgstr ""
 msgid "HTTP/3 Stream Buffer Size field"
 msgstr ""
 
-msgid "<br/><strong style=\"color:var(--red)\">Warning:</strong> "
+msgid "<br/><strong style=\"color:var(--red)\">Warning:</strong>"
 msgstr ""
 
 msgid "Nginx HTTP/3 module has a known bug where POST requests may trigger a massive memory allocation (8GB), causing 500 errors. If you encounter this issue, disable HTTP/3 until nginx fixes the bug."
