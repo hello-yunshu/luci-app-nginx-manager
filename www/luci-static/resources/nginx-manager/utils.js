@@ -4,7 +4,7 @@
 'require baseclass';
 'require uci';
 
-var FOOTER_VERSION = '@PKG_VERSION@';
+var FOOTER_VERSION = '@PKG_FULL_VERSION@';
 
 var FOOTER_OPTIONS = {
 	project: _('Nginx Manager'),
