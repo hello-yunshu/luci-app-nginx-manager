@@ -339,8 +339,8 @@ msgstr "Duration for SSL session cache, e.g. 1d, 4h, 30m."
 msgid "Error Log"
 msgstr "Error Log"
 
-msgid "Error: "
-msgstr "Error: "
+msgid "Error:"
+msgstr "Error:"
 
 msgid "Expired"
 msgstr "Expired"
@@ -1506,8 +1506,8 @@ msgstr "QUIC stream buffer size, e.g. 64k, 256k. Leave empty for default."
 msgid "HTTP/3 Stream Buffer Size field"
 msgstr "HTTP/3 Stream Buffer Size field"
 
-msgid "<br/><strong style=\"color:var(--red)\">Warning:</strong> "
-msgstr "<br/><strong style=\"color:var(--red)\">Warning:</strong> "
+msgid "<br/><strong style=\"color:var(--red)\">Warning:</strong>"
+msgstr "<br/><strong style=\"color:var(--red)\">Warning:</strong>"
 
 msgid "Nginx HTTP/3 module has a known bug where POST requests may trigger a massive memory allocation (8GB), causing 500 errors. If you encounter this issue, disable HTTP/3 until nginx fixes the bug."
 msgstr "Nginx HTTP/3 module has a known bug where POST requests may trigger a massive memory allocation (8GB), causing 500 errors. If you encounter this issue, disable HTTP/3 until nginx fixes the bug."
