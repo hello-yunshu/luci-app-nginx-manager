@@ -158,7 +158,7 @@ return view.extend({
 		var controlSection = E('div', { 'class': 'cbi-section' });
 		controlSection.appendChild(E('h3', {}, _('Service Control')));
 
-		var btnGroup = E('div', {});
+		var btnGroup = E('div', { 'class': 'ys-actions' });
 
 		if (!running) {
 			btnGroup.appendChild(E('button', {

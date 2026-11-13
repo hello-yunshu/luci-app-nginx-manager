@@ -66,7 +66,7 @@ return view.extend({
 		var controlSection = E('div', { 'class': 'cbi-section' });
 		controlSection.appendChild(E('h3', {}, _('Log Settings')));
 
-		var controls = E('div', {});
+		var controls = E('div', { 'class': 'ys-actions' });
 
 		var typeSelect = E('select', {}, [
 			E('option', { 'value': 'error' }, _('Error Log')),
@@ -107,7 +107,7 @@ return view.extend({
 		controlSection.appendChild(controls);
 
 		/* Button Group */
-		var btnGroup = E('div', {});
+		var btnGroup = E('div', { 'class': 'ys-actions' });
 
 		var refreshBtn = E('button', {
 			'class': 'cbi-button cbi-button-apply'

@@ -351,7 +351,7 @@ return view.extend({
 			var readonlySection = E('div', { 'class': 'cbi-section' });
 			readonlySection.appendChild(E('h3', {}, _('Read-only View')));
 
-			var readonlyBtns = E('div', {});
+			var readonlyBtns = E('div', { 'class': 'ys-actions' });
 
 			readonlyBtns.appendChild(E('button', {
 				'type': 'button',
