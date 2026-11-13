@@ -8,10 +8,11 @@
 .nm-actions {
 	display: flex; flex-wrap: wrap;
 	align-items: stretch; align-content: center;
+	gap: calc(var(--spacing, .25rem) * 2);
 }
 .nm-actions button,
 .nm-actions .cbi-button {
-	margin: 0.1em 0.25em 0.1em 0;
+	margin: 0;
 	white-space: nowrap;
 	padding: 0.4rem 0.8rem;
 	line-height: normal;
@@ -25,7 +26,7 @@
 /* === Modal Button Row === */
 .modal .right {
 	display: flex; flex-wrap: wrap;
-	gap: 0.5em; justify-content: flex-end; align-items: center;
+	gap: calc(var(--spacing, .25rem) * 3); justify-content: flex-end; align-items: center;
 	margin-top: 8px;
 }
 .modal .right button,
@@ -84,8 +85,18 @@
 }
 .nm-file-status { min-height: 1.2em; font-size: 0.9em; }
 .nm-file-table { width: 100%; }
-.nm-file-row-dir { background: color-mix(in srgb, currentColor 8%, transparent); }
-.nm-file-row-dir:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
+.nm-file-row-dir {
+	background: linear-gradient(90deg,
+		color-mix(in srgb, #d6a21f 15%, transparent),
+		color-mix(in srgb, #d6a21f 8%, transparent) 42%,
+		transparent 100%);
+}
+.nm-file-row-dir:hover {
+	background: linear-gradient(90deg,
+		color-mix(in srgb, #d6a21f 20%, transparent),
+		color-mix(in srgb, #d6a21f 11%, transparent) 42%,
+		transparent 100%);
+}
 .nm-file-row-parent:hover { background: color-mix(in srgb, currentColor 6%, transparent); }
 .nm-file-table .active { background: color-mix(in srgb, currentColor 14%, transparent); }
 .nm-file-openable:hover .nm-file-name,
@@ -106,7 +117,7 @@
 	left: 0.08em; top: 0.38em;
 	width: 1.12em; height: 0.72em;
 	border: 1.6px solid currentColor; border-radius: 2px;
-	background: color-mix(in srgb, currentColor 16%, transparent);
+	background: color-mix(in srgb, #d6a21f 16%, transparent);
 }
 .nm-file-icon.dir::after,
 .nm-file-icon.parent::after {
@@ -114,9 +125,29 @@
 	width: 0.52em; height: 0.3em;
 	border: 1.6px solid currentColor; border-bottom: 0;
 	border-radius: 2px 2px 0 0;
-	background: color-mix(in srgb, currentColor 18%, transparent);
+	background: color-mix(in srgb, #d6a21f 18%, transparent);
 }
-.nm-file-icon.parent { color: inherit; }
+.nm-file-icon.parent { color: var(--main-color, #337ab7); }
+[data-darkmode="true"] .nm-file-row-dir {
+	background: linear-gradient(90deg,
+		color-mix(in srgb, #f2c14e 18%, transparent),
+		color-mix(in srgb, #f2c14e 9%, transparent) 42%,
+		transparent 100%);
+}
+[data-darkmode="true"] .nm-file-row-dir:hover {
+	background: linear-gradient(90deg,
+		color-mix(in srgb, #f2c14e 24%, transparent),
+		color-mix(in srgb, #f2c14e 13%, transparent) 42%,
+		transparent 100%);
+}
+[data-darkmode="true"] .nm-file-icon.dir::before,
+[data-darkmode="true"] .nm-file-icon.parent::before {
+	background: color-mix(in srgb, #f2c14e 18%, transparent);
+}
+[data-darkmode="true"] .nm-file-icon.dir::after,
+[data-darkmode="true"] .nm-file-icon.parent::after {
+	background: color-mix(in srgb, #f2c14e 20%, transparent);
+}
 .nm-file-icon.file::before {
 	left: 0.22em; top: 0.08em;
 	width: 0.85em; height: 1.02em;
@@ -362,7 +393,6 @@ html[data-darkmode="true"] body.nm-theme-bootstrap span.more { color: #a0a0a0; }
 	gap: .8em 1em;
 	margin-top: 2em;
 	padding: 1em 0 0;
-	border-top: 1px solid var(--border-color, #d8dee8);
 	color: var(--subtext-color, #666);
 	font-size: .875em;
 }
@@ -432,4 +462,34 @@ html[data-darkmode="true"] body.nm-theme-bootstrap span.more { color: #a0a0a0; }
 	.ys-tool-footer-links { flex-wrap: wrap; white-space: normal; }
 	.ys-tool-footer-links .ys-tool-footer-link.github .ys-tool-footer-link-label,
 	.ys-tool-footer-links .ys-tool-footer-link.x .ys-tool-footer-link-label { display: none; }
+}
+
+/* Shared interaction rhythm: side-by-side buttons follow the theme spacing
+ * scale instead of hardcoded pixels. Keep identical across sibling plugins. */
+.ys-actions,
+.cbi-page-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: calc(var(--spacing, .25rem) * 3);
+}
+.cbi-page-actions { justify-content: flex-end; }
+.ys-actions > .cbi-button,
+.ys-actions > button,
+.ys-actions > select,
+.ys-actions > input,
+.cbi-page-actions > form,
+.cbi-page-actions > button { margin: 0; }
+
+/* Shared table contract: every table on the page shares one first-column
+ * basis (minimum width + alignment) instead of content-driven widths. */
+@media screen and (min-width: 48rem) {
+	.table > thead > tr > :first-child,
+	.table > tbody > tr > :first-child,
+	.table > tr > :first-child {
+		width: 1%;
+		min-width: 9rem;
+		text-align: left;
+		vertical-align: top;
+	}
 }

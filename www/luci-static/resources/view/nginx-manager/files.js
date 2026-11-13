@@ -567,7 +567,7 @@ function renderRows(tbody) {
 		}, _('Delete')));
 
 		var row = E('tr', {
-			'class': 'tr nm-file-row' + (isDir ? 'nm-file-row-dir ' : '') + (isDir || editable ? 'nm-file-openable ' : '') + (editable ? 'nm-file-editable ' : '') + (selectedPath === path ? 'active' : ''),
+			'class': 'tr nm-file-row' + (isDir ? ' nm-file-row-dir' : '') + (isDir || editable ? ' nm-file-openable' : '') + (editable ? ' nm-file-editable' : '') + (selectedPath === path ? ' active' : ''),
 			'click': function() {
 				selectRow(tbody, this, path);
 			},

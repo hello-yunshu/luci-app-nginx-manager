@@ -565,7 +565,7 @@ return view.extend({
 		}
 
 		/* ========== Actions ========== */
-		var actionsDiv = E('div', {});
+		var actionsDiv = E('div', { 'class': 'ys-actions' });
 
 		if (!isNew) {
 			actionsDiv.appendChild(E('button', {
