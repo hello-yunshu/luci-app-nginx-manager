@@ -920,7 +920,7 @@ return view.extend({
 					'click': function() { loadDirectory(pathInput.value); }
 				}, _('Go'))
 			]),
-			E('div', {}, [
+			E('div', { 'class': 'nm-file-actions' }, [
 				E('button', { 'class': 'cbi-button', 'click': function() { loadDirectory(currentPath); } }, _('Refresh')),
 				E('button', { 'class': 'cbi-button cbi-button-add', 'click': showNewFileModal }, _('New File')),
 				E('button', { 'class': 'cbi-button cbi-button-add', 'click': showNewDirModal }, _('New Directory')),
