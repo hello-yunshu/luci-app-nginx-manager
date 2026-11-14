@@ -5,10 +5,12 @@
 .nm-row-disabled:hover { opacity: 1; }
 
 /* === Table Action Cell === */
+/* One spacing token for every side-by-side button row in this plugin: the
+ * theme spacing scale, 3 steps (12px), same as the page action bar. */
 .nm-actions {
 	display: flex; flex-wrap: wrap;
 	align-items: stretch; align-content: center;
-	gap: calc(var(--spacing, .25rem) * 2);
+	gap: var(--ys-action-gap, calc(var(--spacing, .25rem) * 3));
 }
 .nm-actions button,
 .nm-actions .cbi-button {
@@ -16,6 +18,7 @@
 	white-space: nowrap;
 	padding: 0.4rem 0.8rem;
 	line-height: normal;
+	min-height: 2rem;
 }
 
 /* === Visit Link === */
@@ -78,7 +81,14 @@
 
 /* === File Manager === */
 .nm-file-toolbar { display: flex; flex-direction: column; gap: 0.75em; }
-.nm-file-path-row { display: flex; align-items: center; gap: 0.5em; }
+.nm-file-path-row { display: flex; align-items: center; gap: 0.5em; flex-wrap: wrap; }
+/* File manager toolbar row (Refresh / New File / New Directory / Upload).
+ * It used to be a bare div, so the buttons sat at 0px apart. */
+.nm-file-actions {
+	display: flex; flex-wrap: wrap; align-items: center;
+	gap: var(--ys-action-gap, calc(var(--spacing, .25rem) * 3));
+}
+.nm-file-actions .cbi-button { margin: 0; min-height: 2rem; }
 .nm-file-path-row .cbi-input-text {
 	flex: 1 1 auto; min-width: 0;
 	font-family: var(--font-mono);
@@ -404,7 +414,12 @@ html[data-darkmode="true"] body.nm-theme-bootstrap span.more { color: #a0a0a0; }
 	gap: .35em;
 }
 .ys-tool-footer-brand { flex-wrap: wrap; }
-.ys-tool-footer-links { white-space: nowrap; }
+/* Link chips are buttons on touch screens: 8px apart minimum and a 32px tap
+ * target, independent of the font-size derived height. */
+.ys-tool-footer-links {
+	white-space: nowrap;
+	gap: calc(var(--spacing, .25rem) * 2);
+}
 .ys-tool-footer-mark {
 	padding: .18em .5em;
 	border-radius: 4px;
@@ -425,7 +440,9 @@ html[data-darkmode="true"] body.nm-theme-bootstrap span.more { color: #a0a0a0; }
 .ys-tool-footer a.ys-tool-footer-link {
 	display: inline-flex;
 	align-items: center;
+	justify-content: center;
 	gap: .35em;
+	min-height: 2rem;
 	padding: .18em .5em;
 	border: 0;
 	border-radius: 4px;
@@ -462,10 +479,19 @@ html[data-darkmode="true"] body.nm-theme-bootstrap span.more { color: #a0a0a0; }
 	.ys-tool-footer-links { flex-wrap: wrap; white-space: normal; }
 	.ys-tool-footer-links .ys-tool-footer-link.github .ys-tool-footer-link-label,
 	.ys-tool-footer-links .ys-tool-footer-link.x .ys-tool-footer-link-label { display: none; }
+	/* Icon-only chips keep the 32px square tap target instead of shrinking to
+	 * a 21x14 pill. */
+	.ys-tool-footer-links .ys-tool-footer-link.github,
+	.ys-tool-footer-links .ys-tool-footer-link.x {
+		min-width: 2rem; padding-inline: .35em;
+	}
 }
 
 /* Shared interaction rhythm: side-by-side buttons follow the theme spacing
- * scale instead of hardcoded pixels. Keep identical across sibling plugins. */
+ * scale instead of hardcoded pixels. Keep identical across sibling plugins.
+ * The #maincontent copies are needed because the theme ships a more specific
+ * `#maincontent .cbi-page-actions` rule (8px) that would win otherwise. */
+#maincontent { --ys-action-gap: calc(var(--spacing, .25rem) * 3); }
 .ys-actions,
 .cbi-page-actions {
 	display: flex;
@@ -473,6 +499,10 @@ html[data-darkmode="true"] body.nm-theme-bootstrap span.more { color: #a0a0a0; }
 	align-items: center;
 	gap: calc(var(--spacing, .25rem) * 3);
 }
+#maincontent .ys-actions,
+#maincontent .cbi-page-actions,
+#maincontent .nm-actions,
+#maincontent .nm-file-actions { gap: var(--ys-action-gap); }
 .cbi-page-actions { justify-content: flex-end; }
 .ys-actions > .cbi-button,
 .ys-actions > button,
@@ -480,6 +510,19 @@ html[data-darkmode="true"] body.nm-theme-bootstrap span.more { color: #a0a0a0; }
 .ys-actions > input,
 .cbi-page-actions > form,
 .cbi-page-actions > button { margin: 0; }
+
+/* Aurora keeps a fixed 40px floating toolbar at the bottom right. Reserve one
+ * toolbar column on the action rows so the last button is never covered. */
+@supports selector(:has(*)) {
+	@media screen and (max-width: 1319px) {
+		body:has(.floating-toolbar) #maincontent .cbi-page-actions,
+		body:has(.floating-toolbar) #maincontent .ys-actions,
+		body:has(.floating-toolbar) #maincontent .nm-file-actions,
+		body:has(.floating-toolbar) #maincontent .ys-tool-footer {
+			padding-inline-end: calc(var(--spacing, .25rem) * 10);
+		}
+	}
+}
 
 /* Shared table contract: every table on the page shares one first-column
  * basis (minimum width + alignment) instead of content-driven widths. */
