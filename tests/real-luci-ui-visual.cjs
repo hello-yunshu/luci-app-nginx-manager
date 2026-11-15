@@ -24,7 +24,7 @@ const routes = [
 const languageIndex = language === 'en' ? 0 : language === 'zh_cn' ? 1 : -1;
 if (languageIndex < 0) throw new Error('Unsupported NGINX_UI_LANG: ' + language);
 const commonWidths = [320, 360, 375, 390, 430, 640, 768, 1024, 1280, 1440, 1920];
-const breakpoints = [600, 700, 768, 1048, 1319];
+const breakpoints = [600, 700, 768, 991, 1048, 1319];
 const widths = [...new Set([...commonWidths, ...breakpoints.flatMap(w => [w - 1, w, w + 1])])].sort((a, b) => a - b);
 const shortViewports = [{ width: 320, height: 568 }, { width: 568, height: 320 }];
 const themes = [
