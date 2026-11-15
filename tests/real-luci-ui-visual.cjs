@@ -105,6 +105,19 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			const detailTables = viewId === 'overview' ? Array.from(main ? main.querySelectorAll('table.nm-overview-detail-table') : []) : null;
 			const responsiveTableOverflow = Array.from(main ? main.querySelectorAll('.nm-table-scroll') : [])
 				.filter(wrapper => wrapper.scrollWidth > wrapper.clientWidth + 1).length;
+			const responsiveTableLayouts = Array.from(main ? main.querySelectorAll('.nm-table-scroll > table.table') : []).map(table => {
+				const titleRow = table.querySelector('thead tr.cbi-section-table-titles');
+				const nativeCards = getComputedStyle(table).display !== 'table' ||
+					(titleRow && getComputedStyle(titleRow).display === 'none');
+
+				return {
+					nativeCards: !!nativeCards,
+					intrinsicWidth: table.classList.contains('nm-table-intrinsic-width')
+				};
+			});
+			const responsiveTableSizingMismatch = responsiveTableLayouts.filter(layout =>
+				width >= 601 && width <= 900 ? layout.nativeCards === layout.intrinsicWidth : layout.intrinsicWidth
+			).length;
 			const overviewRowsAccessible = detailTables ? detailTables.length === 2 && detailTables.every(table => {
 				const rows = Array.from(table.querySelectorAll('tr'));
 				return rows.length > 0 && rows.every(row => {
@@ -132,6 +145,8 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				themeLoaded: resources.some(src => src.includes('/luci-static/' + media + '/')),
 				pluginCssLoaded: resources.some(src => src.includes('nginx-manager/nginx-manager.css')),
 				responsiveTableOverflow,
+				responsiveTableLayouts,
+				responsiveTableSizingMismatch,
 				fileHeaderNative: viewId === 'files' ? !!(fileHeader && fileHeader.classList.contains('cbi-section-table-titles')) : null,
 				fileHeaderVisible: viewId === 'files' && fileHeader ? getComputedStyle(fileHeader).display !== 'none' : null,
 				overviewRowsAccessible,
@@ -161,6 +176,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		if (!metrics.pluginCssLoaded) failures.push('plugin-css-not-loaded');
 		if (metrics.overflow) failures.push('horizontal-overflow');
 		if (width <= 600 && metrics.responsiveTableOverflow) failures.push('mobile-table-overflow');
+		if (metrics.responsiveTableSizingMismatch) failures.push('responsive-table-sizing-overrides-native-layout');
 		if (!metrics.activeTabVisible) failures.push('active-tab-outside-visible-strip');
 		if (metrics.routeTabs.count && metrics.routeTabs.visibleCount !== metrics.routeTabs.count) failures.push('route-tab-outside-visible-strip');
 		if (route && route.label === 'files' && (!metrics.fileHeaderNative || (width <= 600 && metrics.fileHeaderVisible))) failures.push('mobile-file-table-header-not-native');

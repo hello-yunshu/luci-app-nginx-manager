@@ -233,6 +233,7 @@ return view.extend({
 		section.appendChild(E('div', { 'class': 'nm-table-scroll' }, [table]));
 		page.appendChild(section);
 
+		utils.updateResponsiveTableSizing();
 		return utils.appendFooter(page, utils.FOOTER_OPTIONS);
 	},
 

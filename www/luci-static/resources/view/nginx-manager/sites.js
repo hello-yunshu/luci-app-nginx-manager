@@ -417,6 +417,7 @@ return view.extend({
 			]));
 		}
 
+		utils.updateResponsiveTableSizing();
 		return utils.appendFooter(container, utils.FOOTER_OPTIONS);
 	},
 

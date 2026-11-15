@@ -952,6 +952,7 @@ return view.extend({
 			setStatus(currentEntries.length + ' ' + _('items'));
 		}, 0);
 
+		utils.updateResponsiveTableSizing();
 		return utils.appendFooter(container, utils.FOOTER_OPTIONS);
 	},
 

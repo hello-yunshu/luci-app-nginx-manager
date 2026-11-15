@@ -1138,6 +1138,7 @@ return view.extend({
 			E('div', { 'class': 'nm-table-scroll' }, [table])
 		]));
 
+		utils.updateResponsiveTableSizing();
 		return utils.appendFooter(container, utils.FOOTER_OPTIONS);
 	},
 

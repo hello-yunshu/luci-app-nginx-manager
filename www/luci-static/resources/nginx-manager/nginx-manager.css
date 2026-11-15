@@ -351,9 +351,10 @@
 }
 
 @media (min-width: 601px) and (max-width: 900px) {
-	/* Preserve intrinsic table columns at tablet widths while leaving LuCI's
-	 * native stacked-table layout untouched on phones. */
-	.nm-table-scroll > table.table { width: max-content; min-width: 100%; }
+	/* Keep readable columns in themes still using a table at tablet widths.
+	 * The sizing class is omitted when the active theme already renders native
+	 * table rows as cards. */
+	.nm-table-scroll > table.table.nm-table-intrinsic-width { width: max-content; min-width: 100%; }
 }
 /* 主题 mobile.css 给 .tr 加了 margin:0 -3px，概览的键值表未套滚动容器，
  * 窄屏每行右侧多出 3px 撑出 section（V8）；插件页内收回负边距。 */

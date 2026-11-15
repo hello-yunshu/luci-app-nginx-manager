@@ -11,6 +11,38 @@ var FOOTER_OPTIONS = {
 	repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
 };
 
+var responsiveTableSizingInstalled = false;
+var responsiveTableSizingFrame = null;
+
+function updateResponsiveTableSizing() {
+	function applySizing() {
+		responsiveTableSizingFrame = null;
+
+		var useIntrinsicWidth = window.matchMedia('(min-width: 601px) and (max-width: 900px)').matches;
+
+		document.querySelectorAll('.nm-table-scroll > table.table').forEach(function(table) {
+			var titleRow = table.querySelector('thead tr.cbi-section-table-titles');
+			var usesNativeCards = getComputedStyle(table).display !== 'table' ||
+				(titleRow && getComputedStyle(titleRow).display === 'none');
+
+			table.classList.toggle('nm-table-intrinsic-width', useIntrinsicWidth && !usesNativeCards);
+		});
+	}
+
+	function scheduleSizing() {
+		if (responsiveTableSizingFrame === null)
+			responsiveTableSizingFrame = requestAnimationFrame(applySizing);
+	}
+
+	if (!responsiveTableSizingInstalled) {
+		window.addEventListener('resize', scheduleSizing, { passive: true });
+		window.addEventListener('orientationchange', scheduleSizing, { passive: true });
+		responsiveTableSizingInstalled = true;
+	}
+
+	scheduleSizing();
+}
+
 function loadSharedCSS() {
 	if (!document.getElementById('nm-shared-css')) {
 		var link = E('link', {
@@ -786,6 +818,7 @@ function createCodeEditor(content, path, options) {
 }
 
 return baseclass.extend({
+	updateResponsiveTableSizing: updateResponsiveTableSizing,
 	loadSharedCSS: loadSharedCSS,
 	errorPanel: errorPanel,
 	safeApply: safeApply,
