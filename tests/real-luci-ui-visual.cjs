@@ -97,6 +97,11 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				return css.whiteSpace === 'nowrap' && el.clientWidth > 0 && el.scrollWidth > el.clientWidth + 2;
 			}).slice(0, 8).map(el => ({ tag: el.tagName, text: (el.innerText || '').trim().slice(0, 80) }));
 			const activeRect = active && active.getBoundingClientRect();
+			const routeTabLinks = Array.from(document.querySelectorAll('#tabmenu ul.tabs a'));
+			const routeTabRects = routeTabLinks.map(link => {
+				const rect = link.getBoundingClientRect();
+				return rect.width > 0 && rect.height > 0 && rect.left >= -1 && rect.right <= innerWidth + 1;
+			});
 			const detailTables = viewId === 'overview' ? Array.from(main ? main.querySelectorAll('table.nm-overview-detail-table') : []) : null;
 			const overviewRowsAccessible = detailTables ? detailTables.length === 2 && detailTables.every(table => {
 				const rows = Array.from(table.querySelectorAll('tr'));
@@ -121,6 +126,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				darkMode: root.getAttribute('data-darkmode'), scrollWidth: root.scrollWidth, width: innerWidth,
 				overflow: root.scrollWidth > innerWidth + 1,
 				activeTabVisible: !activeRect || (activeRect.left >= -1 && activeRect.right <= innerWidth + 1),
+				routeTabs: { count: routeTabLinks.length, visibleCount: routeTabRects.filter(Boolean).length },
 				themeLoaded: resources.some(src => src.includes('/luci-static/' + media + '/')),
 				pluginCssLoaded: resources.some(src => src.includes('nginx-manager/nginx-manager.css')),
 				fileHeaderNative: viewId === 'files' ? !!(fileHeader && fileHeader.classList.contains('cbi-section-table-titles')) : null,
@@ -152,6 +158,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		if (!metrics.pluginCssLoaded) failures.push('plugin-css-not-loaded');
 		if (metrics.overflow) failures.push('horizontal-overflow');
 		if (!metrics.activeTabVisible) failures.push('active-tab-outside-visible-strip');
+		if (metrics.routeTabs.count && metrics.routeTabs.visibleCount !== metrics.routeTabs.count) failures.push('route-tab-outside-visible-strip');
 		if (route && route.id === 'files' && (!metrics.fileHeaderNative || (width <= 600 && metrics.fileHeaderVisible))) failures.push('mobile-file-table-header-not-native');
 		if (route && route.id === 'logs') {
 			if (!metrics.logFilterFields || metrics.logFilterFields.length !== 4 || metrics.logFilterFields.some(field => field.controls !== 1)) failures.push('log-filter-label-control-pairing');
