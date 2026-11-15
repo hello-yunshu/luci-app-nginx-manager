@@ -347,11 +347,13 @@
 	.nm-log-filter-field { flex: 1 1 15rem; }
 	.nm-log-filter-field > select,
 	.nm-log-filter-field > input { flex: 1 1 0; width: auto; max-width: 100%; }
-	/* Keep the table's intrinsic column widths inside its own scroll region.
-	 * Forcing min-width:0 lets theme table rules compress actions and values
-	 * into unreadable columns just above the stacked-card breakpoint. */
-	.nm-table-scroll > table.table { width: max-content; min-width: 100%; }
 	.nm-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 601px) and (max-width: 900px) {
+	/* Preserve intrinsic table columns at tablet widths while leaving LuCI's
+	 * native stacked-table layout untouched on phones. */
+	.nm-table-scroll > table.table { width: max-content; min-width: 100%; }
 }
 /* 主题 mobile.css 给 .tr 加了 margin:0 -3px，概览的键值表未套滚动容器，
  * 窄屏每行右侧多出 3px 撑出 section（V8）；插件页内收回负边距。 */
