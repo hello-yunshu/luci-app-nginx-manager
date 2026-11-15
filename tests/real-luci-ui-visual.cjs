@@ -46,7 +46,8 @@ const report = {
 	language, mode: smokeOnly ? 'local-smoke-only' : 'full-matrix', routes: routes.map(r => r.path),
 	widths: selectedWidths, shortViewports: selectedShortViewports,
 	method: 'Initial route state; all registered views; breakpoint-adjacent and common CSS widths; short portrait and landscape; Bootstrap system, explicit Light/Dark, Aurora Light/Dark.',
-	notCovered: ['manual visual review', 'all business interaction and data states', 'installed router behavior'], rows: [], errors: []
+	dataScenario: 'Two disposable managed sites (enabled and disabled), one missing certificate, one backup fixture, plus files/core configuration/log states.',
+	notCovered: ['manual visual review', 'business interactions and confirmed mutation flows', 'valid certificate/ACME success and full backup-restore lifecycle', 'installed router behavior'], rows: [], errors: []
 };
 fs.mkdirSync(output, { recursive: true });
 

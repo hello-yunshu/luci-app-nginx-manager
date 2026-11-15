@@ -50,6 +50,37 @@ docker exec "$CONTAINER" sh -c "
 	uci commit uhttpd
 	uci commit luci
 	/etc/uci-defaults/90-luci-app-nginx-manager 2>/dev/null || true
+	# Seed deterministic disposable rows so list/table states are covered as well
+	# as the empty states in the earlier baseline artifact. This container is
+	# destroyed after the visual run and is never installed on the user's router.
+	uci -q delete nginx_manager.ui_gate_site_enabled || true
+	uci set nginx_manager.ui_gate_site_enabled=site
+	uci set nginx_manager.ui_gate_site_enabled.name='Visual fixture: enabled site'
+	uci set nginx_manager.ui_gate_site_enabled.mode=reverse_proxy
+	uci set nginx_manager.ui_gate_site_enabled.server_name='demo.ui-gate.example.test'
+	uci set nginx_manager.ui_gate_site_enabled.listen_port=8080
+	uci set nginx_manager.ui_gate_site_enabled.proxy_pass='http://127.0.0.1:3000/api/v1/deep-path'
+	uci set nginx_manager.ui_gate_site_enabled.enabled=1
+	uci -q delete nginx_manager.ui_gate_site_disabled || true
+	uci set nginx_manager.ui_gate_site_disabled=site
+	uci set nginx_manager.ui_gate_site_disabled.name='Visual fixture: disabled site'
+	uci set nginx_manager.ui_gate_site_disabled.mode=static
+	uci set nginx_manager.ui_gate_site_disabled.server_name='disabled.ui-gate.example.test'
+	uci set nginx_manager.ui_gate_site_disabled.listen_port=8081
+	uci set nginx_manager.ui_gate_site_disabled.root='/srv/www/ui-gate'
+	uci set nginx_manager.ui_gate_site_disabled.enabled=0
+	uci -q delete nginx_manager.ui_gate_cert || true
+	uci set nginx_manager.ui_gate_cert=cert
+	uci set nginx_manager.ui_gate_cert.name='Visual fixture: missing certificate'
+	uci set nginx_manager.ui_gate_cert.type=manual
+	uci set nginx_manager.ui_gate_cert.domain='demo.ui-gate.example.test'
+	uci set nginx_manager.ui_gate_cert.cert_path='/etc/nginx/certs/ui-gate/fullchain.pem'
+	uci set nginx_manager.ui_gate_cert.key_path='/etc/nginx/certs/ui-gate/privkey.pem'
+	uci set nginx_manager.ui_gate_cert.auto_renew=0
+	uci commit nginx_manager
+	backup_dir=\$(uci -q get nginx_manager.global.backup_dir || echo /etc/nginx-manager/backups)
+	mkdir -p \"\$backup_dir/20261115T120000\"
+	printf '%s\\n' '{\"source\":\"visual-fixture\",\"timestamp\":\"20261115T120000\"}' > \"\$backup_dir/20261115T120000/manifest.json\"
 	rm -rf /tmp/luci-indexcache* /tmp/luci-modulecache*
 	/etc/init.d/rpcd restart >/dev/null 2>&1
 	/etc/init.d/uhttpd restart >/dev/null 2>&1
