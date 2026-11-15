@@ -121,12 +121,16 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				const titleRow = table.querySelector('thead tr.cbi-section-table-titles');
 				const nativeCards = getComputedStyle(table).display !== 'table' ||
 					(titleRow && getComputedStyle(titleRow).display === 'none');
+				const headersStatic = Array.from(table.querySelectorAll('thead th')).every(th =>
+					getComputedStyle(th).position !== 'sticky');
 
 				return {
 					nativeCards: !!nativeCards,
+					headersStatic,
 					intrinsicWidth: table.classList.contains('nm-table-intrinsic-width')
 				};
 			});
+			const responsiveTableStickyHeaders = responsiveTableLayouts.filter(layout => !layout.headersStatic).length;
 			const responsiveTableSizingMismatch = responsiveTableLayouts.filter(layout =>
 				width >= 601 && width <= 900 ? layout.nativeCards === layout.intrinsicWidth : layout.intrinsicWidth
 			).length;
@@ -161,6 +165,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				pluginCssLoaded: resources.some(src => src.includes('nginx-manager/nginx-manager.css')),
 				responsiveTableOverflow,
 				responsiveTableLayouts,
+				responsiveTableStickyHeaders,
 				responsiveTableSizingMismatch,
 				scrollRegionsAccessible,
 				horizontalScrollKeyboard,
@@ -194,6 +199,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		if (metrics.overflow) failures.push('horizontal-overflow');
 		if (width <= 600 && metrics.responsiveTableOverflow) failures.push('mobile-table-overflow');
 		if (metrics.responsiveTableSizingMismatch) failures.push('responsive-table-sizing-overrides-native-layout');
+		if (metrics.responsiveTableStickyHeaders) failures.push('sticky-header-overlaps-scrollable-table-rows');
 		if (!metrics.scrollRegionsAccessible) failures.push('horizontal-scroll-region-is-not-accessible');
 		if (!metrics.horizontalScrollKeyboard) failures.push('horizontal-table-scroll-is-not-keyboard-operable');
 		if (!metrics.activeTabVisible) failures.push('active-tab-outside-visible-strip');

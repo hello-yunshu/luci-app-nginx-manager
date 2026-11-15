@@ -331,6 +331,10 @@
 
 /* 外层滚动容器：表格在窄视口可横向滚动，不撑破文档 */
 .nm-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+/* Sticky headers use the nearest scrollport as their reference. Inside this
+ * horizontal scroller that offsets the header over the first data row (e.g.
+ * themes that make native .th cells sticky), so keep the header in table flow. */
+.nm-table-scroll > table.table > thead > tr > th { position: static; }
 
 /* 长域名 / 长后端地址允许任意位置断行，压掉列的内在最小宽 */
 .nm-cell-wrap { overflow-wrap: anywhere; word-break: break-word; max-width: 28ch; }
