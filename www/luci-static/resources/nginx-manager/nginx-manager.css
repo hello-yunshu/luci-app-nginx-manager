@@ -329,9 +329,9 @@
 .nm-site-table .nm-actions button,
 .nm-site-table .nm-actions .cbi-button { min-height: 32px; padding: 0.35rem 0.6rem; font-size: 0.9em; }
 
-@media (max-width: 700px) {
-	/* Keep the active route visible on direct links at phone widths. LuCI's
-	 * native tab strip otherwise clips later tabs until the user scrolls it. */
+@media (max-width: 900px) {
+	/* Keep all routes, including the active route on direct links, visible in
+	 * LuCI's native tab strip at phone and narrow tablet widths. */
 	#tabmenu ul.tabs { flex-wrap: wrap; overflow-x: visible; }
 	.nm-table-scroll > table.table { min-width: 0; width: 100%; }
 	.nm-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
