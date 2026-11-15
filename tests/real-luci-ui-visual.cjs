@@ -151,6 +151,11 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				label: (field.querySelector('span') && field.querySelector('span').textContent || '').trim(),
 				controls: field.querySelectorAll('select, input').length
 			}));
+			const logFilterControls = main && main.querySelector('.nm-log-filter-controls');
+			const logActionControls = main && main.querySelector('.nm-log-action-controls');
+			const logControlsGap = logFilterControls && logActionControls
+				? Math.round(logActionControls.getBoundingClientRect().top - logFilterControls.getBoundingClientRect().bottom)
+				: null;
 			const logOutput = main && main.querySelector('.nm-log-area');
 			const logSize = main && main.querySelector('.nm-log-size');
 			const fileHeader = viewId === 'files' && main && main.querySelector('.nm-file-table thead tr');
@@ -176,6 +181,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				fileHeaderVisible: viewId === 'files' && fileHeader ? getComputedStyle(fileHeader).display !== 'none' : null,
 				overviewRowsAccessible,
 				logFilterFields: viewId === 'logs' ? logFilterFields : null,
+				logControlsGap: viewId === 'logs' ? logControlsGap : null,
 				logOutput: viewId === 'logs' && logOutput ? {
 					state: ['is-empty', 'is-error', 'is-loading'].find(name => logOutput.classList.contains(name)) || 'content',
 					height: Math.round(logOutput.getBoundingClientRect().height),
@@ -210,6 +216,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		if (route && route.label === 'files' && (!metrics.fileHeaderNative || (width <= 600 && metrics.fileHeaderVisible))) failures.push('mobile-file-table-header-not-native');
 		if (route && route.label === 'logs') {
 			if (!metrics.logFilterFields || metrics.logFilterFields.length !== 4 || metrics.logFilterFields.some(field => field.controls !== 1)) failures.push('log-filter-label-control-pairing');
+			if (metrics.logControlsGap == null || metrics.logControlsGap < 12) failures.push('log-filter-actions-are-too-close');
 			if (!metrics.logOutput || !metrics.logOutput.labelled || metrics.logOutput.filterPlaceholder) failures.push('log-output-labeling-or-redundant-placeholder');
 			if (!metrics.logSizeStatus || !metrics.logSizeStatus.labelled || !/Log size:|日志大小：/.test(metrics.logSizeStatus.text)) failures.push('log-size-status-not-labeled');
 			if (metrics.logOutput && ['is-empty', 'is-error'].includes(metrics.logOutput.state) && metrics.logOutput.height > 192) failures.push('log-empty-error-state-not-compact');
