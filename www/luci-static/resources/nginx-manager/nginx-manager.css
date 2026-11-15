@@ -16,9 +16,6 @@
 .nm-actions .cbi-button {
 	margin: 0;
 	white-space: nowrap;
-	padding: 0.4rem 0.8rem;
-	line-height: normal;
-	min-height: 2rem;
 }
 
 /* === Visit Link === */
@@ -104,7 +101,7 @@
 	display: flex; flex-wrap: wrap; align-items: center;
 	gap: var(--ys-action-gap, calc(var(--spacing, .25rem) * 3));
 }
-.nm-file-actions .cbi-button { margin: 0; min-height: 2rem; }
+.nm-file-actions .cbi-button { margin: 0; }
 .nm-file-path-row .cbi-input-text {
 	flex: 1 1 auto; min-width: 0;
 	font-family: var(--font-mono);
@@ -342,8 +339,6 @@
 .nm-site-table td.td,
 .nm-site-table th.th { white-space: normal; vertical-align: middle; }
 .nm-actions-cell { white-space: nowrap; }
-.nm-site-table .nm-actions button,
-.nm-site-table .nm-actions .cbi-button { min-height: 32px; padding: 0.35rem 0.6rem; font-size: 0.9em; }
 
 @media (max-width: 900px) {
 	/* Keep all routes, including the active route on direct links, visible in
