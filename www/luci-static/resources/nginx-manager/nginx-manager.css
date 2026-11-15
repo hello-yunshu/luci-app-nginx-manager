@@ -466,29 +466,22 @@
 	}
 }
 
-/* Shared interaction rhythm: side-by-side buttons follow the theme spacing
- * scale instead of hardcoded pixels. Keep identical across sibling plugins.
- * The #maincontent copies are needed because the theme ships a more specific
- * `#maincontent .cbi-page-actions` rule (8px) that would win otherwise. */
+/* Plugin-owned action groups follow the theme spacing scale. Native
+ * .cbi-page-actions stay under the active LuCI theme's control. */
 #maincontent { --ys-action-gap: calc(var(--spacing, .25rem) * 3); }
-.ys-actions,
-.cbi-page-actions {
+.ys-actions {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	gap: calc(var(--spacing, .25rem) * 3);
 }
 #maincontent .ys-actions,
-#maincontent .cbi-page-actions,
 #maincontent .nm-actions,
 #maincontent .nm-file-actions { gap: var(--ys-action-gap); }
-.cbi-page-actions { justify-content: flex-end; }
 .ys-actions > .cbi-button,
 .ys-actions > button,
 .ys-actions > select,
-.ys-actions > input,
-.cbi-page-actions > form,
-.cbi-page-actions > button { margin: 0; }
+.ys-actions > input { margin: 0; }
 
 /* Shared table contract: every table on the page shares one first-column
  * basis (minimum width + alignment) instead of content-driven widths. */
