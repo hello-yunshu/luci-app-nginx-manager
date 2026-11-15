@@ -156,6 +156,11 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			const logControlsGap = logFilterControls && logActionControls
 				? Math.round(logActionControls.getBoundingClientRect().top - logFilterControls.getBoundingClientRect().bottom)
 				: null;
+			const backupControls = main && main.querySelector('.nm-backup-controls');
+			const backupContent = backupControls && backupControls.nextElementSibling;
+			const backupControlsGap = backupControls && backupContent
+				? Math.round(backupContent.getBoundingClientRect().top - backupControls.getBoundingClientRect().bottom)
+				: null;
 			const logOutput = main && main.querySelector('.nm-log-area');
 			const logSize = main && main.querySelector('.nm-log-size');
 			const fileHeader = viewId === 'files' && main && main.querySelector('.nm-file-table thead tr');
@@ -182,6 +187,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				overviewRowsAccessible,
 				logFilterFields: viewId === 'logs' ? logFilterFields : null,
 				logControlsGap: viewId === 'logs' ? logControlsGap : null,
+				backupControlsGap: viewId === 'backups' ? backupControlsGap : null,
 				logOutput: viewId === 'logs' && logOutput ? {
 					state: ['is-empty', 'is-error', 'is-loading'].find(name => logOutput.classList.contains(name)) || 'content',
 					height: Math.round(logOutput.getBoundingClientRect().height),
@@ -221,6 +227,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			if (!metrics.logSizeStatus || !metrics.logSizeStatus.labelled || !/Log size:|日志大小：/.test(metrics.logSizeStatus.text)) failures.push('log-size-status-not-labeled');
 			if (metrics.logOutput && ['is-empty', 'is-error'].includes(metrics.logOutput.state) && metrics.logOutput.height > 192) failures.push('log-empty-error-state-not-compact');
 		}
+		if (route && route.label === 'backups' && (metrics.backupControlsGap == null || metrics.backupControlsGap < 12)) failures.push('backup-controls-content-are-too-close');
 		if (route && route.label === 'overview' && metrics.overviewRowsAccessible !== true) failures.push('overview-detail-rows-duplicate-or-unlabeled');
 		if (route && route.label === 'site-edit' && metrics.siteEditBackDestructive !== false) failures.push('back-navigation-styled-as-destructive');
 		if (metrics.truncated.length) failures.push('truncated-non-dropdown-text');
