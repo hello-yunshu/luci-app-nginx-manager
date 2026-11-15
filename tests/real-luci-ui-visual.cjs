@@ -94,7 +94,10 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			const wrapper = page.locator('#maincontent .nm-table-scroll').nth(index);
 			await wrapper.focus();
 			await page.keyboard.press('ArrowRight');
-			horizontalScrollKeyboard = await wrapper.evaluate(el => el.scrollLeft > 0) && horizontalScrollKeyboard;
+			const movedRight = await wrapper.evaluate(el => el.scrollLeft > 0);
+			await page.keyboard.press('ArrowLeft');
+			const movedLeft = await wrapper.evaluate(el => el.scrollLeft === 0);
+			horizontalScrollKeyboard = movedRight && movedLeft && horizontalScrollKeyboard;
 			await wrapper.evaluate(el => { el.scrollLeft = 0; });
 		}
 		await page.evaluate(() => { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); });

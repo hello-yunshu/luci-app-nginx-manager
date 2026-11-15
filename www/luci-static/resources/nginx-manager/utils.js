@@ -14,6 +14,26 @@ var FOOTER_OPTIONS = {
 var responsiveTableSizingInstalled = false;
 var responsiveTableSizingFrame = null;
 
+function makeScrollableTable(table) {
+	return E('div', {
+		'class': 'nm-table-scroll',
+		'role': 'region',
+		'tabindex': '0',
+		'aria-label': _('Scrollable table'),
+		'keydown': function(ev) {
+			if (ev.target !== ev.currentTarget || (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight'))
+				return;
+
+			var direction = ev.key === 'ArrowRight' ? 1 : -1;
+			var previous = ev.currentTarget.scrollLeft;
+			ev.currentTarget.scrollLeft = previous + direction * 40;
+
+			if (ev.currentTarget.scrollLeft !== previous)
+				ev.preventDefault();
+		}
+	}, [table]);
+}
+
 function updateResponsiveTableSizing() {
 	function applySizing() {
 		responsiveTableSizingFrame = null;
@@ -818,6 +838,7 @@ function createCodeEditor(content, path, options) {
 }
 
 return baseclass.extend({
+	makeScrollableTable: makeScrollableTable,
 	updateResponsiveTableSizing: updateResponsiveTableSizing,
 	loadSharedCSS: loadSharedCSS,
 	errorPanel: errorPanel,

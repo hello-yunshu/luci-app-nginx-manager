@@ -930,13 +930,7 @@ return view.extend({
 		]));
 
 		container.appendChild(E('div', { 'class': 'cbi-section' }, [
-			E('div', {
-				'class': 'nm-table-scroll',
-				'role': 'region',
-				'tabindex': '0',
-				'aria-label': _('Scrollable table')
-			}, [
-				E('table', { 'class': 'table nm-file-table' }, [
+			utils.makeScrollableTable(E('table', { 'class': 'table nm-file-table' }, [
 					E('thead', {}, [
 						E('tr', { 'class': 'tr cbi-section-table-titles' }, [
 							E('th', { 'class': 'th' }, _('Name')),
@@ -948,8 +942,7 @@ return view.extend({
 						])
 					]),
 					tbody
-				])
-			])
+				]))
 		]));
 
 		setTimeout(function() {

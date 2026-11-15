@@ -230,12 +230,7 @@ return view.extend({
 		});
 
 		table.appendChild(tbody);
-		section.appendChild(E('div', {
-			'class': 'nm-table-scroll',
-			'role': 'region',
-			'tabindex': '0',
-			'aria-label': _('Scrollable table')
-		}, [table]));
+		section.appendChild(utils.makeScrollableTable(table));
 		page.appendChild(section);
 
 		utils.updateResponsiveTableSizing();
