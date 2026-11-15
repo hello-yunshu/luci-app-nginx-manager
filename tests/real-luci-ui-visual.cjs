@@ -146,7 +146,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				siteEditBackDestructive: viewId === 'site-edit' ? !!(siteEditBack && /cbi-button-(reset|negative)/.test(siteEditBack.className)) : null,
 				truncated
 			};
-		}, { media: theme.media, viewId: route && route.id });
+		}, { media: theme.media, viewId: route && route.label });
 		await page.screenshot({ path: file, fullPage: true, animations: 'disabled' });
 	} catch (error) { navigationError = error.message; }
 	finally { page.off('console', onConsole); page.off('pageerror', onPageError); }
@@ -159,15 +159,15 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		if (metrics.overflow) failures.push('horizontal-overflow');
 		if (!metrics.activeTabVisible) failures.push('active-tab-outside-visible-strip');
 		if (metrics.routeTabs.count && metrics.routeTabs.visibleCount !== metrics.routeTabs.count) failures.push('route-tab-outside-visible-strip');
-		if (route && route.id === 'files' && (!metrics.fileHeaderNative || (width <= 600 && metrics.fileHeaderVisible))) failures.push('mobile-file-table-header-not-native');
-		if (route && route.id === 'logs') {
+		if (route && route.label === 'files' && (!metrics.fileHeaderNative || (width <= 600 && metrics.fileHeaderVisible))) failures.push('mobile-file-table-header-not-native');
+		if (route && route.label === 'logs') {
 			if (!metrics.logFilterFields || metrics.logFilterFields.length !== 4 || metrics.logFilterFields.some(field => field.controls !== 1)) failures.push('log-filter-label-control-pairing');
 			if (!metrics.logOutput || !metrics.logOutput.labelled || metrics.logOutput.filterPlaceholder) failures.push('log-output-labeling-or-redundant-placeholder');
 			if (!metrics.logSizeStatus || !metrics.logSizeStatus.labelled || !/Log size:|日志大小：/.test(metrics.logSizeStatus.text)) failures.push('log-size-status-not-labeled');
 			if (metrics.logOutput && ['is-empty', 'is-error'].includes(metrics.logOutput.state) && metrics.logOutput.height > 192) failures.push('log-empty-error-state-not-compact');
 		}
-		if (route && route.id === 'overview' && metrics.overviewRowsAccessible !== true) failures.push('overview-detail-rows-duplicate-or-unlabeled');
-		if (route && route.id === 'site-edit' && metrics.siteEditBackDestructive !== false) failures.push('back-navigation-styled-as-destructive');
+		if (route && route.label === 'overview' && metrics.overviewRowsAccessible !== true) failures.push('overview-detail-rows-duplicate-or-unlabeled');
+		if (route && route.label === 'site-edit' && metrics.siteEditBackDestructive !== false) failures.push('back-navigation-styled-as-destructive');
 		if (metrics.truncated.length) failures.push('truncated-non-dropdown-text');
 		if (metrics.darkMode !== theme.dark) failures.push('theme-dark-mode-mismatch');
 		if (checkTitle && metrics.heading !== route.title[languageIndex]) failures.push('wrong-view-heading: ' + metrics.heading);
