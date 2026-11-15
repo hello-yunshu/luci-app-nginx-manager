@@ -180,7 +180,7 @@ function buildSiteTable(sites) {
 					])
 				]);
 			}
-		}, '\u29C9 ' + _('Clone')));
+		}, _('Clone')));
 
 		actions.appendChild(E('button', {
 			'class': 'cbi-button',
