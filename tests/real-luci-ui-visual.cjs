@@ -110,6 +110,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			}));
 			const logOutput = main && main.querySelector('.nm-log-area');
 			const logSize = main && main.querySelector('.nm-log-size');
+			const fileHeader = viewId === 'files' && main && main.querySelector('.nm-file-table thead tr');
 			const siteEditBack = viewId === 'site-edit' && main && main.querySelector('.ys-actions button:last-child');
 			const outputLabelId = logOutput && logOutput.getAttribute('aria-labelledby');
 			return {
@@ -121,6 +122,8 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				activeTabVisible: !activeRect || (activeRect.left >= -1 && activeRect.right <= innerWidth + 1),
 				themeLoaded: resources.some(src => src.includes('/luci-static/' + media + '/')),
 				pluginCssLoaded: resources.some(src => src.includes('nginx-manager/nginx-manager.css')),
+				fileHeaderNative: viewId === 'files' ? !!(fileHeader && fileHeader.classList.contains('cbi-section-table-titles')) : null,
+				fileHeaderVisible: viewId === 'files' && fileHeader ? getComputedStyle(fileHeader).display !== 'none' : null,
 				overviewRowsAccessible,
 				logFilterFields: viewId === 'logs' ? logFilterFields : null,
 				logOutput: viewId === 'logs' && logOutput ? {
@@ -148,6 +151,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		if (!metrics.pluginCssLoaded) failures.push('plugin-css-not-loaded');
 		if (metrics.overflow) failures.push('horizontal-overflow');
 		if (!metrics.activeTabVisible) failures.push('active-tab-outside-visible-strip');
+		if (route && route.id === 'files' && (!metrics.fileHeaderNative || (width <= 600 && metrics.fileHeaderVisible))) failures.push('mobile-file-table-header-not-native');
 		if (route && route.id === 'logs') {
 			if (!metrics.logFilterFields || metrics.logFilterFields.length !== 4 || metrics.logFilterFields.some(field => field.controls !== 1)) failures.push('log-filter-label-control-pairing');
 			if (!metrics.logOutput || !metrics.logOutput.labelled || metrics.logOutput.filterPlaceholder) failures.push('log-output-labeling-or-redundant-placeholder');
