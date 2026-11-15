@@ -77,6 +77,7 @@
 }
 .nm-log-filter-field > select,
 .nm-log-filter-field > input { min-width: 0; }
+.nm-log-size { white-space: nowrap; }
 
 /* === Overview: Stats Grid === */
 .nm-stats-grid {
@@ -536,12 +537,8 @@ html[data-darkmode="true"] body.nm-theme-bootstrap span.more { color: #a0a0a0; }
  * toolbar column on the action rows so the last button is never covered. */
 @supports selector(:has(*)) {
 	@media screen and (max-width: 1319px) {
-		body:has(.floating-toolbar) #maincontent .cbi-page-actions,
-		body:has(.floating-toolbar) #maincontent .ys-actions,
-		body:has(.floating-toolbar) #maincontent .nm-file-actions,
-		body:has(.floating-toolbar) #maincontent .nm-actions,
-		body:has(.floating-toolbar) #maincontent .ys-tool-footer {
-			padding-inline-end: calc(var(--spacing, .25rem) * 10);
+		body:has(.floating-toolbar) #maincontent {
+			padding-inline-end: calc(var(--spacing, .25rem) * 15);
 		}
 	}
 }

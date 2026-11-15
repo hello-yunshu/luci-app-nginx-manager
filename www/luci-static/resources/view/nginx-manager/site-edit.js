@@ -640,7 +640,7 @@ return view.extend({
 		}, _('Save')));
 
 		actionsDiv.appendChild(E('button', {
-			'class': 'cbi-button cbi-button-reset',
+			'class': 'cbi-button',
 			'click': function() {
 				location.href = L.url('admin/services/nginx-manager/sites');
 			}
