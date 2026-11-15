@@ -115,7 +115,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			}));
 			const logOutput = main && main.querySelector('.nm-log-area');
 			const logSize = main && main.querySelector('.nm-log-size');
-			const siteEditBack = route && route.id === 'site-edit' && main && main.querySelector('.ys-actions button:last-child');
+			const siteEditBack = viewId === 'site-edit' && main && main.querySelector('.ys-actions button:last-child');
 			const outputLabelId = logOutput && logOutput.getAttribute('aria-labelledby');
 			return {
 				heading: h ? h.textContent.trim() : '', hasMain: !!main,
