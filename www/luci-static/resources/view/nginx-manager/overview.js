@@ -106,7 +106,7 @@ return view.extend({
 
 		/* Status Banner */
 		var banner = E('div', {
-			'class': 'cbi-section alert-message' + (running ? 'success' : 'warning')
+			'class': 'cbi-section alert-message ' + (running ? 'success' : 'warning')
 		});
 		banner.appendChild(E('h3', {},
 			running ? _('Nginx is running') : _('Nginx is stopped')));

@@ -74,7 +74,7 @@ return view.extend({
 		section.appendChild(E('h3', {}, _('Backup Management')));
 
 		var settingsRow = E('div', {
-			'class': 'cbi-value'
+			'class': 'cbi-value nm-backup-settings'
 		}, [
 			E('label', {
 				'class': 'cbi-value-title',
@@ -113,7 +113,7 @@ return view.extend({
 		]);
 
 		var createBtn = E('button', {
-			'class': 'cbi-button cbi-button-apply',
+			'class': 'cbi-button cbi-button-apply nm-backup-create',
 			'click': function() {
 				callCreateBackup().then(function(result) {
 					if (result && result.error) {
@@ -126,7 +126,7 @@ return view.extend({
 			}
 		}, '\u271A ' + _('Create Backup'));
 
-		section.appendChild(E('div', {}, [ createBtn, settingsRow ]));
+		section.appendChild(E('div', { 'class': 'nm-backup-controls' }, [ createBtn, settingsRow ]));
 
 		if (backups.length === 0) {
 			section.appendChild(E('div', {},
