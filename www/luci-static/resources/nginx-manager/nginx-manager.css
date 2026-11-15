@@ -39,7 +39,11 @@
 	width: auto;
 	box-sizing: border-box;
 }
-.nm-backup-settings .cbi-value-field .cbi-button { margin: 0; }
+.nm-backup-settings .cbi-value-field .cbi-button {
+	flex: 0 0 auto;
+	margin: 0;
+	white-space: nowrap;
+}
 @media screen and (max-width: 48rem) {
 	.nm-backup-controls { flex-direction: column; align-items: stretch; }
 	.nm-backup-create { align-self: flex-start; }
