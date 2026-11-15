@@ -103,6 +103,8 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				return rect.width > 0 && rect.height > 0 && rect.left >= -1 && rect.right <= innerWidth + 1;
 			});
 			const detailTables = viewId === 'overview' ? Array.from(main ? main.querySelectorAll('table.nm-overview-detail-table') : []) : null;
+			const responsiveTableOverflow = Array.from(main ? main.querySelectorAll('.nm-table-scroll') : [])
+				.filter(wrapper => wrapper.scrollWidth > wrapper.clientWidth + 1).length;
 			const overviewRowsAccessible = detailTables ? detailTables.length === 2 && detailTables.every(table => {
 				const rows = Array.from(table.querySelectorAll('tr'));
 				return rows.length > 0 && rows.every(row => {
@@ -129,6 +131,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				routeTabs: { count: routeTabLinks.length, visibleCount: routeTabRects.filter(Boolean).length },
 				themeLoaded: resources.some(src => src.includes('/luci-static/' + media + '/')),
 				pluginCssLoaded: resources.some(src => src.includes('nginx-manager/nginx-manager.css')),
+				responsiveTableOverflow,
 				fileHeaderNative: viewId === 'files' ? !!(fileHeader && fileHeader.classList.contains('cbi-section-table-titles')) : null,
 				fileHeaderVisible: viewId === 'files' && fileHeader ? getComputedStyle(fileHeader).display !== 'none' : null,
 				overviewRowsAccessible,
@@ -157,6 +160,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		if (!metrics.themeLoaded) failures.push('theme-assets-not-loaded');
 		if (!metrics.pluginCssLoaded) failures.push('plugin-css-not-loaded');
 		if (metrics.overflow) failures.push('horizontal-overflow');
+		if (width <= 600 && metrics.responsiveTableOverflow) failures.push('mobile-table-overflow');
 		if (!metrics.activeTabVisible) failures.push('active-tab-outside-visible-strip');
 		if (metrics.routeTabs.count && metrics.routeTabs.visibleCount !== metrics.routeTabs.count) failures.push('route-tab-outside-visible-strip');
 		if (route && route.label === 'files' && (!metrics.fileHeaderNative || (width <= 600 && metrics.fileHeaderVisible))) failures.push('mobile-file-table-header-not-native');
