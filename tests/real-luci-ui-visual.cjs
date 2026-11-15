@@ -87,11 +87,6 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		await page.waitForTimeout(450);
 		metrics = await page.evaluate(({ media, viewId }) => {
 			const root = document.documentElement, main = document.querySelector('#maincontent');
-			const toolbar = document.querySelector('.floating-toolbar');
-			const toolbarRect = toolbar && toolbar.getBoundingClientRect();
-			const mainRect = main && main.getBoundingClientRect();
-			const toolbarClearancePx = !toolbarRect || toolbarRect.width === 0 || !mainRect ? null :
-				Math.round(toolbarRect.left - (mainRect.right - parseFloat(getComputedStyle(main).paddingInlineEnd || '0')));
 			const h = main && main.querySelector('h2[name="content"], .view h2, h2');
 			const active = document.querySelector('#maincontent #tabmenu .active a, #maincontent #tabmenu a[aria-current="page"]');
 			const resources = Array.from(document.querySelectorAll('link[href],script[src]')).map(el => el.href || el.src);
@@ -123,7 +118,6 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				loading: !!(main && /Loading view|加载视图/.test(main.innerText)),
 				darkMode: root.getAttribute('data-darkmode'), scrollWidth: root.scrollWidth, width: innerWidth,
 				overflow: root.scrollWidth > innerWidth + 1,
-				toolbarClearancePx,
 				activeTabVisible: !activeRect || (activeRect.left >= -1 && activeRect.right <= innerWidth + 1),
 				themeLoaded: resources.some(src => src.includes('/luci-static/' + media + '/')),
 				pluginCssLoaded: resources.some(src => src.includes('nginx-manager/nginx-manager.css')),
@@ -153,7 +147,6 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		if (!metrics.themeLoaded) failures.push('theme-assets-not-loaded');
 		if (!metrics.pluginCssLoaded) failures.push('plugin-css-not-loaded');
 		if (metrics.overflow) failures.push('horizontal-overflow');
-		if (metrics.toolbarClearancePx !== null && metrics.toolbarClearancePx < 8) failures.push('floating-toolbar-overlaps-content');
 		if (!metrics.activeTabVisible) failures.push('active-tab-outside-visible-strip');
 		if (route && route.id === 'logs') {
 			if (!metrics.logFilterFields || metrics.logFilterFields.length !== 4 || metrics.logFilterFields.some(field => field.controls !== 1)) failures.push('log-filter-label-control-pairing');

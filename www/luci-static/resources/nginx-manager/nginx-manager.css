@@ -533,16 +533,6 @@ html[data-darkmode="true"] body.nm-theme-bootstrap span.more { color: #a0a0a0; }
 .cbi-page-actions > form,
 .cbi-page-actions > button { margin: 0; }
 
-/* Aurora keeps a fixed 40px floating toolbar at the bottom right. Reserve one
- * toolbar column on the action rows so the last button is never covered. */
-@supports selector(:has(*)) {
-	@media screen and (max-width: 1319px) {
-		body:has(.floating-toolbar) #maincontent {
-			padding-inline-end: calc(var(--spacing, .25rem) * 15);
-		}
-	}
-}
-
 /* Shared table contract: every table on the page shares one first-column
  * basis (minimum width + alignment) instead of content-driven widths. */
 @media screen and (min-width: 48rem) {
