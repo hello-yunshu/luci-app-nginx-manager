@@ -486,6 +486,12 @@ msgstr ""
 msgid "Log Settings"
 msgstr ""
 
+msgid "Log size"
+msgstr ""
+
+msgid "Log size: %s"
+msgstr ""
+
 msgid "Logging"
 msgstr ""
 

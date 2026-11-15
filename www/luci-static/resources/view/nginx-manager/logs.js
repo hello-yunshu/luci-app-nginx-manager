@@ -124,7 +124,12 @@ return view.extend({
 			'class': 'cbi-button cbi-button-reset'
 		}, '\u2716\u2716 ' + _('Clear All'));
 
-		var sizeLabel = E('span', {  }, '');
+		var sizeLabel = E('span', {
+			'class': 'nm-log-size',
+			'role': 'status',
+			'aria-live': 'polite',
+			'aria-label': _('Log size')
+		}, _('Log size: %s').format('—'));
 
 		btnGroup.appendChild(refreshBtn);
 		btnGroup.appendChild(clearBtn);
@@ -178,7 +183,7 @@ return view.extend({
 
 		function updateLogSize() {
 			callGetLogSize(typeSelect.value, siteSelect.value).then(function(result) {
-				sizeLabel.textContent = bytesToSize((result && result.size) || 0);
+				sizeLabel.textContent = _('Log size: %s').format(bytesToSize((result && result.size) || 0));
 			}).catch(function() {
 				sizeLabel.textContent = '';
 			});

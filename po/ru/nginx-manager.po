@@ -469,6 +469,12 @@ msgstr "Журнал очищен"
 msgid "Log Settings"
 msgstr "Настройки журналов"
 
+msgid "Log size"
+msgstr "Размер журнала"
+
+msgid "Log size: %s"
+msgstr "Размер журнала: %s"
+
 msgid "Logging"
 msgstr "Ведение журнала"
 

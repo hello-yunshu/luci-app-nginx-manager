@@ -109,6 +109,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				controls: field.querySelectorAll('select, input').length
 			}));
 			const logOutput = main && main.querySelector('.nm-log-area');
+		const logSize = main && main.querySelector('.nm-log-size');
 			const outputLabelId = logOutput && logOutput.getAttribute('aria-labelledby');
 			return {
 				heading: h ? h.textContent.trim() : '', hasMain: !!main,
@@ -127,6 +128,10 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 					labelled: !!(outputLabelId && document.getElementById(outputLabelId)),
 					filterPlaceholder: (main.querySelector('.nm-log-filter-field input') || {}).placeholder || ''
 				} : null,
+				logSizeStatus: viewId === 'logs' && logSize ? {
+					labelled: logSize.getAttribute('role') === 'status' && logSize.getAttribute('aria-live') === 'polite' && /^(Log size|日志大小)$/.test(logSize.getAttribute('aria-label') || ''),
+					text: (logSize.textContent || '').trim()
+				} : null,
 				truncated
 			};
 		}, { media: theme.media, viewId: route && route.id });
@@ -144,6 +149,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		if (route && route.id === 'logs') {
 			if (!metrics.logFilterFields || metrics.logFilterFields.length !== 4 || metrics.logFilterFields.some(field => field.controls !== 1)) failures.push('log-filter-label-control-pairing');
 			if (!metrics.logOutput || !metrics.logOutput.labelled || metrics.logOutput.filterPlaceholder) failures.push('log-output-labeling-or-redundant-placeholder');
+			if (!metrics.logSizeStatus || !metrics.logSizeStatus.labelled || !/Log size:|日志大小：/.test(metrics.logSizeStatus.text)) failures.push('log-size-status-not-labeled');
 			if (metrics.logOutput && ['is-empty', 'is-error'].includes(metrics.logOutput.state) && metrics.logOutput.height > 192) failures.push('log-empty-error-state-not-compact');
 		}
 		if (route && route.id === 'overview' && metrics.overviewRowsAccessible !== true) failures.push('overview-detail-rows-duplicate-or-unlabeled');

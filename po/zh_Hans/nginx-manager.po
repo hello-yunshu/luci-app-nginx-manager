@@ -507,6 +507,12 @@ msgstr "日志已清除"
 msgid "Log Settings"
 msgstr "日志设置"
 
+msgid "Log size"
+msgstr "日志大小"
+
+msgid "Log size: %s"
+msgstr "日志大小：%s"
+
 msgid "Logging"
 msgstr "日志"
 

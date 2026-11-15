@@ -468,6 +468,12 @@ msgstr "Log cleared"
 msgid "Log Settings"
 msgstr "Log Settings"
 
+msgid "Log size"
+msgstr "Log size"
+
+msgid "Log size: %s"
+msgstr "Log size: %s"
+
 msgid "Logging"
 msgstr "Logging"
 
