@@ -1647,3 +1647,6 @@ msgstr "Загрузка..."
 
 msgid "items"
 msgstr "предметы"
+
+msgid "Scrollable table"
+msgstr "Таблица с прокруткой"

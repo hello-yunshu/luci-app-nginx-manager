@@ -1649,3 +1649,6 @@ msgstr ""
 
 msgid "Overview"
 msgstr ""
+
+msgid "Scrollable table"
+msgstr ""

@@ -1685,3 +1685,6 @@ msgstr "项目"
 
 msgid "Technical details"
 msgstr "技术详情"
+
+msgid "Scrollable table"
+msgstr "可滚动的表格"

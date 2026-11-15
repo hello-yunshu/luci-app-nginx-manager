@@ -300,7 +300,12 @@ function buildSiteTable(sites) {
 		table.appendChild(row);
 	});
 
-	return E('div', { 'class': 'nm-table-scroll' }, [table]);
+	return E('div', {
+		'class': 'nm-table-scroll',
+		'role': 'region',
+		'tabindex': '0',
+		'aria-label': _('Scrollable table')
+	}, [table]);
 }
 
 return view.extend({

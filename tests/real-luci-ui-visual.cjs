@@ -86,7 +86,19 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			return main && main.innerText.trim().length > 10 && !/Loading view|加载视图/.test(main.innerText);
 		}, null, { timeout: 20000 });
 		await page.waitForTimeout(450);
-		metrics = await page.evaluate(({ media, viewId }) => {
+		let horizontalScrollKeyboard = true;
+		const scrollWrapperIndexes = await page.locator('#maincontent .nm-table-scroll').evaluateAll(wrappers =>
+			wrappers.map((wrapper, index) => wrapper.scrollWidth > wrapper.clientWidth + 1 ? index : -1).filter(index => index >= 0)
+		);
+		for (const index of scrollWrapperIndexes) {
+			const wrapper = page.locator('#maincontent .nm-table-scroll').nth(index);
+			await wrapper.focus();
+			await page.keyboard.press('ArrowRight');
+			horizontalScrollKeyboard = await wrapper.evaluate(el => el.scrollLeft > 0) && horizontalScrollKeyboard;
+			await wrapper.evaluate(el => { el.scrollLeft = 0; });
+		}
+		await page.evaluate(() => { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); });
+		metrics = await page.evaluate(({ media, viewId, width, horizontalScrollKeyboard }) => {
 			const root = document.documentElement, main = document.querySelector('#maincontent');
 			const h = main && main.querySelector('h2[name="content"], .view h2, h2');
 			const active = document.querySelector('#maincontent #tabmenu .active a, #maincontent #tabmenu a[aria-current="page"]');
@@ -118,6 +130,9 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			const responsiveTableSizingMismatch = responsiveTableLayouts.filter(layout =>
 				width >= 601 && width <= 900 ? layout.nativeCards === layout.intrinsicWidth : layout.intrinsicWidth
 			).length;
+			const scrollRegions = Array.from(main ? main.querySelectorAll('.nm-table-scroll') : []);
+			const scrollRegionsAccessible = scrollRegions.every(wrapper => wrapper.scrollWidth <= wrapper.clientWidth + 1 ||
+				(wrapper.tabIndex >= 0 && wrapper.getAttribute('role') === 'region' && !!wrapper.getAttribute('aria-label')));
 			const overviewRowsAccessible = detailTables ? detailTables.length === 2 && detailTables.every(table => {
 				const rows = Array.from(table.querySelectorAll('tr'));
 				return rows.length > 0 && rows.every(row => {
@@ -147,6 +162,8 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				responsiveTableOverflow,
 				responsiveTableLayouts,
 				responsiveTableSizingMismatch,
+				scrollRegionsAccessible,
+				horizontalScrollKeyboard,
 				fileHeaderNative: viewId === 'files' ? !!(fileHeader && fileHeader.classList.contains('cbi-section-table-titles')) : null,
 				fileHeaderVisible: viewId === 'files' && fileHeader ? getComputedStyle(fileHeader).display !== 'none' : null,
 				overviewRowsAccessible,
@@ -164,7 +181,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				siteEditBackDestructive: viewId === 'site-edit' ? !!(siteEditBack && /cbi-button-(reset|negative)/.test(siteEditBack.className)) : null,
 				truncated
 			};
-		}, { media: theme.media, viewId: route && route.label });
+		}, { media: theme.media, viewId: route && route.label, width, horizontalScrollKeyboard });
 		await page.screenshot({ path: file, fullPage: true, animations: 'disabled' });
 	} catch (error) { navigationError = error.message; }
 	finally { page.off('console', onConsole); page.off('pageerror', onPageError); }
@@ -177,6 +194,8 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		if (metrics.overflow) failures.push('horizontal-overflow');
 		if (width <= 600 && metrics.responsiveTableOverflow) failures.push('mobile-table-overflow');
 		if (metrics.responsiveTableSizingMismatch) failures.push('responsive-table-sizing-overrides-native-layout');
+		if (!metrics.scrollRegionsAccessible) failures.push('horizontal-scroll-region-is-not-accessible');
+		if (!metrics.horizontalScrollKeyboard) failures.push('horizontal-table-scroll-is-not-keyboard-operable');
 		if (!metrics.activeTabVisible) failures.push('active-tab-outside-visible-strip');
 		if (metrics.routeTabs.count && metrics.routeTabs.visibleCount !== metrics.routeTabs.count) failures.push('route-tab-outside-visible-strip');
 		if (route && route.label === 'files' && (!metrics.fileHeaderNative || (width <= 600 && metrics.fileHeaderVisible))) failures.push('mobile-file-table-header-not-native');
