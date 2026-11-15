@@ -85,7 +85,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			return main && main.innerText.trim().length > 10 && !/Loading view|加载视图/.test(main.innerText);
 		}, null, { timeout: 20000 });
 		await page.waitForTimeout(450);
-		metrics = await page.evaluate((media, viewId) => {
+		metrics = await page.evaluate(({ media, viewId }) => {
 			const root = document.documentElement, main = document.querySelector('#maincontent');
 			const h = main && main.querySelector('h2[name="content"], .view h2, h2');
 			const active = document.querySelector('#maincontent #tabmenu .active a, #maincontent #tabmenu a[aria-current="page"]');
@@ -129,7 +129,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				} : null,
 				truncated
 			};
-		}, theme.media, route && route.id);
+		}, { media: theme.media, viewId: route && route.id });
 		await page.screenshot({ path: file, fullPage: true, animations: 'disabled' });
 	} catch (error) { navigationError = error.message; }
 	finally { page.off('console', onConsole); page.off('pageerror', onPageError); }
