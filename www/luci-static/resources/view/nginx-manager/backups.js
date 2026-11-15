@@ -137,7 +137,7 @@ return view.extend({
 
 		var table = E('table', { 'class': 'table' });
 		var thead = E('thead');
-		var headerRow = E('tr', { 'class': 'tr' });
+		var headerRow = E('tr', { 'class': 'tr cbi-section-table-titles' });
 		[_('Backup Time'), _('Source'), _('Actions')].forEach(function(title) {
 			headerRow.appendChild(E('th', { 'class': 'th' }, title));
 		});

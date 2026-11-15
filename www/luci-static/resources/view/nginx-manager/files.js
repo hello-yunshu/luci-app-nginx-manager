@@ -933,7 +933,7 @@ return view.extend({
 			E('div', { 'class': 'nm-table-scroll' }, [
 				E('table', { 'class': 'table nm-file-table' }, [
 					E('thead', {}, [
-						E('tr', { 'class': 'tr' }, [
+						E('tr', { 'class': 'tr cbi-section-table-titles' }, [
 							E('th', { 'class': 'th' }, _('Name')),
 							E('th', { 'class': 'th' }, _('Type')),
 							E('th', { 'class': 'th' }, _('Size')),

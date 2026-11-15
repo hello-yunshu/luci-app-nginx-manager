@@ -113,7 +113,7 @@ function renderBackendLink(site) {
 function buildSiteTable(sites) {
 	var table = E('table', { 'class': 'table nm-site-table' });
 	var thead = E('thead');
-	var headerRow = E('tr', { 'class': 'tr' });
+	var headerRow = E('tr', { 'class': 'tr cbi-section-table-titles' });
 	[_('Enabled'), _('Name'), _('Domain'), _('Type'), _('SSL'), _('Backend / Root'), _('Actions')].forEach(function(title) {
 		headerRow.appendChild(E('th', { 'class': 'th' }, title));
 	});

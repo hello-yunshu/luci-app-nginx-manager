@@ -1062,7 +1062,7 @@ return view.extend({
 
 		var table = E('table', { 'class': 'table' });
 		var thead = E('thead');
-		var headerRow = E('tr', { 'class': 'tr' });
+		var headerRow = E('tr', { 'class': 'tr cbi-section-table-titles' });
 		[_('Name'), _('Type'), _('Domain'), _('Status'), _('Actions')].forEach(function(title) {
 			headerRow.appendChild(E('th', { 'class': 'th' }, title));
 		});
