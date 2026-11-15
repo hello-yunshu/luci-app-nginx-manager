@@ -62,6 +62,21 @@
 .nm-log-area.is-empty,
 .nm-log-area.is-loading { font-style: italic; }
 .nm-log-area.is-error { font-weight: bold; }
+.nm-log-area.is-empty,
+.nm-log-area.is-error {
+	height: 3.5rem;
+	min-height: 3.5rem;
+	max-height: 12rem;
+	resize: vertical;
+}
+.nm-log-filter-field {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	min-width: 0;
+}
+.nm-log-filter-field > select,
+.nm-log-filter-field > input { min-width: 0; }
 
 /* === Overview: Stats Grid === */
 .nm-stats-grid {
@@ -333,6 +348,9 @@
 	/* Keep all routes, including the active route on direct links, visible in
 	 * LuCI's native tab strip at phone and narrow tablet widths. */
 	#tabmenu ul.tabs { flex-wrap: wrap; overflow-x: visible; }
+	.nm-log-filter-field { flex: 1 1 15rem; }
+	.nm-log-filter-field > select,
+	.nm-log-filter-field > input { flex: 1 1 0; width: auto; max-width: 100%; }
 	.nm-table-scroll > table.table { min-width: 0; width: 100%; }
 	.nm-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

@@ -72,16 +72,18 @@ return view.extend({
 			E('option', { 'value': 'error' }, _('Error Log')),
 			E('option', { 'value': 'access' }, _('Access Log'))
 		]);
-		controls.appendChild(E('label', {}, _('Type') + ': '));
-		controls.appendChild(typeSelect);
+		controls.appendChild(E('label', { 'class': 'nm-log-filter-field' }, [
+			E('span', {}, _('Type') + ':'), typeSelect
+		]));
 
 		var lineSelect = E('select', {}, [
 			E('option', { 'value': '100' }, '100'),
 			E('option', { 'value': '200', 'selected': true }, '200'),
 			E('option', { 'value': '500' }, '500')
 		]);
-		controls.appendChild(E('label', {}, _('Line Count') + ': '));
-		controls.appendChild(lineSelect);
+		controls.appendChild(E('label', { 'class': 'nm-log-filter-field' }, [
+			E('span', {}, _('Line Count') + ':'), lineSelect
+		]));
 
 		var siteSelect = E('select', {}, [
 			E('option', { 'value': '' }, _('All Sites'))
@@ -93,16 +95,17 @@ return view.extend({
 			siteSelect.appendChild(E('option', { 'value': site.id },
 				label));
 		});
-		controls.appendChild(E('label', {}, _('Site') + ': '));
-		controls.appendChild(siteSelect);
+		controls.appendChild(E('label', { 'class': 'nm-log-filter-field' }, [
+			E('span', {}, _('Site') + ':'), siteSelect
+		]));
 
 		var filterInput = E('input', {
 			'type': 'text',
-			'class': 'cbi-input-text',
-			'placeholder': _('Filter')
+			'class': 'cbi-input-text'
 		});
-		controls.appendChild(E('label', {}, _('Filter') + ': '));
-		controls.appendChild(filterInput);
+		controls.appendChild(E('label', { 'class': 'nm-log-filter-field' }, [
+			E('span', {}, _('Filter') + ':'), filterInput
+		]));
 
 		controlSection.appendChild(controls);
 
@@ -133,10 +136,11 @@ return view.extend({
 
 		/* Log Output Section */
 		var logSection = E('div', { 'class': 'cbi-section' });
-		logSection.appendChild(E('h3', {}, _('Log Output')));
+		logSection.appendChild(E('h3', { 'id': 'nm-log-output-heading' }, _('Log Output')));
 
 		var logOutput = E('textarea', {
 			'class': 'cbi-input-textarea nm-log-area is-loading',
+			'aria-labelledby': 'nm-log-output-heading',
 			'rows': 20,
 			'readonly': 'readonly'
 		}, _('Loading...'));
@@ -200,7 +204,7 @@ return view.extend({
 					logOutput.className = 'cbi-input-textarea nm-log-area';
 				} else {
 					setLogText(_('No log entries found'));
-					logOutput.className = 'cbi-input-textarea nm-log-area';
+					logOutput.className = 'cbi-input-textarea nm-log-area is-empty';
 				}
 			}).catch(function(err) {
 				setLogText(_('Failed to load logs') + ': ' + err);

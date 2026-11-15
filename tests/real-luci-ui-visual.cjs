@@ -85,7 +85,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			return main && main.innerText.trim().length > 10 && !/Loading view|加载视图/.test(main.innerText);
 		}, null, { timeout: 20000 });
 		await page.waitForTimeout(450);
-		metrics = await page.evaluate(media => {
+		metrics = await page.evaluate((media, viewId) => {
 			const root = document.documentElement, main = document.querySelector('#maincontent');
 			const h = main && main.querySelector('h2[name="content"], .view h2, h2');
 			const active = document.querySelector('#maincontent #tabmenu .active a, #maincontent #tabmenu a[aria-current="page"]');
@@ -96,6 +96,20 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				return css.whiteSpace === 'nowrap' && el.clientWidth > 0 && el.scrollWidth > el.clientWidth + 2;
 			}).slice(0, 8).map(el => ({ tag: el.tagName, text: (el.innerText || '').trim().slice(0, 80) }));
 			const activeRect = active && active.getBoundingClientRect();
+			const detailTables = viewId === 'overview' ? Array.from(main ? main.querySelectorAll('table.nm-overview-detail-table') : []) : null;
+			const overviewRowsAccessible = detailTables ? detailTables.length === 2 && detailTables.every(table => {
+				const rows = Array.from(table.querySelectorAll('tr'));
+				return rows.length > 0 && rows.every(row => {
+					const heading = row.querySelector('th.th');
+					return heading && heading.getAttribute('scope') === 'row' && !row.querySelector('td.td[data-title]');
+				});
+			}) : null;
+			const logFilterFields = Array.from(main ? main.querySelectorAll('.nm-log-filter-field') : []).map(field => ({
+				label: (field.querySelector('span') && field.querySelector('span').textContent || '').trim(),
+				controls: field.querySelectorAll('select, input').length
+			}));
+			const logOutput = main && main.querySelector('.nm-log-area');
+			const outputLabelId = logOutput && logOutput.getAttribute('aria-labelledby');
 			return {
 				heading: h ? h.textContent.trim() : '', hasMain: !!main,
 				mainLength: (main && main.innerText || '').trim().length,
@@ -105,9 +119,17 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				activeTabVisible: !activeRect || (activeRect.left >= -1 && activeRect.right <= innerWidth + 1),
 				themeLoaded: resources.some(src => src.includes('/luci-static/' + media + '/')),
 				pluginCssLoaded: resources.some(src => src.includes('nginx-manager/nginx-manager.css')),
+				overviewRowsAccessible,
+				logFilterFields: viewId === 'logs' ? logFilterFields : null,
+				logOutput: viewId === 'logs' && logOutput ? {
+					state: ['is-empty', 'is-error', 'is-loading'].find(name => logOutput.classList.contains(name)) || 'content',
+					height: Math.round(logOutput.getBoundingClientRect().height),
+					labelled: !!(outputLabelId && document.getElementById(outputLabelId)),
+					filterPlaceholder: (main.querySelector('.nm-log-filter-field input') || {}).placeholder || ''
+				} : null,
 				truncated
 			};
-		}, theme.media);
+		}, theme.media, route && route.id);
 		await page.screenshot({ path: file, fullPage: true, animations: 'disabled' });
 	} catch (error) { navigationError = error.message; }
 	finally { page.off('console', onConsole); page.off('pageerror', onPageError); }
@@ -119,6 +141,12 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		if (!metrics.pluginCssLoaded) failures.push('plugin-css-not-loaded');
 		if (metrics.overflow) failures.push('horizontal-overflow');
 		if (!metrics.activeTabVisible) failures.push('active-tab-outside-visible-strip');
+		if (route && route.id === 'logs') {
+			if (!metrics.logFilterFields || metrics.logFilterFields.length !== 4 || metrics.logFilterFields.some(field => field.controls !== 1)) failures.push('log-filter-label-control-pairing');
+			if (!metrics.logOutput || !metrics.logOutput.labelled || metrics.logOutput.filterPlaceholder) failures.push('log-output-labeling-or-redundant-placeholder');
+			if (metrics.logOutput && ['is-empty', 'is-error'].includes(metrics.logOutput.state) && metrics.logOutput.height > 192) failures.push('log-empty-error-state-not-compact');
+		}
+		if (route && route.id === 'overview' && metrics.overviewRowsAccessible !== true) failures.push('overview-detail-rows-duplicate-or-unlabeled');
 		if (metrics.truncated.length) failures.push('truncated-non-dropdown-text');
 		if (metrics.darkMode !== theme.dark) failures.push('theme-dark-mode-mismatch');
 		if (checkTitle && metrics.heading !== route.title[languageIndex]) failures.push('wrong-view-heading: ' + metrics.heading);
