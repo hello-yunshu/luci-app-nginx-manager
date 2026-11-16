@@ -118,6 +118,16 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				return rect.width > 0 && rect.height > 0 && rect.left >= -1 && rect.right <= innerWidth + 1;
 			});
 			const detailTables = viewId === 'overview' ? Array.from(main ? main.querySelectorAll('table.nm-overview-detail-table') : []) : null;
+			const overviewStatsGrid = viewId === 'overview' && main ? main.querySelector('.nm-stats-grid') : null;
+			const overviewStatusBanner = overviewStatsGrid && overviewStatsGrid.previousElementSibling;
+			const overviewControlHeading = overviewStatsGrid && overviewStatsGrid.nextElementSibling
+				? overviewStatsGrid.nextElementSibling.querySelector('h3') : null;
+			const overviewStatsTopGap = overviewStatsGrid && overviewStatusBanner
+				? Math.round(overviewStatsGrid.getBoundingClientRect().top - overviewStatusBanner.getBoundingClientRect().bottom) : null;
+			const overviewStatsBottomGap = overviewStatsGrid && overviewControlHeading
+				? Math.round(overviewControlHeading.getBoundingClientRect().top - overviewStatsGrid.getBoundingClientRect().bottom) : null;
+			const overviewStatsGapDelta = overviewStatsTopGap == null || overviewStatsBottomGap == null
+				? null : Math.abs(overviewStatsTopGap - overviewStatsBottomGap);
 			const overviewControlSection = viewId === 'overview' && main
 				? main.querySelector('.nm-overview-control-section') : null;
 			const overviewControlNext = overviewControlSection && overviewControlSection.nextElementSibling;
@@ -191,6 +201,9 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				fileHeaderNative: viewId === 'files' ? !!(fileHeader && fileHeader.classList.contains('cbi-section-table-titles')) : null,
 				fileHeaderVisible: viewId === 'files' && fileHeader ? getComputedStyle(fileHeader).display !== 'none' : null,
 				overviewRowsAccessible,
+				overviewStatsTopGap,
+				overviewStatsBottomGap,
+				overviewStatsGapDelta,
 				overviewControlGap,
 				logFilterFields: viewId === 'logs' ? logFilterFields : null,
 				logControlsGap: viewId === 'logs' ? logControlsGap : null,
@@ -240,6 +253,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		if (route && route.label === 'backups' && (metrics.backupControlsGap == null || metrics.backupControlsGap < 12)) failures.push('backup-controls-content-are-too-close');
 		if (route && route.label === 'overview') {
 			if (metrics.overviewRowsAccessible !== true) failures.push('overview-detail-rows-duplicate-or-unlabeled');
+			if (metrics.overviewStatsGapDelta == null || metrics.overviewStatsGapDelta > 4) failures.push('overview-status-grid-outer-spacing-uneven');
 			if (metrics.overviewControlGap == null || metrics.overviewControlGap < 16) failures.push('overview-controls-too-close-to-service-information');
 		}
 		if (route && route.label === 'site-edit' && metrics.siteEditBackDestructive !== false) failures.push('back-navigation-styled-as-destructive');
