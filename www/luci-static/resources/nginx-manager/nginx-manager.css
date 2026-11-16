@@ -112,7 +112,7 @@
 /* The cards retain native CBI surfaces, while the grid owns their spacing. */
 #maincontent .nm-stats-grid > .nm-stat-card { margin: 0; }
 .nm-stat-card {
-	padding: 1em 1.2em; border-radius: 8px; text-align: center;
+	text-align: center;
 }
 .nm-stat-card .nm-stat-value {
 	font-size: 1.8em; font-weight: bold; line-height: 1.2;
