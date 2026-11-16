@@ -107,7 +107,7 @@
 /* === Overview: Stats Grid === */
 .nm-stats-grid {
 	display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-	gap: 1em; margin-bottom: 1.5em;
+	gap: 1em; margin-bottom: calc(var(--spacing, .25rem) * 4);
 }
 .nm-stat-card {
 	padding: 1em 1.2em; border-radius: 8px; text-align: center;
@@ -120,6 +120,7 @@
 .nm-stat-card .nm-stat-value.orange { color: inherit; }
 .nm-stat-card .nm-stat-label { margin-top: 0.3em; font-size: 0.85em; }
 #maincontent .nm-overview-control-section {
+	margin-top: 0;
 	/* Keep the service information heading distinct from the final wrapped
 	 * control row while still following the active theme's spacing scale. */
 	margin-bottom: calc(var(--spacing, .25rem) * 6);
