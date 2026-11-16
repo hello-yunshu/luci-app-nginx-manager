@@ -118,6 +118,12 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				return rect.width > 0 && rect.height > 0 && rect.left >= -1 && rect.right <= innerWidth + 1;
 			});
 			const detailTables = viewId === 'overview' ? Array.from(main ? main.querySelectorAll('table.nm-overview-detail-table') : []) : null;
+			const overviewControlSection = viewId === 'overview' && main
+				? main.querySelector('.nm-overview-control-section') : null;
+			const overviewControlNext = overviewControlSection && overviewControlSection.nextElementSibling;
+			const overviewControlGap = overviewControlSection && overviewControlNext
+				? Math.round(overviewControlNext.getBoundingClientRect().top - overviewControlSection.getBoundingClientRect().bottom)
+				: null;
 			const responsiveTableOverflow = Array.from(main ? main.querySelectorAll('.nm-table-scroll') : [])
 				.filter(wrapper => wrapper.scrollWidth > wrapper.clientWidth + 1).length;
 			const responsiveTableLayouts = Array.from(main ? main.querySelectorAll('.nm-table-scroll > table.table') : []).map(table => {
@@ -185,6 +191,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				fileHeaderNative: viewId === 'files' ? !!(fileHeader && fileHeader.classList.contains('cbi-section-table-titles')) : null,
 				fileHeaderVisible: viewId === 'files' && fileHeader ? getComputedStyle(fileHeader).display !== 'none' : null,
 				overviewRowsAccessible,
+				overviewControlGap,
 				logFilterFields: viewId === 'logs' ? logFilterFields : null,
 				logControlsGap: viewId === 'logs' ? logControlsGap : null,
 				backupControlsGap: viewId === 'backups' ? backupControlsGap : null,
@@ -231,7 +238,10 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			if (metrics.logOutput && ['is-empty', 'is-error'].includes(metrics.logOutput.state) && metrics.logOutput.height > 192) failures.push('log-empty-error-state-not-compact');
 		}
 		if (route && route.label === 'backups' && (metrics.backupControlsGap == null || metrics.backupControlsGap < 12)) failures.push('backup-controls-content-are-too-close');
-		if (route && route.label === 'overview' && metrics.overviewRowsAccessible !== true) failures.push('overview-detail-rows-duplicate-or-unlabeled');
+		if (route && route.label === 'overview') {
+			if (metrics.overviewRowsAccessible !== true) failures.push('overview-detail-rows-duplicate-or-unlabeled');
+			if (metrics.overviewControlGap == null || metrics.overviewControlGap < 16) failures.push('overview-controls-too-close-to-service-information');
+		}
 		if (route && route.label === 'site-edit' && metrics.siteEditBackDestructive !== false) failures.push('back-navigation-styled-as-destructive');
 		if (metrics.truncated.length) failures.push('truncated-non-dropdown-text');
 		if (metrics.darkMode !== theme.dark) failures.push('theme-dark-mode-mismatch');

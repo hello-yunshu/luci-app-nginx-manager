@@ -155,7 +155,7 @@ return view.extend({
 		container.appendChild(statsGrid);
 
 		/* Service Control */
-		var controlSection = E('div', { 'class': 'cbi-section' });
+		var controlSection = E('div', { 'class': 'cbi-section nm-overview-control-section' });
 		controlSection.appendChild(E('h3', {}, _('Service Control')));
 
 		var btnGroup = E('div', { 'class': 'ys-actions' });
