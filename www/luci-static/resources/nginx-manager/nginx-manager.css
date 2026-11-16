@@ -26,7 +26,7 @@
 }
 .nm-backup-create { margin: 0; }
 .nm-backup-settings {
-	flex: 1 1 28rem;
+	flex: 1 1 24rem;
 	max-width: 44rem;
 	margin: 0;
 	padding-bottom: calc(var(--spacing, .25rem) * 3);
@@ -46,7 +46,7 @@
 	margin: 0;
 	white-space: nowrap;
 }
-@media screen and (max-width: 48rem) {
+@media screen and (max-width: 36rem) {
 	.nm-backup-controls { flex-direction: column; align-items: stretch; }
 	.nm-backup-create { align-self: flex-start; }
 	.nm-backup-settings { flex: 0 0 auto; width: 100%; max-width: none; }
