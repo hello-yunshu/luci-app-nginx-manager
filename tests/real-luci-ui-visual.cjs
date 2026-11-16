@@ -129,6 +129,25 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				? null : Math.abs(overviewStatsTopGap - overviewStatsBottomGap);
 			const overviewControlSection = viewId === 'overview' && main
 				? main.querySelector('.nm-overview-control-section') : null;
+			const visibleTextRect = (element, edge) => {
+				if (!element) return null;
+				const range = document.createRange();
+				range.selectNodeContents(element);
+				const rects = Array.from(range.getClientRects());
+				if (!rects.length) return null;
+				const rect = edge === 'bottom' ? rects[rects.length - 1] : rects[0];
+				return edge === 'bottom' ? rect.bottom : rect.top;
+			};
+			const overviewFirstStatValue = overviewStatsGrid && overviewStatsGrid.querySelector('.nm-stat-value');
+			const overviewStatLabels = overviewStatsGrid ? Array.from(overviewStatsGrid.querySelectorAll('.nm-stat-label')) : [];
+			const overviewLastStatLabel = overviewStatLabels.length ? overviewStatLabels[overviewStatLabels.length - 1] : null;
+			const overviewControlHeading = overviewControlSection && overviewControlSection.querySelector('h3');
+			const overviewStatsVisibleTopGap = overviewStatsGrid && overviewStatusBanner && overviewFirstStatValue
+				? Math.round(visibleTextRect(overviewFirstStatValue, 'top') - overviewStatusBanner.getBoundingClientRect().bottom) : null;
+			const overviewStatsVisibleBottomGap = overviewStatsGrid && overviewLastStatLabel && overviewControlHeading
+				? Math.round(visibleTextRect(overviewControlHeading, 'top') - visibleTextRect(overviewLastStatLabel, 'bottom')) : null;
+			const overviewStatsVisibleGapDelta = overviewStatsVisibleTopGap == null || overviewStatsVisibleBottomGap == null
+				? null : Math.abs(overviewStatsVisibleTopGap - overviewStatsVisibleBottomGap);
 			const overviewControlNext = overviewControlSection && overviewControlSection.nextElementSibling;
 			const overviewControlGap = overviewControlSection && overviewControlNext
 				? Math.round(overviewControlNext.getBoundingClientRect().top - overviewControlSection.getBoundingClientRect().bottom)
@@ -203,6 +222,9 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				overviewStatsTopGap,
 				overviewStatsBottomGap,
 				overviewStatsGapDelta,
+				overviewStatsVisibleTopGap,
+				overviewStatsVisibleBottomGap,
+				overviewStatsVisibleGapDelta,
 				overviewControlGap,
 				logFilterFields: viewId === 'logs' ? logFilterFields : null,
 				logControlsGap: viewId === 'logs' ? logControlsGap : null,
