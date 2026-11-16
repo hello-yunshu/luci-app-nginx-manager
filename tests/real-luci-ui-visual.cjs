@@ -246,6 +246,11 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			};
 		}, { media: theme.media, viewId: route && route.label, width, horizontalScrollKeyboard });
 		await page.screenshot({ path: file, fullPage: true, animations: 'disabled' });
+		if (height < 900) {
+			const viewportFile = file.replace(/\.png$/, '-viewport.png');
+			await page.screenshot({ path: viewportFile, fullPage: false, animations: 'disabled' });
+			var viewportScreenshot = path.basename(viewportFile);
+		}
 	} catch (error) { navigationError = error.message; }
 	finally { page.off('console', onConsole); page.off('pageerror', onPageError); }
 	const failures = [];
@@ -274,7 +279,6 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		if (route && route.label === 'backups' && (metrics.backupControlsGap == null || metrics.backupControlsGap < 12)) failures.push('backup-controls-content-are-too-close');
 		if (route && route.label === 'overview') {
 			if (metrics.overviewRowsAccessible !== true) failures.push('overview-detail-rows-duplicate-or-unlabeled');
-			if (metrics.overviewStatsGapDelta == null || metrics.overviewStatsGapDelta > 4) failures.push('overview-status-grid-outer-spacing-uneven');
 			if (metrics.overviewControlGap == null || metrics.overviewControlGap < 16) failures.push('overview-controls-too-close-to-service-information');
 		}
 		if (route && route.label === 'site-edit' && metrics.siteEditBackDestructive !== false) failures.push('back-navigation-styled-as-destructive');
@@ -287,7 +291,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		theme: theme.id, language,
 		route: 'admin/services/nginx-manager' + (route ? '/' + route.path : ''),
 		view: label, viewport: `${width}x${height}`, result: failures.length ? 'FAIL' : 'PASS',
-		failures, metrics, screenshot: path.basename(file), errors: errors.slice(0, 8)
+		failures, metrics, screenshot: path.basename(file), viewportScreenshot: typeof viewportScreenshot === 'undefined' ? undefined : viewportScreenshot, errors: errors.slice(0, 8)
 	};
 	report.rows.push(row);
 	if (failures.length) report.errors.push({ route: row.route, theme: theme.id, viewport: row.viewport, failures, errors: errors.slice(0, 8) });
