@@ -509,14 +509,6 @@
 	.ys-tool-footer-project-link,
 	.ys-tool-footer-project-separator { display: none; }
 	.ys-tool-footer-links { flex-wrap: wrap; white-space: normal; }
-	.ys-tool-footer-links .ys-tool-footer-link.github .ys-tool-footer-link-label,
-	.ys-tool-footer-links .ys-tool-footer-link.x .ys-tool-footer-link-label { display: none; }
-	/* Icon-only chips keep the 32px square tap target instead of shrinking to
-	 * a 21x14 pill. */
-	.ys-tool-footer-links .ys-tool-footer-link.github,
-	.ys-tool-footer-links .ys-tool-footer-link.x {
-		min-width: 2rem; padding-inline: .35em;
-	}
 }
 
 /* Plugin-owned action groups follow the theme spacing scale. Native
