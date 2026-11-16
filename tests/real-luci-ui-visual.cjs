@@ -120,12 +120,11 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			const detailTables = viewId === 'overview' ? Array.from(main ? main.querySelectorAll('table.nm-overview-detail-table') : []) : null;
 			const overviewStatsGrid = viewId === 'overview' && main ? main.querySelector('.nm-stats-grid') : null;
 			const overviewStatusBanner = overviewStatsGrid && overviewStatsGrid.previousElementSibling;
-			const overviewControlHeading = overviewStatsGrid && overviewStatsGrid.nextElementSibling
-				? overviewStatsGrid.nextElementSibling.querySelector('h3') : null;
+			const overviewControlSectionForStats = overviewStatsGrid && overviewStatsGrid.nextElementSibling;
 			const overviewStatsTopGap = overviewStatsGrid && overviewStatusBanner
 				? Math.round(overviewStatsGrid.getBoundingClientRect().top - overviewStatusBanner.getBoundingClientRect().bottom) : null;
-			const overviewStatsBottomGap = overviewStatsGrid && overviewControlHeading
-				? Math.round(overviewControlHeading.getBoundingClientRect().top - overviewStatsGrid.getBoundingClientRect().bottom) : null;
+			const overviewStatsBottomGap = overviewStatsGrid && overviewControlSectionForStats
+				? Math.round(overviewControlSectionForStats.getBoundingClientRect().top - overviewStatsGrid.getBoundingClientRect().bottom) : null;
 			const overviewStatsGapDelta = overviewStatsTopGap == null || overviewStatsBottomGap == null
 				? null : Math.abs(overviewStatsTopGap - overviewStatsBottomGap);
 			const overviewControlSection = viewId === 'overview' && main
