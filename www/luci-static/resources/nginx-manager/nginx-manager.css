@@ -29,7 +29,7 @@
 	flex: 1 1 28rem;
 	max-width: 44rem;
 	margin: 0;
-	padding-bottom: calc(var(--spacing, .25rem) * 2);
+	padding-bottom: calc(var(--spacing, .25rem) * 3);
 }
 .nm-backup-settings .cbi-value-field {
 	display: flex; align-items: center;
