@@ -196,6 +196,8 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				} : null,
 				logSizeStatus: viewId === 'logs' && logSize ? {
 					labelled: logSize.getAttribute('role') === 'status' && logSize.getAttribute('aria-live') === 'polite' && /^(Log size|日志大小)$/.test(logSize.getAttribute('aria-label') || ''),
+					inOutputSection: !!(logOutput && logSize.closest('.cbi-section') === logOutput.closest('.cbi-section')),
+					outsideActionGroup: !!(logActionControls && !logActionControls.contains(logSize)),
 					text: (logSize.textContent || '').trim()
 				} : null,
 				siteEditBackDestructive: viewId === 'site-edit' ? !!(siteEditBack && /cbi-button-(reset|negative)/.test(siteEditBack.className)) : null,
@@ -225,6 +227,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			if (metrics.logControlsGap == null || metrics.logControlsGap < 12) failures.push('log-filter-actions-are-too-close');
 			if (!metrics.logOutput || !metrics.logOutput.labelled || metrics.logOutput.filterPlaceholder) failures.push('log-output-labeling-or-redundant-placeholder');
 			if (!metrics.logSizeStatus || !metrics.logSizeStatus.labelled || !/Log size:|日志大小：/.test(metrics.logSizeStatus.text)) failures.push('log-size-status-not-labeled');
+			if (!metrics.logSizeStatus || !metrics.logSizeStatus.inOutputSection || !metrics.logSizeStatus.outsideActionGroup) failures.push('log-size-status-not-grouped-with-output');
 			if (metrics.logOutput && ['is-empty', 'is-error'].includes(metrics.logOutput.state) && metrics.logOutput.height > 192) failures.push('log-empty-error-state-not-compact');
 		}
 		if (route && route.label === 'backups' && (metrics.backupControlsGap == null || metrics.backupControlsGap < 12)) failures.push('backup-controls-content-are-too-close');

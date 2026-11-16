@@ -125,7 +125,7 @@ return view.extend({
 		}, '\u2716\u2716 ' + _('Clear All'));
 
 		var sizeLabel = E('span', {
-			'class': 'nm-log-size',
+			'class': 'cbi-section-descr nm-log-size',
 			'role': 'status',
 			'aria-live': 'polite',
 			'aria-label': _('Log size')
@@ -134,7 +134,6 @@ return view.extend({
 		btnGroup.appendChild(refreshBtn);
 		btnGroup.appendChild(clearBtn);
 		btnGroup.appendChild(clearAllBtn);
-		btnGroup.appendChild(sizeLabel);
 
 		controlSection.appendChild(btnGroup);
 		page.appendChild(controlSection);
@@ -142,6 +141,7 @@ return view.extend({
 		/* Log Output Section */
 		var logSection = E('div', { 'class': 'cbi-section' });
 		logSection.appendChild(E('h3', { 'id': 'nm-log-output-heading' }, _('Log Output')));
+		logSection.appendChild(sizeLabel);
 
 		var logOutput = E('textarea', {
 			'class': 'cbi-input-textarea nm-log-area is-loading',

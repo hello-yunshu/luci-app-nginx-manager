@@ -104,8 +104,6 @@
 .nm-log-filter-field > select,
 .nm-log-filter-field > input { min-width: 0; }
 .nm-log-filter-controls { margin-bottom: calc(var(--spacing, .25rem) * 4); }
-.nm-log-size { white-space: nowrap; }
-
 /* === Overview: Stats Grid === */
 .nm-stats-grid {
 	display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
