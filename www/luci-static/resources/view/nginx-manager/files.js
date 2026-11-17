@@ -417,10 +417,6 @@ function setStatus(text) {
 	}
 }
 
-function setItemCount() {
-	setStatus(currentEntries.length ? currentEntries.length + ' ' + _('items') : '');
-}
-
 function sortEntries(entries) {
 	return (entries || []).slice().sort(function(a, b) {
 		if (a.type !== b.type) {
@@ -629,7 +625,7 @@ function loadDirectory(path) {
 		selectedPath = '';
 		if (input) input.value = currentPath;
 		if (tbody) renderRows(tbody);
-		setItemCount();
+		setStatus('');
 	}).catch(function(err) {
 		setStatus('');
 		showError(_('Failed to load directory'), err);
@@ -964,7 +960,7 @@ return view.extend({
 
 		setTimeout(function() {
 			renderRows(tbody);
-			setItemCount();
+			setStatus('');
 		}, 0);
 
 		utils.updateResponsiveTableSizing();
