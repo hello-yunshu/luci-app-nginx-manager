@@ -198,6 +198,8 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			const logOutput = main && main.querySelector('.nm-log-area');
 			const logSize = main && main.querySelector('.nm-log-size');
 			const fileHeader = viewId === 'files' && main && main.querySelector('.nm-file-table thead tr');
+			const fileStatus = viewId === 'files' && main && main.querySelector('#nm-file-status');
+			const fileTable = viewId === 'files' && main && main.querySelector('.nm-file-table');
 			const siteEditBack = viewId === 'site-edit' && main && main.querySelector('.ys-actions button:last-child');
 			const outputLabelId = logOutput && logOutput.getAttribute('aria-labelledby');
 			return {
@@ -218,6 +220,9 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				horizontalScrollKeyboard,
 				fileHeaderNative: viewId === 'files' ? !!(fileHeader && fileHeader.classList.contains('cbi-section-table-titles')) : null,
 				fileHeaderVisible: viewId === 'files' && fileHeader ? getComputedStyle(fileHeader).display !== 'none' : null,
+				fileStatusGrouped: viewId === 'files' ? !!(fileStatus && fileTable && fileStatus.closest('.cbi-section') === fileTable.closest('.cbi-section')) : null,
+				fileStatusAccessible: viewId === 'files' ? !!(fileStatus && fileTable && fileStatus.getAttribute('role') === 'status' && fileStatus.getAttribute('aria-live') === 'polite' && (fileTable.getAttribute('aria-describedby') || '').split(/\s+/).includes('nm-file-status')) : null,
+				fileStatusVisible: viewId === 'files' && fileStatus ? !fileStatus.hidden : null,
 				overviewRowsAccessible,
 				overviewStatsTopGap,
 				overviewStatsBottomGap,
@@ -268,6 +273,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		if (!metrics.activeTabVisible) failures.push('active-tab-outside-visible-strip');
 		if (metrics.routeTabs.count && metrics.routeTabs.visibleCount !== metrics.routeTabs.count) failures.push('route-tab-outside-visible-strip');
 		if (route && route.label === 'files' && (!metrics.fileHeaderNative || (width <= 600 && metrics.fileHeaderVisible))) failures.push('mobile-file-table-header-not-native');
+		if (route && route.label === 'files' && (!metrics.fileStatusGrouped || !metrics.fileStatusAccessible)) failures.push('file-count-not-grouped-with-accessible-list');
 		if (route && route.label === 'logs') {
 			if (!metrics.logFilterFields || metrics.logFilterFields.length !== 4 || metrics.logFilterFields.some(field => field.controls !== 1)) failures.push('log-filter-label-control-pairing');
 			if (metrics.logControlsGap == null || metrics.logControlsGap < 12) failures.push('log-filter-actions-are-too-close');

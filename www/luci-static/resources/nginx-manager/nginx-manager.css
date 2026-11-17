@@ -147,7 +147,11 @@
 	flex: 1 1 auto; min-width: 0;
 	font-family: var(--font-mono);
 }
-.nm-file-status { min-height: 1.2em; font-size: 0.9em; }
+.nm-file-status {
+	min-height: 1.2em; margin-bottom: calc(var(--spacing, .25rem) * 2);
+	font-size: 0.9em; text-align: right;
+}
+.nm-file-status[hidden] { display: none; }
 .nm-file-table { width: 100%; }
 .nm-file-row-dir {
 	background: linear-gradient(90deg,

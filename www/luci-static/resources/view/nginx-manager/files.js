@@ -411,7 +411,14 @@ function showChmodModal(path, currentPerms) {
 
 function setStatus(text) {
 	var el = document.getElementById('nm-file-status');
-	if (el) el.textContent = text || '';
+	if (el) {
+		el.textContent = text || '';
+		el.hidden = !el.textContent;
+	}
+}
+
+function setItemCount() {
+	setStatus(currentEntries.length ? currentEntries.length + ' ' + _('items') : '');
 }
 
 function sortEntries(entries) {
@@ -622,7 +629,7 @@ function loadDirectory(path) {
 		selectedPath = '';
 		if (input) input.value = currentPath;
 		if (tbody) renderRows(tbody);
-		setStatus(currentEntries.length + ' ' + _('items'));
+		setItemCount();
 	}).catch(function(err) {
 		setStatus('');
 		showError(_('Failed to load directory'), err);
@@ -925,12 +932,22 @@ return view.extend({
 				E('button', { 'class': 'cbi-button cbi-button-add', 'click': showNewFileModal }, _('New File')),
 				E('button', { 'class': 'cbi-button cbi-button-add', 'click': showNewDirModal }, _('New Directory')),
 				E('button', { 'class': 'cbi-button', 'click': triggerUpload }, _('Upload'))
-			]),
-			E('div', { 'id': 'nm-file-status', 'class': 'nm-file-status' }, '')
+			])
 		]));
 
 		container.appendChild(E('div', { 'class': 'cbi-section' }, [
-			utils.makeScrollableTable(E('table', { 'class': 'table nm-file-table' }, [
+			E('div', {
+				'id': 'nm-file-status',
+				'class': 'nm-file-status',
+				'role': 'status',
+				'aria-live': 'polite',
+				'aria-atomic': 'true',
+				'hidden': true
+			}, ''),
+			utils.makeScrollableTable(E('table', {
+				'class': 'table nm-file-table',
+				'aria-describedby': 'nm-file-status'
+			}, [
 					E('thead', {}, [
 						E('tr', { 'class': 'tr cbi-section-table-titles' }, [
 							E('th', { 'class': 'th' }, _('Name')),
@@ -947,7 +964,7 @@ return view.extend({
 
 		setTimeout(function() {
 			renderRows(tbody);
-			setStatus(currentEntries.length + ' ' + _('items'));
+			setItemCount();
 		}, 0);
 
 		utils.updateResponsiveTableSizing();
