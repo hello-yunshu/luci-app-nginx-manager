@@ -201,6 +201,21 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			const fileStatus = viewId === 'files' && main && main.querySelector('#nm-file-status');
 			const fileTable = viewId === 'files' && main && main.querySelector('.nm-file-table');
 			const siteEditBack = viewId === 'site-edit' && main && main.querySelector('.ys-actions button:last-child');
+			const footer = document.querySelector('.ys-tool-footer');
+			const footerMark = footer && footer.querySelector('.ys-tool-footer-mark');
+			const footerSocial = footer && footer.querySelector('.ys-tool-footer-link.github');
+			const footerLabel = footerSocial && footerSocial.querySelector('.ys-tool-footer-link-label');
+			const footerCssFresh = resources.some(src => src.includes('nginx-manager.css') && src.includes('ui=footer-pm-match-1'));
+			const footerMarkHeight = footerMark ? footerMark.getBoundingClientRect().height : null;
+			const footerSocialRect = footerSocial && footerSocial.getBoundingClientRect();
+			const footerLabelRect = footerLabel && footerLabel.getBoundingClientRect();
+			const footerSocialBg = footerSocial && getComputedStyle(footerSocial, '::before');
+			const footerMatchesPm = !!(footerMarkHeight && footerSocialRect && footerLabelRect && footerSocialBg &&
+				Math.abs(parseFloat(footerSocialBg.height) - footerMarkHeight) <= 1 &&
+				footerSocialBg.left === '0px' && footerSocialBg.right === '0px' &&
+				footerSocialBg.backgroundColor !== 'rgba(0, 0, 0, 0)' &&
+				getComputedStyle(footerSocial).backgroundColor === 'rgba(0, 0, 0, 0)' &&
+				footerLabelRect.left >= footerSocialRect.left && footerLabelRect.right <= footerSocialRect.right + 1);
 			const outputLabelId = logOutput && logOutput.getAttribute('aria-labelledby');
 			return {
 				heading: h ? h.textContent.trim() : '', hasMain: !!main,
@@ -212,6 +227,8 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				routeTabs: { count: routeTabLinks.length, visibleCount: routeTabRects.filter(Boolean).length },
 				themeLoaded: resources.some(src => src.includes('/luci-static/' + media + '/')),
 				pluginCssLoaded: resources.some(src => src.includes('nginx-manager/nginx-manager.css')),
+				footerCssFresh,
+				footerMatchesPm,
 				responsiveTableOverflow,
 				responsiveTableLayouts,
 				responsiveTableStickyHeaders,
@@ -264,6 +281,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		if (!metrics.hasMain || metrics.mainLength < 10 || metrics.loading) failures.push('blank-or-loading-view');
 		if (!metrics.themeLoaded) failures.push('theme-assets-not-loaded');
 		if (!metrics.pluginCssLoaded) failures.push('plugin-css-not-loaded');
+		if (!metrics.footerCssFresh || !metrics.footerMatchesPm) failures.push('footer-not-matched-to-performance-manager');
 		if (metrics.overflow) failures.push('horizontal-overflow');
 		if (width <= 600 && metrics.responsiveTableOverflow) failures.push('mobile-table-overflow');
 		if (metrics.responsiveTableSizingMismatch) failures.push('responsive-table-sizing-overrides-native-layout');
