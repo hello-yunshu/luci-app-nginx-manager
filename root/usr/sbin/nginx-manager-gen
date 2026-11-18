@@ -292,7 +292,7 @@ EOF
 		cat <<EOF
 
     location /.well-known/acme-challenge/ {
-        alias /var/run/acme/challenge/;
+        alias /var/run/acme/challenge/.well-known/acme-challenge/;
         default_type text/plain;
     }
 
@@ -504,7 +504,7 @@ generate_reverse_proxy_site() {
 		if is_acme_webroot_cert "${ssl_cert}"; then
 			echo ""
 			echo "    location /.well-known/acme-challenge/ {"
-			echo "        alias /var/run/acme/challenge/;"
+			echo "        alias /var/run/acme/challenge/.well-known/acme-challenge/;"
 			echo "        default_type text/plain;"
 			echo "    }"
 		fi
@@ -683,7 +683,7 @@ generate_static_site() {
 		if is_acme_webroot_cert "${ssl_cert}"; then
 			echo ""
 			echo "    location /.well-known/acme-challenge/ {"
-			echo "        alias /var/run/acme/challenge/;"
+			echo "        alias /var/run/acme/challenge/.well-known/acme-challenge/;"
 			echo "        default_type text/plain;"
 			echo "    }"
 		fi
@@ -761,7 +761,7 @@ generate_redirect_site() {
 		if is_acme_webroot_cert "${ssl_cert}"; then
 			echo ""
 			echo "    location /.well-known/acme-challenge/ {"
-			echo "        alias /var/run/acme/challenge/;"
+			echo "        alias /var/run/acme/challenge/.well-known/acme-challenge/;"
 			echo "        default_type text/plain;"
 			echo "    }"
 			echo ""

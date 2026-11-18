@@ -178,7 +178,7 @@ server {
     server_name ${domain};
 
     location ^~ /.well-known/acme-challenge/ {
-        alias ${ACME_CHALLENGE_DIR}/;
+        alias ${ACME_CHALLENGE_DIR}/.well-known/acme-challenge/;
         default_type text/plain;
     }
 
