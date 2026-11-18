@@ -494,10 +494,10 @@ function renderRows(tbody) {
 					E('span', { 'class': 'nm-file-name-text' }, '..')
 				])
 			]),
-			E('td', { 'class': 'td', 'data-title': _('Type') }, _('Directory')),
-			E('td', { 'class': 'td', 'data-title': _('Size') }, '-'),
-			E('td', { 'class': 'td', 'data-title': _('Perms') }, '-'),
-			E('td', { 'class': 'td', 'data-title': _('Modified') }, '-'),
+			E('td', { 'class': 'td nm-file-type', 'data-title': _('Type') }, _('Directory')),
+			E('td', { 'class': 'td nm-file-size', 'data-title': _('Size') }, '-'),
+			E('td', { 'class': 'td nm-file-perms', 'data-title': _('Perms') }, '-'),
+			E('td', { 'class': 'td nm-file-modified', 'data-title': _('Modified') }, '-'),
 			E('td', { 'class': 'td nowrap nm-actions-cell', 'data-title': _('Actions') }, [
 				E('div', { 'class': 'nm-actions' }, [
 					E('button', {
@@ -585,8 +585,8 @@ function renderRows(tbody) {
 					E('span', { 'class': 'nm-file-name-text' }, entry.name)
 				])
 			]),
-			E('td', { 'class': 'td', 'data-title': _('Type') }, entry.type || '-'),
-			E('td', { 'class': 'td nowrap', 'data-title': _('Size') }, isDir ? '-' : formatSize(entry.size)),
+			E('td', { 'class': 'td nm-file-type', 'data-title': _('Type') }, entry.type || '-'),
+			E('td', { 'class': 'td nowrap nm-file-size', 'data-title': _('Size') }, isDir ? '-' : formatSize(entry.size)),
 			E('td', {
 				'class': 'td nowrap nm-file-perms',
 				'data-title': _('Perms'),
@@ -596,7 +596,7 @@ function renderRows(tbody) {
 					showChmodModal(path, perms);
 				}
 			}, perms),
-			E('td', { 'class': 'td nowrap', 'data-title': _('Modified') }, formatTime(entry.mtime)),
+			E('td', { 'class': 'td nowrap nm-file-modified', 'data-title': _('Modified') }, formatTime(entry.mtime)),
 			E('td', { 'class': 'td nowrap nm-actions-cell', 'data-title': _('Actions') }, [
 				E('div', { 'class': 'nm-actions' }, actions)
 			])

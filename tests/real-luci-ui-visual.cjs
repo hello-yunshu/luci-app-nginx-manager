@@ -200,6 +200,15 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			const fileHeader = viewId === 'files' && main && main.querySelector('.nm-file-table thead tr');
 			const fileStatus = viewId === 'files' && main && main.querySelector('#nm-file-status');
 			const fileTable = viewId === 'files' && main && main.querySelector('.nm-file-table');
+			const fileRows = viewId === 'files' && main ? Array.from(main.querySelectorAll('.nm-file-table tbody > .nm-file-row')) : [];
+			const fileMobileCompact = viewId === 'files' && innerWidth <= 600
+				? fileRows.length > 0 && fileRows.every(row => {
+					const type = row.querySelector('.nm-file-type');
+					const actions = row.querySelector('.nm-actions');
+					return getComputedStyle(row).display === 'grid' && type && getComputedStyle(type).display === 'none' &&
+						actions && actions.scrollWidth <= actions.clientWidth + 1;
+				})
+				: viewId === 'files' ? true : null;
 			const siteEditBack = viewId === 'site-edit' && main && main.querySelector('.ys-actions button:last-child');
 			const footer = document.querySelector('.ys-tool-footer');
 			const footerMark = footer && footer.querySelector('.ys-tool-footer-mark');
@@ -237,6 +246,8 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				horizontalScrollKeyboard,
 				fileHeaderNative: viewId === 'files' ? !!(fileHeader && fileHeader.classList.contains('cbi-section-table-titles')) : null,
 				fileHeaderVisible: viewId === 'files' && fileHeader ? getComputedStyle(fileHeader).display !== 'none' : null,
+				fileMobileCompact,
+				fileMobileRowCount: viewId === 'files' ? fileRows.length : null,
 				fileStatusGrouped: viewId === 'files' ? !!(fileStatus && fileTable && fileStatus.closest('.cbi-section') === fileTable.closest('.cbi-section')) : null,
 				fileStatusAccessible: viewId === 'files' ? !!(fileStatus && fileTable && fileStatus.getAttribute('role') === 'status' && fileStatus.getAttribute('aria-live') === 'polite' && (fileTable.getAttribute('aria-describedby') || '').split(/\s+/).includes('nm-file-status')) : null,
 				fileStatusEmpty: viewId === 'files' && fileStatus ? !fileStatus.textContent.trim() : null,
@@ -291,6 +302,8 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 		if (!metrics.activeTabVisible) failures.push('active-tab-outside-visible-strip');
 		if (metrics.routeTabs.count && metrics.routeTabs.visibleCount !== metrics.routeTabs.count) failures.push('route-tab-outside-visible-strip');
 		if (route && route.label === 'files' && (!metrics.fileHeaderNative || (width <= 600 && metrics.fileHeaderVisible))) failures.push('mobile-file-table-header-not-native');
+		if (route && route.label === 'files' && metrics.fileMobileRowCount < 14) failures.push('14-entry-file-list-fixture-not-loaded');
+		if (route && route.label === 'files' && width <= 600 && !metrics.fileMobileCompact) failures.push('mobile-file-list-not-compact-or-actions-overflow');
 		if (route && route.label === 'files' && (!metrics.fileStatusGrouped || !metrics.fileStatusAccessible || !metrics.fileStatusEmpty)) failures.push('file-list-status-not-cleared-after-load');
 		if (route && route.label === 'logs') {
 			if (!metrics.logFilterFields || metrics.logFilterFields.length !== 4 || metrics.logFilterFields.some(field => field.controls !== 1)) failures.push('log-filter-label-control-pairing');

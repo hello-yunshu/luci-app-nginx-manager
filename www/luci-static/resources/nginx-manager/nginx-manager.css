@@ -430,6 +430,45 @@
 	.nm-dns-credential > label,
 	.nm-dns-credential > input,
 	.nm-dns-credential > .cbi-value-description { grid-column: 1; }
+
+	/* The native mobile table turns every file field into a separate card row.
+	 * Keep its theme-provided surfaces, but group each file into a compact
+	 * name / metadata / actions card when a directory has many items. */
+	.nm-file-table tbody > .tr.nm-file-row {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		align-items: start;
+		gap: calc(var(--spacing, .25rem) * 1);
+		width: 100%;
+		box-sizing: border-box;
+	}
+	.nm-file-table tbody > .tr.nm-file-row > .td {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: calc(var(--spacing, .25rem) * 2);
+		min-width: 0;
+		padding: calc(var(--spacing, .25rem) * 1) calc(var(--spacing, .25rem) * 2);
+		white-space: normal;
+	}
+	.nm-file-table tbody > .tr.nm-file-row > .nm-file-name {
+		grid-column: 1 / -1;
+		padding-bottom: calc(var(--spacing, .25rem) * 1.5);
+	}
+	.nm-file-table tbody > .tr.nm-file-row > .nm-file-name::before,
+	.nm-file-table tbody > .tr.nm-file-row > .nm-file-type { display: none; }
+	.nm-file-table tbody > .tr.nm-file-row-parent > :is(.nm-file-size, .nm-file-perms, .nm-file-modified) { display: none; }
+	.nm-file-table .nm-file-row > .nm-file-modified,
+	.nm-file-table .nm-file-row > .nm-actions-cell { grid-column: 1 / -1; }
+	.nm-file-table .nm-file-row > .nm-actions-cell {
+		display: block;
+		padding-top: calc(var(--spacing, .25rem) * 1.5);
+	}
+	.nm-file-table .nm-file-row > .nm-actions-cell::before {
+		display: block;
+		margin-bottom: calc(var(--spacing, .25rem) * 1.5);
+	}
+	.nm-file-table .nm-actions { gap: calc(var(--spacing, .25rem) * 1.5); }
 }
 
 /* 文件路径栏 “Go” 按钮不被输入框挤压截断 */
