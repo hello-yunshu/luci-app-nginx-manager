@@ -209,7 +209,9 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 					const actionLabelStyle = actionLabel && getComputedStyle(actionLabel, '::before');
 					return getComputedStyle(row).display === 'grid' && type && getComputedStyle(type).display === 'none' &&
 						actions && actions.scrollWidth <= actions.clientWidth + 1 &&
-						actionLabelStyle && actionLabelStyle.float === 'none' && actionLabelStyle.whiteSpace === 'nowrap';
+						actionLabelStyle && actionLabelStyle.float === 'none' && actionLabelStyle.whiteSpace === 'nowrap' &&
+						actionLabelStyle.textOverflow === 'clip' && actionLabelStyle.overflow === 'visible' &&
+						actionLabelStyle.maxWidth === 'none';
 				})
 				: viewId === 'files' ? true : null;
 			const siteEditBack = viewId === 'site-edit' && main && main.querySelector('.ys-actions button:last-child');
