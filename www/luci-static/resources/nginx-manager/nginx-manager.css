@@ -466,7 +466,9 @@
 	}
 	.nm-file-table .nm-file-row > .nm-actions-cell::before {
 		display: block;
+		float: none;
 		margin-bottom: calc(var(--spacing, .25rem) * 1.5);
+		white-space: nowrap;
 	}
 	.nm-file-table .nm-actions { gap: calc(var(--spacing, .25rem) * 1.5); }
 }

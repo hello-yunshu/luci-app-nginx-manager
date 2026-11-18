@@ -205,8 +205,11 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 				? fileRows.length > 0 && fileRows.every(row => {
 					const type = row.querySelector('.nm-file-type');
 					const actions = row.querySelector('.nm-actions');
+					const actionLabel = row.querySelector('.nm-actions-cell');
+					const actionLabelStyle = actionLabel && getComputedStyle(actionLabel, '::before');
 					return getComputedStyle(row).display === 'grid' && type && getComputedStyle(type).display === 'none' &&
-						actions && actions.scrollWidth <= actions.clientWidth + 1;
+						actions && actions.scrollWidth <= actions.clientWidth + 1 &&
+						actionLabelStyle && actionLabelStyle.float === 'none' && actionLabelStyle.whiteSpace === 'nowrap';
 				})
 				: viewId === 'files' ? true : null;
 			const siteEditBack = viewId === 'site-edit' && main && main.querySelector('.ys-actions button:last-child');
