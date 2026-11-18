@@ -67,6 +67,23 @@
 	font-family: var(--font-mono);
 }
 
+/* ACME provider credentials are nested in a native CBI field. Give each
+ * dynamic key a clear label/input row without adding theme-specific colors. */
+.nm-dns-credential {
+	display: grid;
+	grid-template-columns: minmax(9rem, max-content) minmax(10rem, 1fr);
+	align-items: center;
+	gap: calc(var(--spacing, .25rem) * 2) calc(var(--spacing, .25rem) * 3);
+	margin-bottom: calc(var(--spacing, .25rem) * 2);
+}
+.nm-dns-credential > label { margin: 0; }
+.nm-dns-credential > input {
+	width: 100%; min-width: 0; box-sizing: border-box;
+}
+.nm-dns-credential > .cbi-value-description {
+	grid-column: 2; margin: 0;
+}
+
 /* === Code Block (modals) === */
 .nm-code-block {
 	border: 1px solid; border-radius: 6px;
@@ -409,6 +426,10 @@
  * 窄屏每行右侧多出 3px 撑出 section（V8）；插件页内收回负边距。 */
 @media (max-width: 600px) {
 	#view .cbi-section table.table .tr { margin: 0; }
+	.nm-dns-credential { grid-template-columns: minmax(0, 1fr); }
+	.nm-dns-credential > label,
+	.nm-dns-credential > input,
+	.nm-dns-credential > .cbi-value-description { grid-column: 1; }
 }
 
 /* 文件路径栏 “Go” 按钮不被输入框挤压截断 */

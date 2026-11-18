@@ -459,6 +459,12 @@ msgstr "首页文件"
 msgid "Invalid site name"
 msgstr "站点名称无效"
 
+msgid "A site with the same normalized ID already exists."
+msgstr "规范化后的站点 ID 已存在，请换一个名称。"
+
+msgid "site id already exists"
+msgstr "规范化后的站点 ID 已存在，请换一个名称。"
+
 msgid "invalid domain"
 msgstr "域名无效"
 

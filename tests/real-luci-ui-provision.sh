@@ -55,7 +55,7 @@ docker exec "$CONTAINER" sh -c "
 	# destroyed after the visual run and is never installed on the user's router.
 	uci -q delete nginx_manager.ui_gate_site_enabled || true
 	uci set nginx_manager.ui_gate_site_enabled=site
-	uci set nginx_manager.ui_gate_site_enabled.name='Visual fixture: enabled site'
+	uci set nginx_manager.ui_gate_site_enabled.name='demo_reverse_proxy'
 	uci set nginx_manager.ui_gate_site_enabled.mode=reverse_proxy
 	uci set nginx_manager.ui_gate_site_enabled.server_name='demo.ui-gate.example.test'
 	uci set nginx_manager.ui_gate_site_enabled.listen_port=8080
@@ -63,7 +63,7 @@ docker exec "$CONTAINER" sh -c "
 	uci set nginx_manager.ui_gate_site_enabled.enabled=1
 	uci -q delete nginx_manager.ui_gate_site_disabled || true
 	uci set nginx_manager.ui_gate_site_disabled=site
-	uci set nginx_manager.ui_gate_site_disabled.name='Visual fixture: disabled site'
+	uci set nginx_manager.ui_gate_site_disabled.name='demo_static_site'
 	uci set nginx_manager.ui_gate_site_disabled.mode=static
 	uci set nginx_manager.ui_gate_site_disabled.server_name='disabled.ui-gate.example.test'
 	uci set nginx_manager.ui_gate_site_disabled.listen_port=8081

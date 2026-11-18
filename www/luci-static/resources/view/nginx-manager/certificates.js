@@ -482,7 +482,7 @@ function showEditCertModal(cert) {
 			return;
 		}
 
-		credsRow.style.display = '';
+		credsRow.style.display = apiId === '_custom' || !!DNS_API_INFO[apiId] ? '' : 'none';
 
 		if (apiId === '_custom') {
 			dnsApiCustomInput.style.display = '';
@@ -508,7 +508,7 @@ function showEditCertModal(cert) {
 					'placeholder': hasExisting ? '••••••••' : keyInfo.key + '=...',
 					'autocomplete': 'new-password'
 				};
-				var row = E('div', {}, [
+				var row = E('div', { 'class': 'nm-dns-credential' }, [
 					E('label', {}, keyInfo.key + (keyInfo.optional ? ' (' + _('Optional') + ')' : '') + (hasExisting ? ' (' + _('Configured') + ')' : '')),
 					E('input', inputAttrs),
 					keyInfo.desc ? E('div', { 'class': 'cbi-value-description' }, keyInfo.desc) : null
@@ -783,7 +783,7 @@ return view.extend({
 						return;
 					}
 
-					if (credsRow) credsRow.style.display = '';
+					if (credsRow) credsRow.style.display = apiId === '_custom' || !!info ? '' : 'none';
 
 					if (apiId === '_custom') {
 						dnsApiCustomInput.style.display = '';
@@ -797,7 +797,7 @@ return view.extend({
 						for (var i = 0; i < info.keys.length; i++) {
 							var keyInfo = info.keys[i];
 							var keyName = keyInfo.key;
-							var row = E('div', {}, [
+							var row = E('div', { 'class': 'nm-dns-credential' }, [
 								E('label', {}, keyName + (keyInfo.optional ? ' (' + _('Optional') + ')' : '')),
 								E('input', { 'type': 'password', 'class': 'cbi-input-text', 'data-cred-key': keyName, 'placeholder': keyName + '=...', 'autocomplete': 'new-password' }),
 								keyInfo.desc ? E('div', { 'class': 'cbi-value-description' }, keyInfo.desc) : null
