@@ -155,7 +155,7 @@
 .nm-file-path-row { display: flex; align-items: center; gap: 0.5em; flex-wrap: wrap; }
 /* Keep the custom file view clear of a theme-provided floating toolbar while
  * expanded, at every viewport where that overlay is present. */
-body:has(.floating-toolbar:not(.collapsed)) #view:has(.nm-file-toolbar) {
+body:has(.floating-toolbar:not(.collapsed)) #maincontent #view:has(.nm-file-toolbar) {
 	box-sizing: border-box;
 	padding-inline-end: 3.5rem;
 }
