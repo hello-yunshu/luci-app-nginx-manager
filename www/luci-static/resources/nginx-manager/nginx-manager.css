@@ -153,6 +153,12 @@
 /* === File Manager === */
 .nm-file-toolbar { display: flex; flex-direction: column; gap: 0.75em; }
 .nm-file-path-row { display: flex; align-items: center; gap: 0.5em; flex-wrap: wrap; }
+/* Keep the custom file view clear of a theme-provided floating toolbar while
+ * expanded, at every viewport where that overlay is present. */
+body:has(.floating-toolbar:not(.collapsed)) #view:has(.nm-file-toolbar) {
+	box-sizing: border-box;
+	padding-inline-end: 3.5rem;
+}
 /* File manager toolbar row (Refresh / New File / New Directory / Upload).
  * It used to be a bare div, so the buttons sat at 0px apart. */
 .nm-file-actions {
@@ -430,13 +436,6 @@
 	.nm-dns-credential > label,
 	.nm-dns-credential > input,
 	.nm-dns-credential > .cbi-value-description { grid-column: 1; }
-
-	/* Keep the custom file view clear of a theme-provided floating toolbar while
-	 * it is expanded; do not restyle the toolbar itself. */
-	body:has(.floating-toolbar:not(.collapsed)) #view:has(.nm-file-toolbar) {
-		box-sizing: border-box;
-		padding-inline-end: 3.5rem;
-	}
 
 	/* The native mobile table turns every file field into a separate card row.
 	 * Keep its theme-provided surfaces, but group each file into a compact
