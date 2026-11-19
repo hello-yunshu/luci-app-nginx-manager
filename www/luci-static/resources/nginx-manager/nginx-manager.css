@@ -431,9 +431,9 @@
 	.nm-dns-credential > input,
 	.nm-dns-credential > .cbi-value-description { grid-column: 1; }
 
-	/* Keep the file manager's full-width custom controls and cards clear of a
-	 * theme-provided floating toolbar when it is expanded on narrow screens. */
-	body:has(.floating-toolbar [aria-expanded="true"]) #view:has(.nm-file-toolbar) {
+	/* Keep the custom file view clear of a theme-provided floating toolbar while
+	 * it is expanded; do not restyle the toolbar itself. */
+	body:has(.floating-toolbar:not(.collapsed)) #view:has(.nm-file-toolbar) {
 		box-sizing: border-box;
 		padding-inline-end: 3.5rem;
 	}
