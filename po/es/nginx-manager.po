@@ -1,0 +1,1682 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: luci-app-nginx-manager\n"
+"PO-Revision-Date: 2026-11-19 00:00+0000\n"
+"Last-Translator: Pedro Flores\n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "-- None --"
+msgstr "-- Ninguno --"
+
+msgid "/etc/nginx/uci.conf.template"
+msgstr "/etc/nginx/uci.conf.template"
+
+msgid "ACME certificate issued successfully"
+msgstr "Certificado ACME emitido correctamente"
+
+msgid "ACME certificate renewed successfully"
+msgstr "Certificado ACME renovado correctamente"
+
+msgid "ACME certificate requested"
+msgstr "Certificado ACME solicitado"
+
+msgid "Access Log"
+msgstr "Registro de acceso"
+
+msgid "acme config not found"
+msgstr "No se ha encontrado la configuración de ACME"
+
+msgid "acme challenge config failed"
+msgstr "Error al generar la configuración del desafío ACME"
+
+msgid "acme dns api package not installed"
+msgstr "El paquete de API DNS de ACME no está instalado"
+
+msgid "acme issue failed"
+msgstr "Error en la emisión ACME"
+
+msgid "acme package not installed"
+msgstr "El paquete acme no está instalado"
+
+msgid "acme renew failed"
+msgstr "Error en la renovación ACME"
+
+msgid "not an acme certificate"
+msgstr "No es un certificado ACME"
+
+msgid "Actions"
+msgstr "Acciones"
+
+msgid "Add Certificate"
+msgstr "Añadir certificado"
+
+msgid "Add Site"
+msgstr "Añadir sitio"
+
+msgid "All Sites"
+msgstr "Todos los sitios"
+
+msgid "All interfaces"
+msgstr "Todas las interfaces"
+
+msgid "Are you sure you want to delete this backup?"
+msgstr "¿Seguro que quieres eliminar esta copia de seguridad?"
+
+msgid "Are you sure you want to delete this certificate?"
+msgstr "¿Seguro que quieres eliminar este certificado?"
+
+msgid "Are you sure you want to delete this site?"
+msgstr "¿Seguro que quieres eliminar este sitio?"
+
+msgid "Are you sure you want to restore this backup? A backup of the current configuration will be created first."
+msgstr "¿Seguro que quieres restaurar esta copia de seguridad? Antes se creará una copia de seguridad de la configuración actual."
+
+msgid "Auto (ACME)"
+msgstr "Automático (ACME)"
+
+msgid "SSL can be enabled on any port, no need to switch to 443."
+msgstr "Se puede activar SSL en cualquier puerto; no hace falta cambiar al 443."
+
+msgid "Back to Sites"
+msgstr "Volver a sitios"
+
+msgid "Backend Address"
+msgstr "Dirección del backend"
+
+msgid "Backend / Root"
+msgstr "Backend / Raíz"
+
+msgid "Backup Management"
+msgstr "Gestión de copias de seguridad"
+
+msgid "Backup Time"
+msgstr "Fecha de la copia"
+
+msgid "Backup created"
+msgstr "Copia de seguridad creada"
+
+msgid "Backup deleted"
+msgstr "Copia de seguridad eliminada"
+
+msgid "Backup restored"
+msgstr "Copia de seguridad restaurada"
+
+msgid "Backup settings saved"
+msgstr "Ajustes de copias de seguridad guardados"
+
+msgid "Backups"
+msgstr "Copias de seguridad"
+
+msgid "Basic Settings"
+msgstr "Ajustes básicos"
+
+msgid "Both certificate and key are required"
+msgstr "Se requieren tanto el certificado como la clave"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Certificate (PEM)"
+msgstr "Certificado (PEM)"
+
+msgid "Certificate Expiry"
+msgstr "Caducidad de certificados"
+
+msgid "Certificate Name"
+msgstr "Nombre del certificado"
+
+msgid "Certificate deleted"
+msgstr "Certificado eliminado"
+
+msgid "certificate id already exists"
+msgstr "Ya existe un certificado con ese nombre"
+
+msgid "cert not found"
+msgstr "No se ha encontrado el certificado"
+
+msgid "Certificate name is required"
+msgstr "El nombre del certificado es obligatorio"
+
+msgid "Certificate uploaded"
+msgstr "Certificado subido"
+
+msgid "Certificates"
+msgstr "Certificados"
+
+msgid "Clearing..."
+msgstr "Vaciando..."
+
+msgid "Clear"
+msgstr "Vaciar"
+
+msgid "Client Max Body Size"
+msgstr "Tamaño máximo del cuerpo de la petición"
+
+msgid "Close"
+msgstr "Cerrar"
+
+msgid "Common Proxy Headers"
+msgstr "Cabeceras de proxy habituales"
+
+msgid "Compare"
+msgstr "Comparar"
+
+msgid "Compare with Current"
+msgstr "Comparar con la actual"
+
+msgid "Confirm Delete"
+msgstr "Confirmar eliminación"
+
+msgid "Confirm Restore"
+msgstr "Confirmar restauración"
+
+msgid "Confirm Save"
+msgstr "Confirmar guardado"
+
+msgid "Config Test Result"
+msgstr "Resultado de la prueba de configuración"
+
+msgid "Config File"
+msgstr "Archivo de configuración"
+
+msgid "Config file not found. It will be created after saving the site."
+msgstr "No se ha encontrado el archivo de configuración. Se creará al guardar el sitio."
+
+msgid "Content"
+msgstr "Contenido"
+
+msgid "Config file path not available"
+msgstr "Ruta del archivo de configuración no disponible"
+
+msgid "Config file saved successfully"
+msgstr "Archivo de configuración guardado correctamente"
+
+msgid "Configuration test failed"
+msgstr "La prueba de configuración ha fallado"
+
+msgid "Core Config"
+msgstr "Configuración principal"
+
+msgid "Core config saved and applied"
+msgstr "Configuración principal guardada y aplicada"
+
+msgid "Configuration saved"
+msgstr "Configuración guardada"
+
+msgid "Configuration reset"
+msgstr "Configuración restablecida"
+
+msgid "Reset failed"
+msgstr "Error al restablecer"
+
+msgid "Apply failed"
+msgstr "Error al aplicar"
+
+msgid "Changes saved but not applied because dangerous edit mode is enabled. Disable it to apply changes."
+msgstr "Cambios guardados, pero no aplicados porque el modo de edición peligrosa está activado. Desactívalo para aplicar los cambios."
+
+msgid "Create"
+msgstr "Crear"
+
+msgid "Create Backup"
+msgstr "Crear copia de seguridad"
+
+msgid "Creating site..."
+msgstr "Creando sitio..."
+
+msgid "Custom Location Directives"
+msgstr "Directivas location personalizadas"
+
+msgid "Custom SSL Directives"
+msgstr "Directivas SSL personalizadas"
+
+msgid "Proxy Timeouts"
+msgstr "Tiempos de espera del proxy"
+
+msgid "gRPC Headers"
+msgstr "Cabeceras gRPC"
+
+msgid "Persistent directives added inside the main gRPC location. Use grpc_set_header for headers."
+msgstr "Directivas persistentes añadidas dentro de la location gRPC principal. Usa grpc_set_header para las cabeceras."
+
+msgid "Connect Timeout"
+msgstr "Tiempo de espera de conexión"
+
+msgid "Timeout for establishing a connection to the backend. Default: 60s."
+msgstr "Tiempo de espera para establecer la conexión con el backend. Predeterminado: 60s."
+
+msgid "Read Timeout"
+msgstr "Tiempo de espera de lectura"
+
+msgid "Timeout for reading a response from the backend. Default: 60s."
+msgstr "Tiempo de espera para leer la respuesta del backend. Predeterminado: 60s."
+
+msgid "Send Timeout"
+msgstr "Tiempo de espera de envío"
+
+msgid "Send buffer size for SSL data, e.g. 4k, 8k, 16k. Leave empty for default."
+msgstr "Tamaño del búfer de envío de datos SSL, p. ej., 4k, 8k, 16k. Déjalo vacío para usar el valor predeterminado."
+
+msgid "Shared memory zone for SSL sessions, e.g. shared:SSL:10m. Leave empty for default."
+msgstr "Zona de memoria compartida para las sesiones SSL, p. ej., shared:SSL:10m. Déjalo vacío para usar el valor predeterminado."
+
+msgid "Timeout for sending a request to the backend. Default: 60s."
+msgstr "Tiempo de espera para enviar la petición al backend. Predeterminado: 60s."
+
+msgid "Custom Server Block"
+msgstr "Bloque server personalizado"
+
+msgid "Custom Server Block Content"
+msgstr "Contenido del bloque server personalizado"
+
+msgid "Danger Zone"
+msgstr "Zona de peligro"
+
+msgid "Dangerous edit mode disabled"
+msgstr "Modo de edición peligrosa desactivado"
+
+msgid "Dangerous edit mode enabled"
+msgstr "Modo de edición peligrosa activado"
+
+msgid "Default"
+msgstr "Predeterminado"
+
+msgid "Delete"
+msgstr "Eliminar"
+
+msgid "Disable"
+msgstr "Desactivar"
+
+msgid "Disable Dangerous Edit"
+msgstr "Desactivar edición peligrosa"
+
+msgid "Direct Edit"
+msgstr "Edición directa"
+
+msgid "Direct edits are temporary and will be overwritten whenever managed configuration is applied. Use Custom Location Directives for persistent reverse-proxy changes."
+msgstr "Las ediciones directas son temporales y se sobrescribirán cada vez que se aplique la configuración gestionada. Usa las directivas location personalizadas para hacer cambios persistentes en el proxy inverso."
+
+msgid "Disabled"
+msgstr "Desactivado"
+
+msgid "Disabled Sites"
+msgstr "Sitios desactivados"
+
+msgid "Domain"
+msgstr "Dominio"
+
+msgid "Domain is required for ACME certificates"
+msgstr "Los certificados ACME requieren un dominio"
+
+msgid "Domain is required for self-signed certificates"
+msgstr "Los certificados autofirmados requieren un dominio"
+
+msgid "Edit"
+msgstr "Editar"
+
+msgid "Edit Site"
+msgstr "Editar sitio"
+
+msgid "Enable"
+msgstr "Activar"
+
+msgid "Enable Dangerous Edit"
+msgstr "Activar edición peligrosa"
+
+msgid "Enable direct editing of the config file"
+msgstr "Activar la edición directa del archivo de configuración"
+
+msgid "Enabled"
+msgstr "Activado"
+
+msgid "Enabled Sites"
+msgstr "Sitios activados"
+
+msgid "Environment Detection"
+msgstr "Detección del entorno"
+
+msgid "Duration for SSL session cache, e.g. 1d, 4h, 30m."
+msgstr "Duración de la caché de sesiones SSL, p. ej., 1d, 4h, 30m."
+
+msgid "Error Log"
+msgstr "Registro de errores"
+
+msgid "Error:"
+msgstr "Error:"
+
+msgid "Expired"
+msgstr "Caducado"
+
+msgid "Expiring Soon"
+msgstr "Caduca pronto"
+
+msgid "Failed to clear logs"
+msgstr "Error al vaciar los registros"
+
+msgid "Failed to delete certificate"
+msgstr "Error al eliminar el certificado"
+
+msgid "Failed to generate self-signed certificate"
+msgstr "Error al generar el certificado autofirmado"
+
+msgid "Failed to issue ACME certificate"
+msgstr "Error al emitir el certificado ACME"
+
+msgid "Failed to renew ACME certificate"
+msgstr "Error al renovar el certificado ACME"
+
+msgid "Failed to load logs"
+msgstr "Error al cargar los registros"
+
+msgid "Failed to upload certificate"
+msgstr "Error al subir el certificado"
+
+msgid "File Missing"
+msgstr "Falta el archivo"
+
+msgid "File Path"
+msgstr "Ruta del archivo"
+
+msgid "File not found"
+msgstr "No se ha encontrado el archivo"
+
+msgid "File not found or not readable"
+msgstr "No se ha encontrado el archivo o no se puede leer"
+
+msgid "File saved successfully"
+msgstr "Archivo guardado correctamente"
+
+msgid "Filter"
+msgstr "Filtro"
+
+msgid "General Settings"
+msgstr "Ajustes generales"
+
+msgid "Generated Config"
+msgstr "Configuración generada"
+
+msgid "Generating..."
+msgstr "Generando..."
+
+msgid "gRPC"
+msgstr "gRPC"
+
+msgid "gRPC Passthrough"
+msgstr "Reenvío de gRPC"
+
+msgid "gRPC Path"
+msgstr "Ruta gRPC"
+
+msgid "URL path for gRPC traffic, e.g. /grpc or /api.Service"
+msgstr "Ruta URL para el tráfico gRPC, p. ej., /grpc o /api.Service"
+
+msgid "gRPC Backend Address"
+msgstr "Dirección del backend gRPC"
+
+msgid "Uses grpc:// or grpcs:// scheme."
+msgstr "Usa el esquema grpc:// o grpcs://."
+
+msgid "Gzip"
+msgstr "Gzip"
+
+msgid "HTTP"
+msgstr "HTTP"
+
+msgid "HTTP to HTTPS Redirect"
+msgstr "Redirección de HTTP a HTTPS"
+
+msgid "HTTP Redirect Port"
+msgstr "Puerto de redirección HTTP"
+
+msgid "Index File"
+msgstr "Archivo índice"
+
+msgid "Invalid site name"
+msgstr "Nombre de sitio no válido"
+
+msgid "invalid domain"
+msgstr "Dominio no válido"
+
+msgid "invalid id"
+msgstr "ID no válido"
+
+msgid "Keepalive Timeout"
+msgstr "Tiempo de espera keepalive"
+
+msgid "Last Config Test"
+msgstr "Última prueba de configuración"
+
+msgid "Last Reload"
+msgstr "Última recarga"
+
+msgid "Leave empty for all interfaces, or specify an IP (e.g. 127.0.0.1)."
+msgstr "Déjalo vacío para todas las interfaces o indica una IP (p. ej., 127.0.0.1)."
+
+msgid "Leave empty to use default ciphers."
+msgstr "Déjalo vacío para usar los cifrados predeterminados."
+
+msgid "Leave empty to use default: TLSv1.2 TLSv1.3"
+msgstr "Déjalo vacío para usar el valor predeterminado: TLSv1.2 TLSv1.3"
+
+msgid "Leave empty to use same-port redirect."
+msgstr "Déjalo vacío para redirigir en el mismo puerto."
+
+msgid "Listen Address"
+msgstr "Dirección de escucha"
+
+msgid "Listen Port"
+msgstr "Puerto de escucha"
+
+msgid "Listening Ports"
+msgstr "Puertos de escucha"
+
+msgid "Loading..."
+msgstr "Cargando..."
+
+msgid "Log Output"
+msgstr "Salida del registro"
+
+msgid "Log cleared"
+msgstr "Registro vaciado"
+
+msgid "Log Settings"
+msgstr "Ajustes de registro"
+
+msgid "Logging"
+msgstr "Registro"
+
+msgid "Logs"
+msgstr "Registros"
+
+msgid "Managed Sites"
+msgstr "Sitios gestionados"
+
+msgid "Manual"
+msgstr "Manual"
+
+msgid "Maximum Backups"
+msgstr "Máximo de copias de seguridad"
+
+msgid "Maximum backups must be between 1 and 100"
+msgstr "El máximo de copias de seguridad debe estar entre 1 y 100"
+
+msgid "Missing"
+msgstr "Falta"
+
+msgid "missing domain"
+msgstr "Falta el dominio"
+
+msgid "missing id"
+msgstr "Falta el ID"
+
+msgid "Modifying core configuration may prevent Nginx from starting and make LuCI inaccessible. Ensure SSH access is available."
+msgstr "Modificar la configuración principal puede impedir que Nginx se inicie y dejar LuCI inaccesible. Asegúrate de tener acceso por SSH."
+
+msgid "Name"
+msgstr "Nombre"
+
+msgid "Nginx Manager"
+msgstr "Gestor de Nginx"
+
+msgid "Nginx is running"
+msgstr "Nginx está en ejecución"
+
+msgid "Nginx is stopped"
+msgstr "Nginx está detenido"
+
+msgid "Nginx service is active and serving requests."
+msgstr "El servicio Nginx está activo y atendiendo peticiones."
+
+msgid "Nginx service is not running. Click Start or Reload to begin."
+msgstr "El servicio Nginx no está en ejecución. Pulsa Iniciar o Recargar para arrancarlo."
+
+msgid "No backups available."
+msgstr "No hay copias de seguridad."
+
+msgid "No certificates configured."
+msgstr "No hay certificados configurados."
+
+msgid "No differences"
+msgstr "Sin diferencias"
+
+msgid "No log entries found"
+msgstr "No se han encontrado entradas en el registro"
+
+msgid "No output"
+msgstr "Sin salida"
+
+msgid "No sites configured. Click \"Add Site\" to create one."
+msgstr "No hay sitios configurados. Pulsa «Añadir sitio» para crear uno."
+
+msgid "Non-Managed Configs"
+msgstr "Configuraciones no gestionadas"
+
+msgid "OCSP Stapling"
+msgstr "OCSP Stapling"
+
+msgid "OCSP stapling for custom certificates only. ACME certs not supported — Let's Encrypt has discontinued OCSP."
+msgstr "OCSP Stapling solo para certificados personalizados. No es compatible con certificados ACME: Let's Encrypt ha dejado de ofrecer OCSP."
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Off"
+msgstr "Desactivado"
+
+msgid "On"
+msgstr "Activado"
+
+msgid "Persistent directives added inside location /. Supports proxy_set_header, sub_filter, and other location directives."
+msgstr "Directivas persistentes añadidas dentro de location /. Admite proxy_set_header, sub_filter y otras directivas de location."
+
+msgid "One directive per line. These will be added inside the server block."
+msgstr "Una directiva por línea. Se añadirán dentro del bloque server."
+
+msgid "OpenWrt"
+msgstr "OpenWrt"
+
+msgid "Package Manager"
+msgstr "Gestor de paquetes"
+
+msgid "Path"
+msgstr "Ruta"
+
+msgid "Permission denied. Make sure UCI changes are applied."
+msgstr "Permiso denegado. Asegúrate de que se han aplicado los cambios de UCI."
+
+msgid "Please wait..."
+msgstr "Espera, por favor..."
+
+msgid "Please wait, ACME certificate issuance may take a while..."
+msgstr "Espera, por favor; la emisión del certificado ACME puede tardar un poco..."
+
+msgid "Plugin Version"
+msgstr "Versión del complemento"
+
+msgid "Private Key (PEM)"
+msgstr "Clave privada (PEM)"
+
+msgid "Proxy Host Header"
+msgstr "Cabecera Host del proxy"
+
+msgid "Proxy Type"
+msgstr "Tipo de proxy"
+
+msgid "Read-only View"
+msgstr "Vista de solo lectura"
+
+msgid "Redirect"
+msgstr "Redirección"
+
+msgid "Redirect Target"
+msgstr "Destino de la redirección"
+
+msgid "Redirecting"
+msgstr "Redirigiendo"
+
+msgid "Refresh"
+msgstr "Actualizar"
+
+msgid "Reload"
+msgstr "Recargar"
+
+msgid "Requesting..."
+msgstr "Solicitando..."
+
+msgid "Renew"
+msgstr "Renovar"
+
+msgid "Renewing..."
+msgstr "Renovando..."
+
+msgid "Restoring..."
+msgstr "Restaurando..."
+
+msgid "Restart"
+msgstr "Reiniciar"
+
+msgid "Restore"
+msgstr "Restaurar"
+
+msgid "Restore failed"
+msgstr "Error al restaurar"
+
+msgid "Reverse Proxy"
+msgstr "Proxy inverso"
+
+msgid "Root Directory"
+msgstr "Directorio raíz"
+
+msgid "SSL"
+msgstr "SSL"
+
+msgid "SSL Certificate"
+msgstr "Certificado SSL"
+
+msgid "SSL Ciphers"
+msgstr "Cifrados SSL"
+
+msgid "SSL Module"
+msgstr "Módulo SSL"
+
+msgid "SSL Protocols"
+msgstr "Protocolos SSL"
+
+msgid "SSL Session Cache"
+msgstr "Caché de sesiones SSL"
+
+msgid "SSL Session Timeout"
+msgstr "Tiempo de espera de sesión SSL"
+
+msgid "SSL Buffer Size"
+msgstr "Tamaño del búfer SSL"
+
+msgid "SSL Settings"
+msgstr "Ajustes SSL"
+
+msgid "Save"
+msgstr "Guardar"
+
+msgid "Save Config File"
+msgstr "Guardar archivo de configuración"
+
+msgid "Save changes to the config file?"
+msgstr "¿Guardar los cambios en el archivo de configuración?"
+
+msgid "A backup will be created before saving."
+msgstr "Se creará una copia de seguridad antes de guardar."
+
+msgid "Save failed"
+msgstr "Error al guardar"
+
+msgid "Saving this file may break Nginx configuration. A backup will be created first. Continue?"
+msgstr "Guardar este archivo puede romper la configuración de Nginx. Antes se creará una copia de seguridad. ¿Continuar?"
+
+msgid "Self-Signed Certificate"
+msgstr "Certificado autofirmado"
+
+msgid "Self-signed certificate generated"
+msgstr "Certificado autofirmado generado"
+
+msgid "TCP NOPUSH"
+msgstr "TCP NOPUSH"
+
+msgid "Optimizes sending large files. Works best with Sendfile enabled."
+msgstr "Optimiza el envío de archivos grandes. Funciona mejor con Sendfile activado."
+
+msgid "TCP NODELAY"
+msgstr "TCP NODELAY"
+
+msgid "Disables Nagle algorithm for low-latency delivery. Useful for real-time applications."
+msgstr "Desactiva el algoritmo de Nagle para reducir la latencia. Útil para aplicaciones en tiempo real."
+
+msgid "Sendfile"
+msgstr "Sendfile"
+
+msgid "Server Tokens"
+msgstr "Server Tokens"
+
+msgid "Service Control"
+msgstr "Control del servicio"
+
+msgid "Service Information"
+msgstr "Información del servicio"
+
+msgid "Site"
+msgstr "Sitio"
+
+msgid "Site Name"
+msgstr "Nombre del sitio"
+
+msgid "Site created, redirecting to edit page..."
+msgstr "Sitio creado; redirigiendo a la página de edición..."
+
+msgid "Site deleted successfully"
+msgstr "Sitio eliminado correctamente"
+
+msgid "Site disabled"
+msgstr "Sitio desactivado"
+
+msgid "Site enabled"
+msgstr "Sitio activado"
+
+msgid "Site name is required"
+msgstr "El nombre del sitio es obligatorio"
+
+msgid "Site saved successfully"
+msgstr "Sitio guardado correctamente"
+
+msgid "Sites"
+msgstr "Sitios"
+
+msgid "Source"
+msgstr "Origen"
+
+msgid "Start"
+msgstr "Iniciar"
+
+msgid "Static Website"
+msgstr "Sitio web estático"
+
+msgid "Status"
+msgstr "Estado"
+
+msgid "Test Config"
+msgstr "Probar configuración"
+
+msgid "This certificate has expired."
+msgstr "Este certificado ha caducado."
+
+msgid "This certificate is expiring soon."
+msgstr "Este certificado caducará pronto."
+
+msgid "Type"
+msgstr "Tipo"
+
+msgid "Upload"
+msgstr "Subir"
+
+msgid "Upload Certificate"
+msgstr "Subir certificado"
+
+msgid "Unknown"
+msgstr "Desconocido"
+
+msgid "Valid"
+msgstr "Válido"
+
+msgid "Version"
+msgstr "Versión"
+
+msgid "View Config"
+msgstr "Ver configuración"
+
+msgid "View Full Config"
+msgstr "Ver configuración completa"
+
+msgid "View Generated Config"
+msgstr "Ver configuración generada"
+
+msgid "View nginx -T"
+msgstr "Ver nginx -T"
+
+msgid "View uci.conf.template"
+msgstr "Ver uci.conf.template"
+
+msgid "WebSocket"
+msgstr "WebSocket"
+
+msgid "WebSocket Support"
+msgstr "Compatibilidad con WebSocket"
+
+msgid "X-Forwarded-For"
+msgstr "X-Forwarded-For"
+
+msgid "X-Forwarded-Proto"
+msgstr "X-Forwarded-Proto"
+
+msgid "X-Real-IP"
+msgstr "X-Real-IP"
+
+msgid "days remaining"
+msgstr "días restantes"
+
+msgid "nginx -T Output"
+msgstr "Salida de nginx -T"
+
+msgid "ACME operation timed out"
+msgstr "Se ha agotado el tiempo de espera de la operación ACME"
+
+msgid "ACME Validation"
+msgstr "Validación ACME"
+
+msgid "ACME Task"
+msgstr "Tarea ACME"
+
+msgid "ACME Account Email"
+msgstr "Correo de la cuenta ACME"
+
+msgid "A real email address is required for ACME account registration."
+msgstr "Se necesita una dirección de correo real para registrar la cuenta ACME."
+
+msgid "ACME account email is required"
+msgstr "El correo de la cuenta ACME es obligatorio"
+
+msgid "Invalid ACME account email"
+msgstr "Correo de la cuenta ACME no válido"
+
+msgid "Command"
+msgstr "Comando"
+
+msgid "Output"
+msgstr "Salida"
+
+msgid "Recent ACME Log"
+msgstr "Registro ACME reciente"
+
+msgid "No output yet."
+msgstr "Aún no hay salida."
+
+msgid "No ACME log entries yet."
+msgstr "Aún no hay entradas en el registro ACME."
+
+msgid "Failed"
+msgstr "Fallido"
+
+msgid "Regenerate"
+msgstr "Regenerar"
+
+msgid "Edit Certificate"
+msgstr "Editar certificado"
+
+msgid "Automatic Renewal"
+msgstr "Renovación automática"
+
+msgid "Enable automatic renewal"
+msgstr "Activar la renovación automática"
+
+msgid "Manual Renewal"
+msgstr "Renovación manual"
+
+msgid "Manual renewal will disable automatic renewal. You can re-enable it via Edit."
+msgstr "La renovación manual desactivará la renovación automática. Puedes volver a activarla desde Editar."
+
+msgid "Continue"
+msgstr "Continuar"
+
+msgid "Automatic renewal enabled"
+msgstr "Renovación automática activada"
+
+msgid "Automatic renewal disabled"
+msgstr "Renovación automática desactivada"
+
+msgid "Failed to update automatic renewal"
+msgstr "Error al actualizar la renovación automática"
+
+msgid "Failed to update certificate"
+msgstr "Error al actualizar el certificado"
+
+msgid "Auto (ACME DNS-01)"
+msgstr "Automático (ACME DNS-01)"
+
+msgid "Auto (ACME HTTP-01)"
+msgstr "Automático (ACME HTTP-01)"
+
+msgid "Auto (ACME Standalone)"
+msgstr "Automático (ACME Standalone)"
+
+msgid "DNS API"
+msgstr "API DNS"
+
+msgid "DNS API is required for DNS-01 validation"
+msgstr "La validación DNS-01 requiere una API DNS"
+
+msgid "DNS Credentials"
+msgstr "Credenciales DNS"
+
+msgid "Leave empty to keep existing credentials."
+msgstr "Déjalo vacío para conservar las credenciales actuales."
+
+msgid "DNS credentials are required for DNS-01 validation"
+msgstr "La validación DNS-01 requiere credenciales DNS"
+
+msgid "DNS Provider"
+msgstr "Proveedor DNS"
+
+msgid "-- Please choose --"
+msgstr "-- Elige una opción --"
+
+msgid "DNS Wait Seconds"
+msgstr "Espera DNS (segundos)"
+
+msgid "Seconds to wait for DNS propagation before validation."
+msgstr "Segundos de espera para que se propague el DNS antes de la validación."
+
+msgid "Custom DNS API Name"
+msgstr "Nombre de la API DNS personalizada"
+
+msgid "acme.sh DNS API script name, e.g. dns_myapi"
+msgstr "Nombre del script de API DNS de acme.sh, p. ej., dns_myapi"
+
+msgid "Custom..."
+msgstr "Personalizado..."
+
+msgid "Optional"
+msgstr "Opcional"
+
+msgid "Configured"
+msgstr "Configurado"
+
+msgid "One credential per line in KEY=VALUE format"
+msgstr "Una credencial por línea con el formato KEY=VALUE"
+
+msgid "API Token from Cloudflare dashboard > My Profile > API Tokens"
+msgstr "Token de API del panel de Cloudflare > My Profile > API Tokens"
+
+msgid "Cloudflare Account ID (optional, needed for some tokens)"
+msgstr "ID de cuenta de Cloudflare (opcional; necesario para algunos tokens)"
+
+msgid "Cloudflare Zone ID (optional, needed for some tokens)"
+msgstr "ID de zona de Cloudflare (opcional; necesario para algunos tokens)"
+
+msgid "DNSPod API ID from console.dnspod.cn"
+msgstr "ID de API de DNSPod de console.dnspod.cn"
+
+msgid "DNSPod API Token from console.dnspod.cn"
+msgstr "Token de API de DNSPod de console.dnspod.cn"
+
+msgid "AccessKey ID from Alibaba Cloud RAM console"
+msgstr "AccessKey ID de la consola RAM de Alibaba Cloud"
+
+msgid "AccessKey Secret from Alibaba Cloud RAM console"
+msgstr "AccessKey Secret de la consola RAM de Alibaba Cloud"
+
+msgid "AWS IAM Access Key ID with Route53 permissions"
+msgstr "ID de clave de acceso de AWS IAM con permisos de Route53"
+
+msgid "AWS IAM Secret Access Key"
+msgstr "Clave de acceso secreta de AWS IAM"
+
+msgid "IAM username from Huawei Cloud console > My Credentials"
+msgstr "Nombre de usuario IAM de la consola de Huawei Cloud > My Credentials"
+
+msgid "Password for the IAM user"
+msgstr "Contraseña del usuario IAM"
+
+msgid "Account name from Huawei Cloud console > My Credentials"
+msgstr "Nombre de cuenta de la consola de Huawei Cloud > My Credentials"
+
+msgid "API Key from developer.godaddy.com (Production key)"
+msgstr "Clave de API de developer.godaddy.com (clave de producción)"
+
+msgid "API Secret from developer.godaddy.com"
+msgstr "Secreto de API de developer.godaddy.com"
+
+msgid "Namecheap account username"
+msgstr "Nombre de usuario de la cuenta de Namecheap"
+
+msgid "API Key from Namecheap dashboard > Profile > Tools"
+msgstr "Clave de API del panel de Namecheap > Profile > Tools"
+
+msgid "Whitelisted IP address for API access"
+msgstr "Dirección IP en la lista de permitidas para acceder a la API"
+
+msgid "DNS-01"
+msgstr "DNS-01"
+
+msgid "HTTP-01 Webroot"
+msgstr "HTTP-01 Webroot"
+
+msgid "HTTP-01 Standalone"
+msgstr "HTTP-01 Standalone"
+
+msgid "Unknown ACME task status"
+msgstr "Estado de tarea ACME desconocido"
+
+msgid "invalid acme validation method"
+msgstr "Método de validación ACME no válido"
+
+msgid "invalid acme account email"
+msgstr "Correo de la cuenta ACME no válido"
+
+msgid "missing acme account email"
+msgstr "Falta el correo de la cuenta ACME"
+
+msgid "invalid auto renew"
+msgstr "Ajuste de renovación automática no válido"
+
+msgid "invalid dns api"
+msgstr "API DNS no válida"
+
+msgid "invalid dns credentials"
+msgstr "Credenciales DNS no válidas"
+
+msgid "invalid dns wait seconds"
+msgstr "Segundos de espera DNS no válidos"
+
+msgid "missing dns api"
+msgstr "Falta la API DNS"
+
+msgid "missing dns credentials"
+msgstr "Faltan las credenciales DNS"
+
+msgid "System Behavior"
+msgstr "Comportamiento del sistema"
+
+msgid "Auto Backup"
+msgstr "Copia de seguridad automática"
+
+msgid "Automatically create a backup before applying configuration changes."
+msgstr "Crea automáticamente una copia de seguridad antes de aplicar cambios en la configuración."
+
+msgid "Max Backups"
+msgstr "Máx. de copias de seguridad"
+
+msgid "Maximum number of backups to keep. Older backups will be automatically deleted."
+msgstr "Número máximo de copias de seguridad que se conservan. Las más antiguas se eliminarán automáticamente."
+
+msgid "Test Before Reload"
+msgstr "Probar antes de recargar"
+
+msgid "Certificate Directory"
+msgstr "Directorio de certificados"
+
+msgid "Managed Config Directory"
+msgstr "Directorio de configuración gestionada"
+
+msgid "Directory for managed site configuration files."
+msgstr "Directorio de los archivos de configuración de los sitios gestionados."
+
+msgid "Backup Directory"
+msgstr "Directorio de copias de seguridad"
+
+msgid "Directory for storing configuration backups."
+msgstr "Directorio donde se guardan las copias de seguridad de la configuración."
+
+msgid "Run nginx -t to test configuration before reloading. Prevents invalid config from breaking the server."
+msgstr "Ejecuta nginx -t para probar la configuración antes de recargar. Evita que una configuración no válida deje el servidor fuera de servicio."
+
+msgid "wildcard domains not supported for webroot acme"
+msgstr "La validación ACME Webroot no admite dominios comodín"
+
+msgid "wildcard domains not supported for http acme"
+msgstr "La validación ACME HTTP-01 no admite dominios comodín"
+
+msgid "Wildcard domains are not supported for ACME certificates"
+msgstr "Los certificados ACME no admiten dominios comodín"
+
+msgid "Please wait, ACME renewal may take a while..."
+msgstr "Espera, por favor; la renovación ACME puede tardar un poco..."
+
+msgid "ACME operation already in progress for this certificate"
+msgstr "Ya hay una operación ACME en curso para este certificado"
+
+msgid "Certificate name must start with a letter, number or underscore, and can contain letters, numbers, dots, hyphens and underscores"
+msgstr "El nombre del certificado debe empezar por una letra, un número o un guion bajo, y puede contener letras, números, puntos, guiones y guiones bajos"
+
+msgid "wildcard domains not supported for acme"
+msgstr "ACME no admite dominios comodín"
+
+msgid "HSTS Max-Age"
+msgstr "HSTS Max-Age"
+
+msgid "HSTS max-age in seconds. Default: 31536000 (1 year). Set to 0 to disable."
+msgstr "max-age de HSTS en segundos. Predeterminado: 31536000 (1 año). Pon 0 para desactivarlo."
+
+msgid "HTTP/2"
+msgstr "HTTP/2"
+
+msgid "Enable HTTP/2 for SSL sites. Uses the http2 directive (nginx 1.25.1+)."
+msgstr "Activa HTTP/2 en los sitios SSL. Usa la directiva http2 (nginx 1.25.1+)."
+
+msgid "HTTP/3 (QUIC)"
+msgstr "HTTP/3 (QUIC)"
+
+msgid "Enable HTTP/3 over QUIC. Adds quic reuseport to listen directives and Alt-Svc header. Requires nginx built with QUIC support."
+msgstr "Activa HTTP/3 sobre QUIC. Añade quic reuseport a las directivas listen y la cabecera Alt-Svc. Requiere nginx compilado con compatibilidad con QUIC."
+
+msgid "HTTP/3 Stream Buffer Size"
+msgstr "Tamaño del búfer de flujo HTTP/3"
+
+msgid "QUIC stream buffer size, e.g. 64k, 256k. Leave empty for default."
+msgstr "Tamaño del búfer de flujo QUIC, p. ej., 64k, 256k. Déjalo vacío para usar el valor predeterminado."
+
+msgid "HTTP/3 Stream Buffer Size field"
+msgstr "el campo Tamaño del búfer de flujo HTTP/3"
+
+msgid "<br/><strong style=\"color:var(--red)\">Warning:</strong>"
+msgstr "<br/><strong style=\"color:var(--red)\">Advertencia:</strong>"
+
+msgid "Nginx HTTP/3 module has a known bug where POST requests may trigger a massive memory allocation (8GB), causing 500 errors. If you encounter this issue, disable HTTP/3 until nginx fixes the bug."
+msgstr "El módulo HTTP/3 de Nginx tiene un fallo conocido por el que las peticiones POST pueden provocar una reserva de memoria enorme (8 GB) y causar errores 500. Si te ocurre, desactiva HTTP/3 hasta que nginx corrija el fallo."
+
+msgid "SSL Session Tickets"
+msgstr "Tickets de sesión SSL"
+
+msgid "Enable to improve TLS resumption performance, or disable for stricter forward secrecy."
+msgstr "Actívalo para mejorar el rendimiento de la reanudación de TLS o desactívalo para reforzar el secreto hacia adelante (forward secrecy)."
+
+msgid "Archive"
+msgstr "Archivo comprimido"
+
+msgid "Package"
+msgstr "Paquete"
+
+msgid "Shell"
+msgstr "Script de shell"
+
+msgid "Image"
+msgstr "Imagen"
+
+msgid "Backup"
+msgstr "Copia de seguridad"
+
+msgid "Binary"
+msgstr "Binario"
+
+msgid "Certificate bundle"
+msgstr "Paquete de certificados"
+
+msgid "Certificate"
+msgstr "Certificado"
+
+msgid "Certificate chain"
+msgstr "Cadena de certificados"
+
+msgid "Nginx config"
+msgstr "Configuración de Nginx"
+
+msgid "Certificate request"
+msgstr "Solicitud de certificado"
+
+msgid "Environment file"
+msgstr "Archivo de entorno"
+
+msgid "OpenWrt package"
+msgstr "Paquete de OpenWrt"
+
+msgid "Private key"
+msgstr "Clave privada"
+
+msgid "PEM certificate"
+msgstr "Certificado PEM"
+
+msgid "Public key"
+msgstr "Clave pública"
+
+msgid "Service unit"
+msgstr "Unidad de servicio"
+
+msgid "SQLite database"
+msgstr "Base de datos SQLite"
+
+msgid "SVG image"
+msgstr "Imagen SVG"
+
+msgid "Dockerfile"
+msgstr "Dockerfile"
+
+msgid "Makefile"
+msgstr "Makefile"
+
+msgid "Authorized keys"
+msgstr "Claves autorizadas"
+
+msgid "Group file"
+msgstr "Archivo de grupos"
+
+msgid "Hosts file"
+msgstr "Archivo hosts"
+
+msgid "Hostname file"
+msgstr "Archivo de nombre de host"
+
+msgid "Known hosts"
+msgstr "Hosts conocidos"
+
+msgid "Password file"
+msgstr "Archivo de contraseñas"
+
+msgid "Shadow password file"
+msgstr "Archivo de contraseñas shadow"
+
+msgid "UCI config"
+msgstr "Configuración UCI"
+
+msgid "File"
+msgstr "Archivo"
+
+msgid "Database"
+msgstr "Base de datos"
+
+msgid "Example file"
+msgstr "Archivo de ejemplo"
+
+msgid "C header"
+msgstr "Cabecera de C"
+
+msgid "C++ header"
+msgstr "Cabecera de C++"
+
+msgid "Icon"
+msgstr "Icono"
+
+msgid "Config"
+msgstr "Configuración"
+
+msgid "JavaScript"
+msgstr "JavaScript"
+
+msgid "TypeScript"
+msgstr "TypeScript"
+
+msgid "Markdown"
+msgstr "Markdown"
+
+msgid "List"
+msgstr "Lista"
+
+msgid "Log"
+msgstr "Registro"
+
+msgid "Sample file"
+msgstr "Archivo de muestra"
+
+msgid "Text"
+msgstr "Texto"
+
+msgid "Certificate is valid and active."
+msgstr "El certificado es válido y está activo."
+
+msgid "Certificate is expiring soon. Consider renewing it."
+msgstr "El certificado caducará pronto. Plantéate renovarlo."
+
+msgid "Certificate has expired. Please renew or replace it."
+msgstr "El certificado ha caducado. Renuévalo o sustitúyelo."
+
+msgid "Certificate file is missing. The certificate may have been issued but the file link is broken. Try regenerating."
+msgstr "Falta el archivo del certificado. Puede que el certificado se haya emitido, pero el enlace al archivo está roto. Prueba a regenerarlo."
+
+msgid "Details"
+msgstr "Detalles"
+
+msgid "Certificate Status"
+msgstr "Estado del certificado"
+
+msgid "Changing domain, validation method, or DNS provider requires re-issuing the certificate."
+msgstr "Cambiar el dominio, el método de validación o el proveedor DNS obliga a volver a emitir el certificado."
+
+msgid "Domain is required"
+msgstr "El dominio es obligatorio"
+
+msgid "Re-issue Required"
+msgstr "Reemisión necesaria"
+
+msgid "The changes you made require re-issuing the certificate. Would you like to re-issue now?"
+msgstr "Los cambios que has hecho requieren volver a emitir el certificado. ¿Quieres reemitirlo ahora?"
+
+msgid "Settings saved. Certificate will be re-issued on next renewal."
+msgstr "Ajustes guardados. El certificado se volverá a emitir en la próxima renovación."
+
+msgid "Later"
+msgstr "Más tarde"
+
+msgid "Re-issue Now"
+msgstr "Reemitir ahora"
+
+msgid "Certificate settings updated"
+msgstr "Ajustes del certificado actualizados"
+
+msgid "Line Count"
+msgstr "Número de líneas"
+
+msgid "certificate path generated by site settings"
+msgstr "la ruta del certificado generada a partir de los ajustes del sitio"
+
+msgid "certificate key path generated by site settings"
+msgstr "la ruta de la clave del certificado generada a partir de los ajustes del sitio"
+
+msgid "SSL protocol settings generated by site settings"
+msgstr "la configuración de protocolos SSL generada a partir de los ajustes del sitio"
+
+msgid "SSL cipher settings generated by site settings"
+msgstr "la configuración de cifrados SSL generada a partir de los ajustes del sitio"
+
+msgid "SSL cipher preference generated by Nginx Manager"
+msgstr "la preferencia de cifrados SSL generada por Nginx Manager"
+
+msgid "SSL Session Timeout field"
+msgstr "el campo Tiempo de espera de sesión SSL"
+
+msgid "SSL Session Tickets field"
+msgstr "el campo Tickets de sesión SSL"
+
+msgid "OCSP trusted certificate generated by Nginx Manager"
+msgstr "el certificado de confianza OCSP generado por Nginx Manager"
+
+msgid "HTTP/2 field"
+msgstr "el campo HTTP/2"
+
+msgid "SSL Buffer Size field"
+msgstr "el campo Tamaño del búfer SSL"
+
+msgid "OCSP Stapling field"
+msgstr "el campo OCSP Stapling"
+
+msgid "OCSP Stapling generated resolver"
+msgstr "el resolvedor DNS generado por OCSP Stapling"
+
+msgid "OCSP Stapling generated resolver timeout"
+msgstr "el tiempo de espera del resolvedor DNS generado por OCSP Stapling"
+
+msgid "Line"
+msgstr "Línea"
+
+msgid "reuses shared zone"
+msgstr "reutiliza la zona compartida"
+
+msgid "with size"
+msgstr "con tamaño"
+
+msgid "but SSL Session Cache uses"
+msgstr "pero la caché de sesiones SSL usa"
+
+msgid "Use a different zone name or change the SSL Session Cache field."
+msgstr "Usa otro nombre de zona o cambia el campo Caché de sesiones SSL."
+
+msgid "is already managed by"
+msgstr "ya se gestiona mediante"
+
+msgid "Remove this line from Custom SSL Directives and use the dedicated field instead."
+msgstr "Quita esta línea de las directivas SSL personalizadas y usa en su lugar el campo específico."
+
+msgid "Custom SSL Directives Conflict"
+msgstr "Conflicto en las directivas SSL personalizadas"
+
+msgid "Please adjust Custom SSL Directives before saving. These lines conflict with settings generated by Nginx Manager:"
+msgstr "Ajusta las directivas SSL personalizadas antes de guardar. Estas líneas entran en conflicto con ajustes generados por Nginx Manager:"
+
+msgid "Add X-Frame-Options, CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy to SSL sites."
+msgstr "Añade X-Frame-Options, CSP, X-Content-Type-Options, Referrer-Policy y Permissions-Policy a los sitios SSL."
+
+msgid "Apply"
+msgstr "Aplicar"
+
+msgid "Are you sure you want to clear ALL access and error logs for all sites? This cannot be undone."
+msgstr "¿Seguro que quieres vaciar TODOS los registros de acceso y de errores de todos los sitios? No se puede deshacer."
+
+msgid "Are you sure you want to delete"
+msgstr "¿Seguro que quieres eliminar"
+
+msgid "Back"
+msgstr "Atrás"
+
+msgid "Cannot delete root directory"
+msgstr "No se puede eliminar el directorio raíz"
+
+msgid "Change Permissions"
+msgstr "Cambiar permisos"
+
+msgid "Clear All"
+msgstr "Vaciar todo"
+
+msgid "Clear All Logs"
+msgstr "Vaciar todos los registros"
+
+msgid "Cleared"
+msgstr "Se han vaciado"
+
+msgid "Clone"
+msgstr "Clonar"
+
+msgid "Clone Site"
+msgstr "Clonar sitio"
+
+msgid "Clone this site with a new name? The clone will be disabled by default."
+msgstr "¿Clonar este sitio con un nombre nuevo? El clon estará desactivado de forma predeterminada."
+
+msgid "Cloning..."
+msgstr "Clonando..."
+
+msgid "Confirm Overwrite"
+msgstr "Confirmar sobrescritura"
+
+msgid "Confirm Path"
+msgstr "Confirmar ruta"
+
+msgid "Create a new directory in"
+msgstr "Crear un directorio nuevo en"
+
+msgid "Create a new file in"
+msgstr "Crear un archivo nuevo en"
+
+msgid "Creating..."
+msgstr "Creando..."
+
+msgid "Deleted successfully"
+msgstr "Eliminado correctamente"
+
+msgid "Directory"
+msgstr "Directorio"
+
+msgid "Directory Name"
+msgstr "Nombre del directorio"
+
+msgid "Directory created"
+msgstr "Directorio creado"
+
+msgid "Directory name is required"
+msgstr "El nombre del directorio es obligatorio"
+
+msgid "Download"
+msgstr "Descargar"
+
+msgid "Execute"
+msgstr "Ejecución"
+
+msgid "Expired %d days ago"
+msgstr "Caducó hace %d días"
+
+msgid "Expires in %d days"
+msgstr "Caduca en %d días"
+
+msgid "Expires today"
+msgstr "Caduca hoy"
+
+msgid "Expiry Date"
+msgstr "Fecha de caducidad"
+
+msgid "Failed to change permissions"
+msgstr "Error al cambiar los permisos"
+
+msgid "Failed to create directory"
+msgstr "Error al crear el directorio"
+
+msgid "Failed to create file"
+msgstr "Error al crear el archivo"
+
+msgid "Failed to delete"
+msgstr "Error al eliminar"
+
+msgid "Failed to download"
+msgstr "Error al descargar"
+
+msgid "Failed to load directory"
+msgstr "Error al cargar el directorio"
+
+msgid "Failed to load file"
+msgstr "Error al cargar el archivo"
+
+msgid "Failed to rename"
+msgstr "Error al cambiar el nombre"
+
+msgid "Failed to save file"
+msgstr "Error al guardar el archivo"
+
+msgid "File Name"
+msgstr "Nombre del archivo"
+
+msgid "File created"
+msgstr "Archivo creado"
+
+msgid "File name is required"
+msgstr "El nombre del archivo es obligatorio"
+
+msgid "File uploaded successfully"
+msgstr "Archivo subido correctamente"
+
+msgid "Files"
+msgstr "Archivos"
+
+msgid "Go"
+msgstr "Ir"
+
+msgid "Group"
+msgstr "Grupo"
+
+msgid "Invalid certificate name"
+msgstr "Nombre de certificado no válido"
+
+msgid "Invalid permissions"
+msgstr "Permisos no válidos"
+
+msgid "Letters, digits, underscore to start; dots and hyphens are also allowed after that."
+msgstr "Empieza por letra, dígito o guion bajo; después también se permiten puntos y guiones."
+
+msgid "Modified"
+msgstr "Modificado"
+
+msgid "Name cannot contain slashes or parent directory references"
+msgstr "El nombre no puede contener barras ni referencias al directorio superior"
+
+msgid "Name is required"
+msgstr "El nombre es obligatorio"
+
+msgid "Network error"
+msgstr "Error de red"
+
+msgid "New Directory"
+msgstr "Nuevo directorio"
+
+msgid "New File"
+msgstr "Nuevo archivo"
+
+msgid "New Name"
+msgstr "Nombre nuevo"
+
+msgid "No file selected"
+msgstr "No se ha seleccionado ningún archivo"
+
+msgid "No files"
+msgstr "No hay archivos"
+
+msgid "Octal"
+msgstr "Octal"
+
+msgid "Open"
+msgstr "Abrir"
+
+msgid "Other"
+msgstr "Otros"
+
+msgid "Owner"
+msgstr "Propietario"
+
+msgid "Path confirmation does not match"
+msgstr "La ruta de confirmación no coincide"
+
+msgid "Permissions updated"
+msgstr "Permisos actualizados"
+
+msgid "Perms"
+msgstr "Permisos"
+
+msgid "Read"
+msgstr "Lectura"
+
+msgid "Remaining"
+msgstr "Tiempo restante"
+
+msgid "Rename"
+msgstr "Cambiar nombre"
+
+msgid "Renamed successfully"
+msgstr "Nombre cambiado correctamente"
+
+msgid "Saving..."
+msgstr "Guardando..."
+
+msgid "Security Headers"
+msgstr "Cabeceras de seguridad"
+
+msgid "Site cloned, redirecting to edit page..."
+msgstr "Sitio clonado; redirigiendo a la página de edición..."
+
+msgid "Size"
+msgstr "Tamaño"
+
+msgid "System virtual directories cannot be modified"
+msgstr "Los directorios virtuales del sistema no se pueden modificar"
+
+msgid "System virtual directories cannot be opened"
+msgstr "Los directorios virtuales del sistema no se pueden abrir"
+
+msgid "Type the full path to confirm deletion. This operation cannot be undone."
+msgstr "Escribe la ruta completa para confirmar la eliminación. Esta operación no se puede deshacer."
+
+msgid "Type the full path to confirm overwriting the existing file."
+msgstr "Escribe la ruta completa para confirmar que quieres sobrescribir el archivo existente."
+
+msgid "Upload failed"
+msgstr "Error al subir"
+
+msgid "Uploading..."
+msgstr "Subiendo..."
+
+msgid "Write"
+msgstr "Escritura"
+
+msgid "e.g. my-cert"
+msgstr "p. ej., mi-cert"
+
+msgid "e.g. my-site, my_site_01"
+msgstr "p. ej., mi-sitio, mi_sitio_01"
+
+msgid "is managed by HSTS settings. Set HSTS Max Age to 0 to disable it."
+msgstr "se gestiona desde los ajustes de HSTS. Pon HSTS Max-Age a 0 para desactivarlo."
+
+msgid "is managed by HTTP/3 settings. Disable HTTP/3 to customize it."
+msgstr "se gestiona desde los ajustes de HTTP/3. Desactiva HTTP/3 para personalizarlo."
+
+msgid "is managed by Security Headers. Disable Security Headers to customize it."
+msgstr "se gestiona desde Cabeceras de seguridad. Desactiva Cabeceras de seguridad para personalizarlo."
+
+msgid "items"
+msgstr "elementos"
+
+msgid "log file(s)"
+msgstr "archivo(s) de registro"
+
+msgid "Overview"
+msgstr "Resumen"
+
+msgid "Unable to load status"
+msgstr "No se puede cargar el estado"
+
+msgid "Unable to load files"
+msgstr "No se pueden cargar los archivos"
+
+msgid "Unable to load logs"
+msgstr "No se pueden cargar los registros"
+
+msgid "Unable to load sites"
+msgstr "No se pueden cargar los sitios"
+
+msgid "Unable to load site"
+msgstr "No se puede cargar el sitio"
+
+msgid "Unable to load certificates"
+msgstr "No se pueden cargar los certificados"
+
+msgid "Unable to load core config"
+msgstr "No se puede cargar la configuración principal"
+
+msgid "Unable to load backups"
+msgstr "No se pueden cargar las copias de seguridad"
+
+msgid "Retry the page; if it keeps failing, check the service log."
+msgstr "Vuelve a cargar la página; si sigue fallando, revisa el registro del servicio."
+
+msgid "Permission"
+msgstr "Permiso"
+
+msgid "Project"
+msgstr "Proyecto"
+
+msgid "Technical details"
+msgstr "Detalles técnicos"
