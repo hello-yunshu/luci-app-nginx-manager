@@ -431,6 +431,13 @@
 	.nm-dns-credential > input,
 	.nm-dns-credential > .cbi-value-description { grid-column: 1; }
 
+	/* Keep the file manager's full-width custom controls and cards clear of a
+	 * theme-provided floating toolbar when it is expanded on narrow screens. */
+	body:has(.floating-toolbar [aria-expanded="true"]) #view:has(.nm-file-toolbar) {
+		box-sizing: border-box;
+		padding-inline-end: 3.5rem;
+	}
+
 	/* The native mobile table turns every file field into a separate card row.
 	 * Keep its theme-provided surfaces, but group each file into a compact
 	 * name / metadata / actions card when a directory has many items. */
