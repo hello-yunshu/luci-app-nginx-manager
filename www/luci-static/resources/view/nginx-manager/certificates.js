@@ -1081,7 +1081,7 @@ return view.extend({
 
 			var statusCell = E('td', { 'class': 'td', 'data-title': _('Status') });
 			statusCell.appendChild(E('button', {
-				'class': 'cbi-button',
+				'class': 'cbi-button ' + certStatusClass(cert.status),
 				'click': function() { showCertStatusModal(cert); }
 			}, certStatusIcon(cert.status) + ' ' + certStatusLabel(cert.status)));
 			row.appendChild(statusCell);
