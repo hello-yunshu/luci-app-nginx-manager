@@ -660,6 +660,36 @@ msgstr "请稍候，ACME 证书续期可能需要一些时间..."
 msgid "Plugin Version"
 msgstr "插件版本"
 
+msgid "OpenWrt version"
+msgstr "OpenWrt 版本"
+
+msgid "Package manager"
+msgstr "软件包管理工具"
+
+msgid "Nginx Manager version"
+msgstr "Nginx 管理器版本"
+
+msgid "Nginx HTTPS support"
+msgstr "Nginx HTTPS 支持"
+
+msgid "OpenSSL command-line tool"
+msgstr "OpenSSL 命令行工具"
+
+msgid "ACME certificate service"
+msgstr "ACME 证书申请工具"
+
+msgid "ACME DNS validation plugins"
+msgstr "ACME DNS 验证插件"
+
+msgid "Nginx service script"
+msgstr "Nginx 服务管理脚本"
+
+msgid "Nginx configuration template"
+msgstr "Nginx 配置模板"
+
+msgid "HTTP/3 (QUIC) support"
+msgstr "HTTP/3（QUIC）支持"
+
 msgid "Private Key (PEM)"
 msgstr "私钥 (PEM)"
 

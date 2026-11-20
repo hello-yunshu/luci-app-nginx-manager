@@ -588,6 +588,36 @@ msgstr "Please wait, ACME renewal may take a while..."
 msgid "Plugin Version"
 msgstr "Plugin Version"
 
+msgid "OpenWrt version"
+msgstr "OpenWrt version"
+
+msgid "Package manager"
+msgstr "Package manager"
+
+msgid "Nginx Manager version"
+msgstr "Nginx Manager version"
+
+msgid "Nginx HTTPS support"
+msgstr "Nginx HTTPS support"
+
+msgid "OpenSSL command-line tool"
+msgstr "OpenSSL command-line tool"
+
+msgid "ACME certificate service"
+msgstr "ACME certificate service"
+
+msgid "ACME DNS validation plugins"
+msgstr "ACME DNS validation plugins"
+
+msgid "Nginx service script"
+msgstr "Nginx service script"
+
+msgid "Nginx configuration template"
+msgstr "Nginx configuration template"
+
+msgid "HTTP/3 (QUIC) support"
+msgstr "HTTP/3 (QUIC) support"
+
 msgid "Private Key (PEM)"
 msgstr "Private Key (PEM)"
 

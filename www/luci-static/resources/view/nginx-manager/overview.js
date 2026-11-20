@@ -271,28 +271,28 @@ return view.extend({
 				envTable.removeChild(envTable.firstChild);
 
 			envTable.appendChild(E('tr', { 'class': 'tr' }, [
-				E('th', { 'class': 'th', 'scope': 'row' }, _('OpenWrt')),
+				E('th', { 'class': 'th', 'scope': 'row' }, _('OpenWrt version')),
 				E('td', { 'class': 'td' }, envData.openwrt_version || '-')
 			]));
 
 			envTable.appendChild(E('tr', { 'class': 'tr' }, [
-				E('th', { 'class': 'th', 'scope': 'row' }, _('Package Manager')),
+				E('th', { 'class': 'th', 'scope': 'row' }, _('Package manager')),
 				E('td', { 'class': 'td' }, envData.package_manager || '-')
 			]));
 
 			envTable.appendChild(E('tr', { 'class': 'tr' }, [
-				E('th', { 'class': 'th', 'scope': 'row' }, _('Plugin Version')),
+				E('th', { 'class': 'th', 'scope': 'row' }, _('Nginx Manager version')),
 				E('td', { 'class': 'td' }, envData.version || status.version || '-')
 			]));
 
 			var depChecks = [
-				{ key: 'nginx_ssl', label: 'nginx (+ssl)' },
-				{ key: 'openssl_util', label: 'openssl-util' },
-				{ key: 'acme', label: 'acme' },
-				{ key: 'acme_dnsapi', label: 'acme-acmesh-dnsapi' },
-				{ key: 'initd_nginx', label: 'init.d nginx' },
-				{ key: 'uci_template', label: 'uci.conf.template' },
-				{ key: 'nginx_quic', label: 'nginx-http_v3_module (QUIC)' }
+				{ key: 'nginx_ssl', label: _('Nginx HTTPS support') },
+				{ key: 'openssl_util', label: _('OpenSSL command-line tool') },
+				{ key: 'acme', label: _('ACME certificate service') },
+				{ key: 'acme_dnsapi', label: _('ACME DNS validation plugins') },
+				{ key: 'initd_nginx', label: _('Nginx service script') },
+				{ key: 'uci_template', label: _('Nginx configuration template') },
+				{ key: 'nginx_quic', label: _('HTTP/3 (QUIC) support') }
 			];
 
 			depChecks.forEach(function(dep) {

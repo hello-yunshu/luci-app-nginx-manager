@@ -603,6 +603,36 @@ msgstr ""
 msgid "Plugin Version"
 msgstr ""
 
+msgid "OpenWrt version"
+msgstr ""
+
+msgid "Package manager"
+msgstr ""
+
+msgid "Nginx Manager version"
+msgstr ""
+
+msgid "Nginx HTTPS support"
+msgstr ""
+
+msgid "OpenSSL command-line tool"
+msgstr ""
+
+msgid "ACME certificate service"
+msgstr ""
+
+msgid "ACME DNS validation plugins"
+msgstr ""
+
+msgid "Nginx service script"
+msgstr ""
+
+msgid "Nginx configuration template"
+msgstr ""
+
+msgid "HTTP/3 (QUIC) support"
+msgstr ""
+
 msgid "Private Key (PEM)"
 msgstr ""
 
