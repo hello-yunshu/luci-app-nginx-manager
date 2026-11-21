@@ -21,7 +21,7 @@ var callSetSite = rpc.declare({
 		'websocket', 'proxy_type', 'grpc_path', 'grpc_pass', 'custom_proxy_headers', 'redirect_https', 'redirect_http_port', 'proxy_host', 'proxy_xff', 'proxy_xfp', 'proxy_xri',
 		'ssl_cert', 'ssl_protocols', 'ssl_ciphers', 'hsts_max_age',
 		'access_log', 'error_log', 'custom_server_block', 'redirect_target', 'enabled',
-		'proxy_connect_timeout', 'proxy_read_timeout', 'proxy_send_timeout'],
+		'proxy_connect_timeout', 'proxy_read_timeout', 'proxy_send_timeout', 'create'],
 	expect: {}
 });
 
@@ -640,7 +640,7 @@ return view.extend({
 		}, _('Save')));
 
 		actionsDiv.appendChild(E('button', {
-			'class': 'cbi-button cbi-button-reset',
+			'class': 'cbi-button',
 			'click': function() {
 				location.href = L.url('admin/services/nginx-manager/sites');
 			}
@@ -731,7 +731,8 @@ return view.extend({
 				data.enabled,
 				data.proxy_connect_timeout,
 				data.proxy_read_timeout,
-				data.proxy_send_timeout
+				data.proxy_send_timeout,
+				'0'
 			).then(function(result) {
 				if (result && result.error) {
 					ui.addNotification(null, E('p', {}, _('Configuration test failed') + ': ' + (result.detail || result.error)), 'error');

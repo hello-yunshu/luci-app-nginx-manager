@@ -178,7 +178,7 @@ server {
     server_name ${domain};
 
     location ^~ /.well-known/acme-challenge/ {
-        alias ${ACME_CHALLENGE_DIR}/;
+        alias ${ACME_CHALLENGE_DIR}/.well-known/acme-challenge/;
         default_type text/plain;
     }
 
@@ -408,11 +408,23 @@ handle_set_site() {
 	json_get_var proxy_connect_timeout "proxy_connect_timeout"
 	json_get_var proxy_read_timeout "proxy_read_timeout"
 	json_get_var proxy_send_timeout "proxy_send_timeout"
+	json_get_var create "create"
 
 	[ -z "${site_id}" ] && { json_init; json_add_string "error" "missing id"; json_dump; return; }
 	validate_uci_id "${site_id}" || { json_init; json_add_string "error" "invalid site id"; json_dump; return; }
 	[ -z "${name}" ] && name="${site_id}"
 	validate_name "${name}" || { json_init; json_add_string "error" "invalid name"; json_dump; return; }
+	local existing_type
+	existing_type="$(uci -q get "nginx_manager.${site_id}")" || existing_type=""
+	case "${create}" in
+		1)
+			[ -z "${existing_type}" ] || { json_init; json_add_string "error" "site id already exists"; json_dump; return; }
+			;;
+		0)
+			[ "${existing_type}" = "site" ] || { json_init; json_add_string "error" "site not found"; json_dump; return; }
+			;;
+		*) { json_init; json_add_string "error" "invalid create flag"; json_dump; return; } ;;
+	esac
 
 	case "${mode}" in
 		reverse_proxy|static|custom|redirect|"") ;;
@@ -2824,6 +2836,7 @@ case "$1" in
 		json_add_string "proxy_connect_timeout" ""
 		json_add_string "proxy_read_timeout" ""
 		json_add_string "proxy_send_timeout" ""
+		json_add_string "create" ""
 		json_close_object
 
 		json_add_object "delete_site"

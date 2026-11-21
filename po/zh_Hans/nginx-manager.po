@@ -459,6 +459,12 @@ msgstr "首页文件"
 msgid "Invalid site name"
 msgstr "站点名称无效"
 
+msgid "A site with the same normalized ID already exists."
+msgstr "规范化后的站点 ID 已存在，请换一个名称。"
+
+msgid "site id already exists"
+msgstr "规范化后的站点 ID 已存在，请换一个名称。"
+
 msgid "invalid domain"
 msgstr "域名无效"
 
@@ -506,6 +512,12 @@ msgstr "日志已清除"
 
 msgid "Log Settings"
 msgstr "日志设置"
+
+msgid "Log size"
+msgstr "日志大小"
+
+msgid "Log size: %s"
+msgstr "日志大小：%s"
 
 msgid "Logging"
 msgstr "日志"
@@ -647,6 +659,36 @@ msgstr "请稍候，ACME 证书续期可能需要一些时间..."
 
 msgid "Plugin Version"
 msgstr "插件版本"
+
+msgid "OpenWrt version"
+msgstr "OpenWrt 版本"
+
+msgid "Package manager"
+msgstr "包管理器"
+
+msgid "Plugin version"
+msgstr "插件版本"
+
+msgid "HTTPS"
+msgstr "HTTPS 支持"
+
+msgid "OpenSSL"
+msgstr "OpenSSL"
+
+msgid "ACME service"
+msgstr "ACME 服务"
+
+msgid "DNS plugins"
+msgstr "DNS 验证插件"
+
+msgid "Nginx service"
+msgstr "Nginx 服务"
+
+msgid "Config template"
+msgstr "配置模板"
+
+msgid "HTTP/3"
+msgstr "HTTP/3"
 
 msgid "Private Key (PEM)"
 msgstr "私钥 (PEM)"
@@ -1679,3 +1721,6 @@ msgstr "项目"
 
 msgid "Technical details"
 msgstr "技术详情"
+
+msgid "Scrollable table"
+msgstr "可滚动的表格"

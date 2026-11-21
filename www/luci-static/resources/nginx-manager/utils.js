@@ -4,36 +4,75 @@
 'require baseclass';
 'require uci';
 
-var FOOTER_VERSION = '@PKG_VERSION@';
+var FOOTER_VERSION = '@PKG_FULL_VERSION@';
 
 var FOOTER_OPTIONS = {
 	project: _('Nginx Manager'),
 	repoUrl: 'https://github.com/hello-yunshu/luci-app-nginx-manager'
 };
 
+var responsiveTableSizingInstalled = false;
+var responsiveTableSizingFrame = null;
+
+function makeScrollableTable(table) {
+	return E('div', {
+		'class': 'nm-table-scroll',
+		'role': 'region',
+		'tabindex': '0',
+		'aria-label': _('Scrollable table'),
+		'keydown': function(ev) {
+			if (ev.target !== ev.currentTarget || (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight'))
+				return;
+
+			var direction = ev.key === 'ArrowRight' ? 1 : -1;
+			var previous = ev.currentTarget.scrollLeft;
+			ev.currentTarget.scrollLeft = previous + direction * 40;
+
+			if (ev.currentTarget.scrollLeft !== previous)
+				ev.preventDefault();
+		}
+	}, [table]);
+}
+
+function updateResponsiveTableSizing() {
+	function applySizing() {
+		responsiveTableSizingFrame = null;
+
+		var useIntrinsicWidth = window.matchMedia('(min-width: 601px) and (max-width: 900px)').matches;
+
+		document.querySelectorAll('.nm-table-scroll > table.table').forEach(function(table) {
+			var titleRow = table.querySelector('thead tr.cbi-section-table-titles');
+			var usesNativeCards = getComputedStyle(table).display !== 'table' ||
+				(titleRow && getComputedStyle(titleRow).display === 'none');
+
+			table.classList.toggle('nm-table-intrinsic-width', useIntrinsicWidth && !usesNativeCards);
+		});
+	}
+
+	function scheduleSizing() {
+		if (responsiveTableSizingFrame === null)
+			responsiveTableSizingFrame = requestAnimationFrame(applySizing);
+	}
+
+	if (!responsiveTableSizingInstalled) {
+		window.addEventListener('resize', scheduleSizing, { passive: true });
+		window.addEventListener('orientationchange', scheduleSizing, { passive: true });
+		responsiveTableSizingInstalled = true;
+	}
+
+	scheduleSizing();
+}
+
 function loadSharedCSS() {
 	if (!document.getElementById('nm-shared-css')) {
 		var link = E('link', {
 			'id': 'nm-shared-css',
 			'rel': 'stylesheet',
-			'href': L.resource('nginx-manager/nginx-manager.css') + '?v=@PKG_FULL_VERSION@'
+			'href': L.resource('nginx-manager/nginx-manager.css') + '?v=@PKG_FULL_VERSION@&ui=footer-pm-match-1&credentials=1&files-mobile-cards=6&toolbar-clearance=2'
 		});
 		document.head.appendChild(link);
 	}
 
-	/* 主题没有在 body 上留标记，唯一可靠的信号是主题样式表本身。
-	 * 只在 bootstrap 下加类，供 CSS 做兼容覆盖，避免污染 aurora。 */
-	if (document.body && document.querySelector('link[rel="stylesheet"][href*="/bootstrap/"]'))
-		document.body.classList.add('nm-theme-bootstrap');
-
-	/* 离开插件页时移除，防止兼容样式泄漏到其他视图 */
-	if (!loadSharedCSS.unwatch) {
-		loadSharedCSS.unwatch = true;
-		window.addEventListener('hashchange', function() {
-			if (document.body)
-				document.body.classList.remove('nm-theme-bootstrap');
-		});
-	}
 }
 
 function footerSeparator(extraClass) {
@@ -799,6 +838,8 @@ function createCodeEditor(content, path, options) {
 }
 
 return baseclass.extend({
+	makeScrollableTable: makeScrollableTable,
+	updateResponsiveTableSizing: updateResponsiveTableSizing,
 	loadSharedCSS: loadSharedCSS,
 	errorPanel: errorPanel,
 	safeApply: safeApply,

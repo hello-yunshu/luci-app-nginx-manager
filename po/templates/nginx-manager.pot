@@ -486,6 +486,12 @@ msgstr ""
 msgid "Log Settings"
 msgstr ""
 
+msgid "Log size"
+msgstr ""
+
+msgid "Log size: %s"
+msgstr ""
+
 msgid "Logging"
 msgstr ""
 
@@ -595,6 +601,36 @@ msgid "Please wait, ACME certificate issuance may take a while..."
 msgstr ""
 
 msgid "Plugin Version"
+msgstr ""
+
+msgid "OpenWrt version"
+msgstr ""
+
+msgid "Package manager"
+msgstr ""
+
+msgid "Plugin version"
+msgstr ""
+
+msgid "HTTPS"
+msgstr ""
+
+msgid "OpenSSL"
+msgstr ""
+
+msgid "ACME service"
+msgstr ""
+
+msgid "DNS plugins"
+msgstr ""
+
+msgid "Nginx service"
+msgstr ""
+
+msgid "Config template"
+msgstr ""
+
+msgid "HTTP/3"
 msgstr ""
 
 msgid "Private Key (PEM)"
@@ -1642,4 +1678,7 @@ msgid "log file(s)"
 msgstr ""
 
 msgid "Overview"
+msgstr ""
+
+msgid "Scrollable table"
 msgstr ""

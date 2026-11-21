@@ -2,6 +2,7 @@ name: PR Build
 
 on:
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: pr-build-${{ github.ref }}
@@ -112,14 +113,14 @@ jobs:
         working-directory: ${{ env.SDKDIR }}
         shell: bash
         run: |
-          for f in $(find ./bin/ -type f -name "${PKG_NAME}*.${{ matrix.pkgtype }}"); do
+          while IFS= read -r -d '' f; do
             echo "::group::$f"
             case "$f" in
               *.ipk) tar -xzOf "$f" ./control.tar.gz | tar -xzO ./control | grep -E '^(Package|Version|Depends|Provides):' ;;
               *.apk) ls -l "$f"; echo "(apk v3 format; dependency metadata is checked on device with apk)" ;;
             esac
             echo "::endgroup::"
-          done
+          done < <(find ./bin/ -type f -name "${PKG_NAME}*.${{ matrix.pkgtype }}" -print0)
 
       - name: Collect package
         working-directory: ${{ env.SDKDIR }}

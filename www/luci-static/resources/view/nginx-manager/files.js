@@ -411,7 +411,10 @@ function showChmodModal(path, currentPerms) {
 
 function setStatus(text) {
 	var el = document.getElementById('nm-file-status');
-	if (el) el.textContent = text || '';
+	if (el) {
+		el.textContent = text || '';
+		el.hidden = !el.textContent;
+	}
 }
 
 function sortEntries(entries) {
@@ -491,10 +494,10 @@ function renderRows(tbody) {
 					E('span', { 'class': 'nm-file-name-text' }, '..')
 				])
 			]),
-			E('td', { 'class': 'td', 'data-title': _('Type') }, _('Directory')),
-			E('td', { 'class': 'td', 'data-title': _('Size') }, '-'),
-			E('td', { 'class': 'td', 'data-title': _('Perms') }, '-'),
-			E('td', { 'class': 'td', 'data-title': _('Modified') }, '-'),
+			E('td', { 'class': 'td nm-file-type', 'data-title': _('Type') }, _('Directory')),
+			E('td', { 'class': 'td nm-file-size', 'data-title': _('Size') }, '-'),
+			E('td', { 'class': 'td nm-file-perms', 'data-title': _('Perms') }, '-'),
+			E('td', { 'class': 'td nm-file-modified', 'data-title': _('Modified') }, '-'),
 			E('td', { 'class': 'td nowrap nm-actions-cell', 'data-title': _('Actions') }, [
 				E('div', { 'class': 'nm-actions' }, [
 					E('button', {
@@ -582,8 +585,8 @@ function renderRows(tbody) {
 					E('span', { 'class': 'nm-file-name-text' }, entry.name)
 				])
 			]),
-			E('td', { 'class': 'td', 'data-title': _('Type') }, entry.type || '-'),
-			E('td', { 'class': 'td nowrap', 'data-title': _('Size') }, isDir ? '-' : formatSize(entry.size)),
+			E('td', { 'class': 'td nm-file-type', 'data-title': _('Type') }, entry.type || '-'),
+			E('td', { 'class': 'td nowrap nm-file-size', 'data-title': _('Size') }, isDir ? '-' : formatSize(entry.size)),
 			E('td', {
 				'class': 'td nowrap nm-file-perms',
 				'data-title': _('Perms'),
@@ -593,7 +596,7 @@ function renderRows(tbody) {
 					showChmodModal(path, perms);
 				}
 			}, perms),
-			E('td', { 'class': 'td nowrap', 'data-title': _('Modified') }, formatTime(entry.mtime)),
+			E('td', { 'class': 'td nowrap nm-file-modified', 'data-title': _('Modified') }, formatTime(entry.mtime)),
 			E('td', { 'class': 'td nowrap nm-actions-cell', 'data-title': _('Actions') }, [
 				E('div', { 'class': 'nm-actions' }, actions)
 			])
@@ -622,7 +625,7 @@ function loadDirectory(path) {
 		selectedPath = '';
 		if (input) input.value = currentPath;
 		if (tbody) renderRows(tbody);
-		setStatus(currentEntries.length + ' ' + _('items'));
+		setStatus('');
 	}).catch(function(err) {
 		setStatus('');
 		showError(_('Failed to load directory'), err);
@@ -920,20 +923,29 @@ return view.extend({
 					'click': function() { loadDirectory(pathInput.value); }
 				}, _('Go'))
 			]),
-			E('div', {}, [
+			E('div', { 'class': 'nm-file-actions' }, [
 				E('button', { 'class': 'cbi-button', 'click': function() { loadDirectory(currentPath); } }, _('Refresh')),
 				E('button', { 'class': 'cbi-button cbi-button-add', 'click': showNewFileModal }, _('New File')),
 				E('button', { 'class': 'cbi-button cbi-button-add', 'click': showNewDirModal }, _('New Directory')),
 				E('button', { 'class': 'cbi-button', 'click': triggerUpload }, _('Upload'))
-			]),
-			E('div', { 'id': 'nm-file-status', 'class': 'nm-file-status' }, '')
+			])
 		]));
 
 		container.appendChild(E('div', { 'class': 'cbi-section' }, [
-			E('div', { 'class': 'nm-table-scroll' }, [
-				E('table', { 'class': 'table nm-file-table' }, [
+			E('div', {
+				'id': 'nm-file-status',
+				'class': 'nm-file-status',
+				'role': 'status',
+				'aria-live': 'polite',
+				'aria-atomic': 'true',
+				'hidden': true
+			}, ''),
+			utils.makeScrollableTable(E('table', {
+				'class': 'table nm-file-table',
+				'aria-describedby': 'nm-file-status'
+			}, [
 					E('thead', {}, [
-						E('tr', { 'class': 'tr' }, [
+						E('tr', { 'class': 'tr cbi-section-table-titles' }, [
 							E('th', { 'class': 'th' }, _('Name')),
 							E('th', { 'class': 'th' }, _('Type')),
 							E('th', { 'class': 'th' }, _('Size')),
@@ -943,15 +955,15 @@ return view.extend({
 						])
 					]),
 					tbody
-				])
-			])
+				]))
 		]));
 
 		setTimeout(function() {
 			renderRows(tbody);
-			setStatus(currentEntries.length + ' ' + _('items'));
+			setStatus('');
 		}, 0);
 
+		utils.updateResponsiveTableSizing();
 		return utils.appendFooter(container, utils.FOOTER_OPTIONS);
 	},
 
