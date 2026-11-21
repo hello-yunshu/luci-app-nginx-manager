@@ -66,22 +66,24 @@ return view.extend({
 		var controlSection = E('div', { 'class': 'cbi-section' });
 		controlSection.appendChild(E('h3', {}, _('Log Settings')));
 
-		var controls = E('div', { 'class': 'ys-actions' });
+		var controls = E('div', { 'class': 'ys-actions nm-log-filter-controls' });
 
 		var typeSelect = E('select', {}, [
 			E('option', { 'value': 'error' }, _('Error Log')),
 			E('option', { 'value': 'access' }, _('Access Log'))
 		]);
-		controls.appendChild(E('label', {}, _('Type') + ': '));
-		controls.appendChild(typeSelect);
+		controls.appendChild(E('label', { 'class': 'nm-log-filter-field' }, [
+			E('span', {}, _('Type') + ':'), typeSelect
+		]));
 
 		var lineSelect = E('select', {}, [
 			E('option', { 'value': '100' }, '100'),
 			E('option', { 'value': '200', 'selected': true }, '200'),
 			E('option', { 'value': '500' }, '500')
 		]);
-		controls.appendChild(E('label', {}, _('Line Count') + ': '));
-		controls.appendChild(lineSelect);
+		controls.appendChild(E('label', { 'class': 'nm-log-filter-field' }, [
+			E('span', {}, _('Line Count') + ':'), lineSelect
+		]));
 
 		var siteSelect = E('select', {}, [
 			E('option', { 'value': '' }, _('All Sites'))
@@ -93,21 +95,22 @@ return view.extend({
 			siteSelect.appendChild(E('option', { 'value': site.id },
 				label));
 		});
-		controls.appendChild(E('label', {}, _('Site') + ': '));
-		controls.appendChild(siteSelect);
+		controls.appendChild(E('label', { 'class': 'nm-log-filter-field' }, [
+			E('span', {}, _('Site') + ':'), siteSelect
+		]));
 
 		var filterInput = E('input', {
 			'type': 'text',
-			'class': 'cbi-input-text',
-			'placeholder': _('Filter')
+			'class': 'cbi-input-text'
 		});
-		controls.appendChild(E('label', {}, _('Filter') + ': '));
-		controls.appendChild(filterInput);
+		controls.appendChild(E('label', { 'class': 'nm-log-filter-field' }, [
+			E('span', {}, _('Filter') + ':'), filterInput
+		]));
 
 		controlSection.appendChild(controls);
 
 		/* Button Group */
-		var btnGroup = E('div', { 'class': 'ys-actions' });
+		var btnGroup = E('div', { 'class': 'ys-actions nm-log-action-controls' });
 
 		var refreshBtn = E('button', {
 			'class': 'cbi-button cbi-button-apply'
@@ -121,22 +124,28 @@ return view.extend({
 			'class': 'cbi-button cbi-button-reset'
 		}, '\u2716\u2716 ' + _('Clear All'));
 
-		var sizeLabel = E('span', {  }, '');
+		var sizeLabel = E('span', {
+			'class': 'cbi-section-descr nm-log-size',
+			'role': 'status',
+			'aria-live': 'polite',
+			'aria-label': _('Log size')
+		}, _('Log size: %s').format('—'));
 
 		btnGroup.appendChild(refreshBtn);
 		btnGroup.appendChild(clearBtn);
 		btnGroup.appendChild(clearAllBtn);
-		btnGroup.appendChild(sizeLabel);
 
 		controlSection.appendChild(btnGroup);
 		page.appendChild(controlSection);
 
 		/* Log Output Section */
 		var logSection = E('div', { 'class': 'cbi-section' });
-		logSection.appendChild(E('h3', {}, _('Log Output')));
+		logSection.appendChild(E('h3', { 'id': 'nm-log-output-heading' }, _('Log Output')));
+		logSection.appendChild(sizeLabel);
 
 		var logOutput = E('textarea', {
 			'class': 'cbi-input-textarea nm-log-area is-loading',
+			'aria-labelledby': 'nm-log-output-heading',
 			'rows': 20,
 			'readonly': 'readonly'
 		}, _('Loading...'));
@@ -174,7 +183,7 @@ return view.extend({
 
 		function updateLogSize() {
 			callGetLogSize(typeSelect.value, siteSelect.value).then(function(result) {
-				sizeLabel.textContent = bytesToSize((result && result.size) || 0);
+				sizeLabel.textContent = _('Log size: %s').format(bytesToSize((result && result.size) || 0));
 			}).catch(function() {
 				sizeLabel.textContent = '';
 			});
@@ -200,7 +209,7 @@ return view.extend({
 					logOutput.className = 'cbi-input-textarea nm-log-area';
 				} else {
 					setLogText(_('No log entries found'));
-					logOutput.className = 'cbi-input-textarea nm-log-area';
+					logOutput.className = 'cbi-input-textarea nm-log-area is-empty';
 				}
 			}).catch(function(err) {
 				setLogText(_('Failed to load logs') + ': ' + err);

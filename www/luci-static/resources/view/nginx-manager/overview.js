@@ -106,7 +106,7 @@ return view.extend({
 
 		/* Status Banner */
 		var banner = E('div', {
-			'class': 'cbi-section alert-message' + (running ? 'success' : 'warning')
+			'class': 'cbi-section alert-message ' + (running ? 'success' : 'warning')
 		});
 		banner.appendChild(E('h3', {},
 			running ? _('Nginx is running') : _('Nginx is stopped')));
@@ -155,7 +155,7 @@ return view.extend({
 		container.appendChild(statsGrid);
 
 		/* Service Control */
-		var controlSection = E('div', { 'class': 'cbi-section' });
+		var controlSection = E('div', { 'class': 'cbi-section nm-overview-control-section' });
 		controlSection.appendChild(E('h3', {}, _('Service Control')));
 
 		var btnGroup = E('div', { 'class': 'ys-actions' });
@@ -245,21 +245,21 @@ return view.extend({
 		var infoSection = E('div', { 'class': 'cbi-section' });
 		infoSection.appendChild(E('h3', {}, _('Service Information')));
 
-		var infoTable = E('table', { 'class': 'table' });
+		var infoTable = E('table', { 'class': 'table nm-overview-detail-table' });
 
 		infoTable.appendChild(E('tr', { 'class': 'tr' }, [
-			E('th', { 'class': 'th' }, _('Version')),
-			E('td', { 'class': 'td', 'data-title': _('Version') }, status.version || '-')
+			E('th', { 'class': 'th', 'scope': 'row' }, _('Version')),
+			E('td', { 'class': 'td' }, status.version || '-')
 		]));
 
 		infoTable.appendChild(E('tr', { 'class': 'tr' }, [
-			E('th', { 'class': 'th' }, _('Listening Ports')),
-			E('td', { 'class': 'td', 'data-title': _('Listening Ports') }, status.listening_ports || '-')
+			E('th', { 'class': 'th', 'scope': 'row' }, _('Listening Ports')),
+			E('td', { 'class': 'td' }, status.listening_ports || '-')
 		]));
 
 		infoTable.appendChild(E('tr', { 'class': 'tr' }, [
-			E('th', { 'class': 'th' }, _('Last Reload')),
-			E('td', { 'class': 'td', 'data-title': _('Last Reload') }, !status.last_reload || status.last_reload === 'unknown' ? _('Unknown') : status.last_reload)
+			E('th', { 'class': 'th', 'scope': 'row' }, _('Last Reload')),
+			E('td', { 'class': 'td' }, !status.last_reload || status.last_reload === 'unknown' ? _('Unknown') : status.last_reload)
 		]));
 
 		infoSection.appendChild(infoTable);
@@ -271,28 +271,28 @@ return view.extend({
 				envTable.removeChild(envTable.firstChild);
 
 			envTable.appendChild(E('tr', { 'class': 'tr' }, [
-				E('th', { 'class': 'th' }, _('OpenWrt')),
-				E('td', { 'class': 'td', 'data-title': _('OpenWrt') }, envData.openwrt_version || '-')
+				E('th', { 'class': 'th', 'scope': 'row' }, _('OpenWrt version')),
+				E('td', { 'class': 'td' }, envData.openwrt_version || '-')
 			]));
 
 			envTable.appendChild(E('tr', { 'class': 'tr' }, [
-				E('th', { 'class': 'th' }, _('Package Manager')),
-				E('td', { 'class': 'td', 'data-title': _('Package Manager') }, envData.package_manager || '-')
+				E('th', { 'class': 'th', 'scope': 'row' }, _('Package manager')),
+				E('td', { 'class': 'td' }, envData.package_manager || '-')
 			]));
 
 			envTable.appendChild(E('tr', { 'class': 'tr' }, [
-				E('th', { 'class': 'th' }, _('Plugin Version')),
-				E('td', { 'class': 'td', 'data-title': _('Plugin Version') }, envData.version || status.version || '-')
+				E('th', { 'class': 'th', 'scope': 'row' }, _('Plugin version')),
+				E('td', { 'class': 'td' }, envData.version || status.version || '-')
 			]));
 
 			var depChecks = [
-				{ key: 'nginx_ssl', label: 'nginx (+ssl)' },
-				{ key: 'openssl_util', label: 'openssl-util' },
-				{ key: 'acme', label: 'acme' },
-				{ key: 'acme_dnsapi', label: 'acme-acmesh-dnsapi' },
-				{ key: 'initd_nginx', label: 'init.d nginx' },
-				{ key: 'uci_template', label: 'uci.conf.template' },
-				{ key: 'nginx_quic', label: 'nginx-http_v3_module (QUIC)' }
+				{ key: 'nginx_ssl', label: _('HTTPS') },
+				{ key: 'openssl_util', label: _('OpenSSL') },
+				{ key: 'acme', label: _('ACME service') },
+				{ key: 'acme_dnsapi', label: _('DNS plugins') },
+				{ key: 'initd_nginx', label: _('Nginx service') },
+				{ key: 'uci_template', label: _('Config template') },
+				{ key: 'nginx_quic', label: _('HTTP/3') }
 			];
 
 			depChecks.forEach(function(dep) {
@@ -302,8 +302,8 @@ return view.extend({
 					'class': (hasValue ? (passed ? 'label success' : 'label important') : 'label')
 				}, hasValue ? ((passed ? '\u2714 ' : '\u2718 ') + (passed ? _('OK') : _('Missing'))) : _('Loading...'));
 				envTable.appendChild(E('tr', { 'class': 'tr' }, [
-					E('th', { 'class': 'th' }, dep.label),
-					E('td', { 'class': 'td', 'data-title': dep.label }, badge)
+					E('th', { 'class': 'th', 'scope': 'row' }, dep.label),
+					E('td', { 'class': 'td' }, badge)
 				]));
 			});
 		}
@@ -340,7 +340,7 @@ return view.extend({
 		var envSection = E('div', { 'class': 'cbi-section' });
 		envSection.appendChild(E('h3', {}, _('Environment Detection')));
 
-		var envTable = E('table', { 'class': 'table' });
+		var envTable = E('table', { 'class': 'table nm-overview-detail-table' });
 		renderEnvTable({});
 		envSection.appendChild(envTable);
 		container.appendChild(envSection);

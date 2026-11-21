@@ -468,6 +468,12 @@ msgstr "Log cleared"
 msgid "Log Settings"
 msgstr "Log Settings"
 
+msgid "Log size"
+msgstr "Log size"
+
+msgid "Log size: %s"
+msgstr "Log size: %s"
+
 msgid "Logging"
 msgstr "Logging"
 
@@ -581,6 +587,36 @@ msgstr "Please wait, ACME renewal may take a while..."
 
 msgid "Plugin Version"
 msgstr "Plugin Version"
+
+msgid "OpenWrt version"
+msgstr "OpenWrt version"
+
+msgid "Package manager"
+msgstr "Package manager"
+
+msgid "Plugin version"
+msgstr "Plugin version"
+
+msgid "HTTPS"
+msgstr "HTTPS"
+
+msgid "OpenSSL"
+msgstr "OpenSSL"
+
+msgid "ACME service"
+msgstr "ACME service"
+
+msgid "DNS plugins"
+msgstr "DNS plugins"
+
+msgid "Nginx service"
+msgstr "Nginx service"
+
+msgid "Config template"
+msgstr "Config template"
+
+msgid "HTTP/3"
+msgstr "HTTP/3"
 
 msgid "Private Key (PEM)"
 msgstr "Private Key (PEM)"
@@ -1643,3 +1679,6 @@ msgstr "items"
 
 msgid "Overview"
 msgstr "Overview"
+
+msgid "Scrollable table"
+msgstr "Scrollable table"

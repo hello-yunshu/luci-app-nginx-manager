@@ -5,19 +5,48 @@
 .nm-row-disabled:hover { opacity: 1; }
 
 /* === Table Action Cell === */
+/* One spacing token for every side-by-side button row in this plugin: the
+ * theme spacing scale, 3 steps (12px), same as the page action bar. */
 .nm-actions {
 	display: flex; flex-wrap: wrap;
 	align-items: stretch; align-content: center;
-	gap: calc(var(--spacing, .25rem) * 2);
+	gap: var(--ys-action-gap, calc(var(--spacing, .25rem) * 3));
 }
 .nm-actions button,
 .nm-actions .cbi-button {
 	margin: 0;
 	white-space: nowrap;
-	padding: 0.4rem 0.8rem;
-	line-height: normal;
 }
 
+/* === Backup Controls === */
+.nm-backup-controls {
+	display: flex; flex-wrap: wrap; align-items: center;
+	gap: calc(var(--spacing, .25rem) * 4);
+	margin-bottom: calc(var(--spacing, .25rem) * 5);
+}
+.nm-backup-create { margin: 0; }
+.nm-backup-settings {
+	flex: 1 1 24rem;
+	min-width: 0;
+	max-width: 44rem;
+	margin: 0;
+	padding-bottom: calc(var(--spacing, .25rem) * 3);
+}
+.nm-backup-settings .cbi-value-field {
+	display: flex; align-items: center;
+	gap: var(--ys-action-gap, calc(var(--spacing, .25rem) * 3));
+}
+.nm-backup-settings .cbi-value-field input {
+	flex: 1 1 12rem;
+	min-width: 0;
+	width: auto;
+	box-sizing: border-box;
+}
+.nm-backup-settings .cbi-value-field .cbi-button {
+	flex: 0 0 auto;
+	margin: 0;
+	white-space: nowrap;
+}
 /* === Visit Link === */
 .nm-visit-link { color: inherit; text-decoration: none; }
 .nm-visit-link:hover,
@@ -36,6 +65,23 @@
 .nm-modal-textarea {
 	width: 100%;
 	font-family: var(--font-mono);
+}
+
+/* ACME provider credentials are nested in a native CBI field. Give each
+ * dynamic key a clear label/input row without adding theme-specific colors. */
+.nm-dns-credential {
+	display: grid;
+	grid-template-columns: minmax(9rem, max-content) minmax(10rem, 1fr);
+	align-items: center;
+	gap: calc(var(--spacing, .25rem) * 2) calc(var(--spacing, .25rem) * 3);
+	margin-bottom: calc(var(--spacing, .25rem) * 2);
+}
+.nm-dns-credential > label { margin: 0; }
+.nm-dns-credential > input {
+	width: 100%; min-width: 0; box-sizing: border-box;
+}
+.nm-dns-credential > .cbi-value-description {
+	grid-column: 2; margin: 0;
 }
 
 /* === Code Block (modals) === */
@@ -59,14 +105,33 @@
 .nm-log-area.is-empty,
 .nm-log-area.is-loading { font-style: italic; }
 .nm-log-area.is-error { font-weight: bold; }
-
+.nm-log-area.is-empty,
+.nm-log-area.is-error {
+	height: 3.5rem;
+	min-height: 3.5rem;
+	max-height: 12rem;
+	resize: vertical;
+}
+.nm-log-filter-field {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	min-width: 0;
+}
+.nm-log-filter-field > select,
+.nm-log-filter-field > input { min-width: 0; }
+.nm-log-filter-controls { margin-bottom: calc(var(--spacing, .25rem) * 4); }
 /* === Overview: Stats Grid === */
 .nm-stats-grid {
 	display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-	gap: 1em; margin-bottom: 1.5em;
+	gap: 1em;
+	margin-top: calc(var(--spacing, .25rem) * 4);
+	margin-bottom: 0;
 }
+/* The cards retain native CBI surfaces, while the grid owns their spacing. */
+#maincontent .nm-stats-grid > .nm-stat-card { margin: 0; }
 .nm-stat-card {
-	padding: 1em 1.2em; border-radius: 8px; text-align: center;
+	text-align: center;
 }
 .nm-stat-card .nm-stat-value {
 	font-size: 1.8em; font-weight: bold; line-height: 1.2;
@@ -75,15 +140,41 @@
 .nm-stat-card .nm-stat-value.red,
 .nm-stat-card .nm-stat-value.orange { color: inherit; }
 .nm-stat-card .nm-stat-label { margin-top: 0.3em; font-size: 0.85em; }
+#maincontent .nm-overview-control-section {
+	/* Trim one native spacing unit so the visible gap from the final status
+	 * label to this heading stays close to the banner-to-grid rhythm. */
+	margin-top: calc(var(--spacing, .25rem) * 3);
+	/* Keep the service information heading distinct from the final wrapped
+	 * control row while still following the active theme's spacing scale. */
+	margin-bottom: calc(var(--spacing, .25rem) * 6);
+}
+#maincontent .nm-overview-control-section > h3 { margin-top: 0; }
 
 /* === File Manager === */
 .nm-file-toolbar { display: flex; flex-direction: column; gap: 0.75em; }
-.nm-file-path-row { display: flex; align-items: center; gap: 0.5em; }
+.nm-file-path-row { display: flex; align-items: center; gap: 0.5em; flex-wrap: wrap; }
+/* Keep the custom file view clear of a theme-provided floating toolbar while
+ * expanded, at every viewport where that overlay is present. */
+body:has(.floating-toolbar:not(.collapsed)) #maincontent #view:has(.nm-file-toolbar) {
+	box-sizing: border-box;
+	padding-inline-end: 3.5rem;
+}
+/* File manager toolbar row (Refresh / New File / New Directory / Upload).
+ * It used to be a bare div, so the buttons sat at 0px apart. */
+.nm-file-actions {
+	display: flex; flex-wrap: wrap; align-items: center;
+	gap: var(--ys-action-gap, calc(var(--spacing, .25rem) * 3));
+}
+.nm-file-actions .cbi-button { margin: 0; }
 .nm-file-path-row .cbi-input-text {
 	flex: 1 1 auto; min-width: 0;
 	font-family: var(--font-mono);
 }
-.nm-file-status { min-height: 1.2em; font-size: 0.9em; }
+.nm-file-status {
+	min-height: 1.2em; margin-bottom: calc(var(--spacing, .25rem) * 2);
+	font-size: 0.9em; text-align: right;
+}
+.nm-file-status[hidden] { display: none; }
 .nm-file-table { width: 100%; }
 .nm-file-row-dir {
 	background: linear-gradient(90deg,
@@ -308,6 +399,10 @@
 
 /* 外层滚动容器：表格在窄视口可横向滚动，不撑破文档 */
 .nm-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+/* Sticky headers use the nearest scrollport as their reference. Inside this
+ * horizontal scroller that offsets the header over the first data row (e.g.
+ * themes that make native .th cells sticky), so keep the header in table flow. */
+.nm-table-scroll > table.table > thead > tr.cbi-section-table-titles > th.th { position: static; }
 
 /* 长域名 / 长后端地址允许任意位置断行，压掉列的内在最小宽 */
 .nm-cell-wrap { overflow-wrap: anywhere; word-break: break-word; max-width: 28ch; }
@@ -316,69 +411,85 @@
 .nm-site-table td.td,
 .nm-site-table th.th { white-space: normal; vertical-align: middle; }
 .nm-actions-cell { white-space: nowrap; }
-.nm-site-table .nm-actions button,
-.nm-site-table .nm-actions .cbi-button { min-height: 32px; padding: 0.35rem 0.6rem; font-size: 0.9em; }
 
-@media (max-width: 700px) {
-	.nm-table-scroll > table.table { min-width: 0; width: 100%; }
+@media (max-width: 900px) {
+	/* Keep all routes, including the active route on direct links, visible in
+	 * LuCI's native tab strip at phone and narrow tablet widths. */
+	#tabmenu ul.tabs { flex-wrap: wrap; overflow-x: visible; }
+	.nm-log-filter-field { flex: 1 1 15rem; }
+	.nm-log-filter-field > select,
+	.nm-log-filter-field > input { flex: 1 1 0; width: auto; max-width: 100%; }
 	.nm-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 601px) and (max-width: 900px) {
+	/* Keep readable columns in themes still using a table at tablet widths.
+	 * The sizing class is omitted when the active theme already renders native
+	 * table rows as cards. */
+	.nm-table-scroll > table.table.nm-table-intrinsic-width { width: max-content; min-width: 100%; }
 }
 /* 主题 mobile.css 给 .tr 加了 margin:0 -3px，概览的键值表未套滚动容器，
  * 窄屏每行右侧多出 3px 撑出 section（V8）；插件页内收回负边距。 */
 @media (max-width: 600px) {
 	#view .cbi-section table.table .tr { margin: 0; }
+	.nm-dns-credential { grid-template-columns: minmax(0, 1fr); }
+	.nm-dns-credential > label,
+	.nm-dns-credential > input,
+	.nm-dns-credential > .cbi-value-description { grid-column: 1; }
+
+	/* The native mobile table turns every file field into a separate card row.
+	 * Keep its theme-provided surfaces, but group each file into a compact
+	 * name / metadata / actions card when a directory has many items. */
+	.nm-file-table tbody > .tr.nm-file-row {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		align-items: start;
+		gap: calc(var(--spacing, .25rem) * 1);
+		width: 100%;
+		box-sizing: border-box;
+	}
+	.nm-file-table tbody > .tr.nm-file-row > .td {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: calc(var(--spacing, .25rem) * 2);
+		min-width: 0;
+		padding: calc(var(--spacing, .25rem) * 1) calc(var(--spacing, .25rem) * 2);
+		white-space: normal;
+	}
+	.nm-file-table tbody > .tr.nm-file-row > .nm-file-name {
+		grid-column: 1 / -1;
+		padding-bottom: calc(var(--spacing, .25rem) * 1.5);
+	}
+	.nm-file-table tbody > .tr.nm-file-row > .nm-file-name::before,
+	.nm-file-table tbody > .tr.nm-file-row > .nm-file-type { display: none; }
+	.nm-file-table tbody > .tr.nm-file-row-parent > :is(.nm-file-size, .nm-file-perms, .nm-file-modified) { display: none; }
+	.nm-file-table .nm-file-row > .nm-file-modified,
+	.nm-file-table .nm-file-row > .nm-actions-cell { grid-column: 1 / -1; }
+	.nm-file-table .nm-file-row > .nm-actions-cell {
+		display: block;
+		padding-top: calc(var(--spacing, .25rem) * 1.5);
+	}
+	.nm-file-table .nm-file-row > .nm-actions-cell::before {
+		display: block;
+		float: none;
+		width: auto;
+		max-width: none;
+		overflow: visible;
+		margin-bottom: calc(var(--spacing, .25rem) * 1.5);
+		text-overflow: clip;
+		white-space: nowrap;
+	}
+	.nm-file-table .nm-actions { gap: calc(var(--spacing, .25rem) * 1.5); }
 }
 
 /* 文件路径栏 “Go” 按钮不被输入框挤压截断 */
 .nm-file-path-row .cbi-button { flex: 0 0 auto; min-width: 44px; }
 
-/* 模态限宽：bootstrap 主题的固定宽度在窄视口会超出视口 */
-@media (max-width: 1048px) {
-	#modal_overlay > .modal { width: calc(100vw - 24px); max-width: calc(100vw - 24px); }
-}
 .nm-modal-textarea { max-width: 100%; }
 
-/* ===== bootstrap 主题兼容段 =====
- * 仅当 body.nm-theme-bootstrap（由 utils.loadSharedCSS 按主题样式表探测）时生效，
- * aurora 与其他主题完全不受影响。 */
-
-/* 触摸目标 >= 32px（主题按钮 28–30px） */
-body.nm-theme-bootstrap .cbi-button,
-body.nm-theme-bootstrap .btn,
-body.nm-theme-bootstrap .cbi-page-actions button { min-height: 32px; line-height: 30px; }
-
-/* 模态内文本框/下拉在 bootstrap 下只有 30px，同样低于 32px 触摸底线 */
-body.nm-theme-bootstrap #modal_overlay :is(input.cbi-input-text, select) { min-height: 32px; }
-
-/* 对比度补偿（WCAG AA 正文 >= 4.5）。Save 会被主题
- * `.cbi-page-actions .cbi-button-apply + .cbi-button-save`（0,4,0）覆盖，需提高一级。 */
-body.nm-theme-bootstrap .cbi-page-actions .cbi-button-save.cbi-button,
-body.nm-theme-bootstrap .cbi-button-add {
-	background: #00713d; border-color: #006635; color: #fff; /* 6.1:1 */
-}
-body.nm-theme-bootstrap .cbi-button-reset,
-body.nm-theme-bootstrap .cbi-button-remove { color: #b3261e; } /* 6.0:1 */
-html[data-darkmode="true"] body.nm-theme-bootstrap .cbi-button-reset,
-html[data-darkmode="true"] body.nm-theme-bootstrap .cbi-button-remove { color: #ff9d97; } /* 8.0:1 */
-body.nm-theme-bootstrap .cbi-button-edit,
-body.nm-theme-bootstrap .cbi-button-action,
-body.nm-theme-bootstrap .cbi-dropdown > .open {
-	background: #2a6a80; border-color: #255d70; color: #fff; /* 6.1:1 */
-}
-body.nm-theme-bootstrap .cbi-dropdown > ul > li { background: #2a6a80; color: #fff; } /* 6.1:1 */
-body.nm-theme-bootstrap .label.success { background: #00713d; border-color: #006635; color: #fff; } /* 6.1:1 */
-body.nm-theme-bootstrap .alert-message.success { background: #007a4a; color: #fff; } /* 5.4:1 */
-body.nm-theme-bootstrap .alert-message.success :is(h3,h4,h5,p,b,strong,li) { color: #fff; }
-/* danger 的渐变底在白字下最浅处 ~4.5:1，暗色主题还给深灰字；统一纯深红白字 */
-body.nm-theme-bootstrap .alert-message.danger { background: #8c1d18; color: #fff; } /* 7.1:1 */
-body.nm-theme-bootstrap .alert-message.danger :is(h3,h4,h5,p,b,strong,li,summary,pre) { color: #fff; }
-body.nm-theme-bootstrap .alert-message.danger .cbi-button {
-	background: rgba(0, 0, 0, 0.28); border-color: rgba(255, 255, 255, 0.45); color: #fff; /* 9.7:1 */
-}
-/* 主题 summary 只有 ~23px，达不到 32px 触摸目标（错误详情折叠） */
+/* The details disclosure is plugin-owned and needs a comfortable touch target. */
 #view .alert-message details > summary { display: flex; align-items: center; min-height: 32px; }
-body.nm-theme-bootstrap span.more { color: #595959; } /* 6.4:1 on #f8f8f8 */
-html[data-darkmode="true"] body.nm-theme-bootstrap span.more { color: #a0a0a0; } /* 5.6:1 on #282828 */
 
 /* Shared Yunshu OpenWrt plugin footer. Keep this block identical across
  * sibling LuCI plugins so every page shows the same version bar. */
@@ -391,7 +502,6 @@ html[data-darkmode="true"] body.nm-theme-bootstrap span.more { color: #a0a0a0; }
 	align-items: center;
 	justify-content: space-between;
 	gap: .8em 1em;
-	margin-top: 2em;
 	padding: 1em 0 0;
 	color: var(--subtext-color, #666);
 	font-size: .875em;
@@ -404,8 +514,17 @@ html[data-darkmode="true"] body.nm-theme-bootstrap span.more { color: #a0a0a0; }
 	gap: .35em;
 }
 .ys-tool-footer-brand { flex-wrap: wrap; }
-.ys-tool-footer-links { white-space: nowrap; }
+/* Keep a 32px link target while drawing its background close to the text. */
+.ys-tool-footer-links {
+	flex: 0 0 auto;
+	white-space: nowrap;
+	gap: calc(var(--spacing, .25rem) * 2);
+}
 .ys-tool-footer-mark {
+	display: inline-flex;
+	align-items: center;
+	box-sizing: border-box;
+	min-height: 1.5rem;
 	padding: .18em .5em;
 	border-radius: 4px;
 	background-color: var(--ys-footer-blue-bg);
@@ -424,24 +543,43 @@ html[data-darkmode="true"] body.nm-theme-bootstrap span.more { color: #a0a0a0; }
 .ys-tool-footer-link,
 .ys-tool-footer a.ys-tool-footer-link {
 	display: inline-flex;
+	flex: 0 0 auto;
 	align-items: center;
+	justify-content: center;
 	gap: .35em;
+	min-height: 2rem;
+	box-sizing: border-box;
 	padding: .18em .5em;
 	border: 0;
 	border-radius: 4px;
-	background-color: var(--ys-footer-blue-bg);
-	background: color-mix(in srgb, var(--ys-footer-blue) 12%, transparent);
+	position: relative;
+	isolation: isolate;
+	background: transparent;
 	color: var(--ys-footer-blue);
 	font-size: .86em;
 	font-weight: 700;
 	line-height: 1.6;
 	text-decoration: none;
 }
+.ys-tool-footer-link::before,
+.ys-tool-footer a.ys-tool-footer-link::before {
+	position: absolute;
+	inset: .25rem 0;
+	border-radius: inherit;
+	background-color: var(--ys-footer-blue-bg);
+	background: color-mix(in srgb, var(--ys-footer-blue) 12%, transparent);
+	content: "";
+	z-index: -1;
+	pointer-events: none;
+}
 .ys-tool-footer-link:hover,
 .ys-tool-footer a.ys-tool-footer-link:hover {
+	text-decoration: none;
+}
+.ys-tool-footer-link:hover::before,
+.ys-tool-footer a.ys-tool-footer-link:hover::before {
 	background-color: var(--ys-footer-blue-bg-hover);
 	background: color-mix(in srgb, var(--ys-footer-blue) 18%, transparent);
-	text-decoration: none;
 }
 .ys-tool-footer-link-icon {
 	width: 1em;
@@ -460,29 +598,32 @@ html[data-darkmode="true"] body.nm-theme-bootstrap span.more { color: #a0a0a0; }
 	.ys-tool-footer-project-link,
 	.ys-tool-footer-project-separator { display: none; }
 	.ys-tool-footer-links { flex-wrap: wrap; white-space: normal; }
-	.ys-tool-footer-links .ys-tool-footer-link.github .ys-tool-footer-link-label,
-	.ys-tool-footer-links .ys-tool-footer-link.x .ys-tool-footer-link-label { display: none; }
 }
 
-/* Shared interaction rhythm: side-by-side buttons follow the theme spacing
- * scale instead of hardcoded pixels. Keep identical across sibling plugins. */
-.ys-actions,
-.cbi-page-actions {
+/* Plugin-owned action groups follow the theme spacing scale. Native
+ * .cbi-page-actions stay under the active LuCI theme's control. */
+#maincontent { --ys-action-gap: calc(var(--spacing, .25rem) * 3); }
+.ys-actions {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	gap: calc(var(--spacing, .25rem) * 3);
 }
-.cbi-page-actions { justify-content: flex-end; }
+#maincontent .ys-actions,
+#maincontent .nm-actions,
+#maincontent .nm-file-actions { gap: var(--ys-action-gap); }
 .ys-actions > .cbi-button,
 .ys-actions > button,
 .ys-actions > select,
-.ys-actions > input,
-.cbi-page-actions > form,
-.cbi-page-actions > button { margin: 0; }
+.ys-actions > input { margin: 0; }
 
 /* Shared table contract: every table on the page shares one first-column
  * basis (minimum width + alignment) instead of content-driven widths. */
+.table > thead > tr > :first-child,
+.table > tbody > tr > :first-child,
+.table > tr > :first-child {
+	vertical-align: middle;
+}
 @media screen and (min-width: 48rem) {
 	.table > thead > tr > :first-child,
 	.table > tbody > tr > :first-child,
@@ -490,6 +631,5 @@ html[data-darkmode="true"] body.nm-theme-bootstrap span.more { color: #a0a0a0; }
 		width: 1%;
 		min-width: 9rem;
 		text-align: left;
-		vertical-align: top;
 	}
 }

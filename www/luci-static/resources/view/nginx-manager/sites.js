@@ -61,7 +61,7 @@ var callSetSite = rpc.declare({
 		'websocket', 'proxy_type', 'grpc_path', 'grpc_pass', 'custom_proxy_headers', 'redirect_https', 'redirect_http_port', 'proxy_host', 'proxy_xff', 'proxy_xfp', 'proxy_xri',
 		'ssl_cert', 'ssl_protocols', 'ssl_ciphers', 'hsts_max_age',
 		'access_log', 'error_log', 'custom_server_block', 'redirect_target', 'enabled',
-		'proxy_connect_timeout', 'proxy_read_timeout', 'proxy_send_timeout'],
+		'proxy_connect_timeout', 'proxy_read_timeout', 'proxy_send_timeout', 'create'],
 	expect: {}
 });
 
@@ -113,7 +113,7 @@ function renderBackendLink(site) {
 function buildSiteTable(sites) {
 	var table = E('table', { 'class': 'table nm-site-table' });
 	var thead = E('thead');
-	var headerRow = E('tr', { 'class': 'tr' });
+	var headerRow = E('tr', { 'class': 'tr cbi-section-table-titles' });
 	[_('Enabled'), _('Name'), _('Domain'), _('Type'), _('SSL'), _('Backend / Root'), _('Actions')].forEach(function(title) {
 		headerRow.appendChild(E('th', { 'class': 'th' }, title));
 	});
@@ -180,7 +180,7 @@ function buildSiteTable(sites) {
 					])
 				]);
 			}
-		}, '\u29C9 ' + _('Clone')));
+		}, _('Clone')));
 
 		actions.appendChild(E('button', {
 			'class': 'cbi-button',
@@ -300,7 +300,7 @@ function buildSiteTable(sites) {
 		table.appendChild(row);
 	});
 
-	return E('div', { 'class': 'nm-table-scroll' }, [table]);
+	return utils.makeScrollableTable(table);
 }
 
 return view.extend({
@@ -369,9 +369,14 @@ return view.extend({
 									ui.addNotification(null, E('p', {}, _('Invalid site name')), 'error');
 									return;
 								}
+								var siteId = name.replace(/[^a-zA-Z0-9_]/g, '_');
+								if (sites.some(function(site) { return site.id === siteId; })) {
+									ui.addNotification(null, E('p', {}, _('A site with the same normalized ID already exists.')), 'error');
+									return;
+								}
 								ui.hideModal();
 								ui.showModal(_('Creating site...'), [E('p', {}, _('Please wait...'))]);
-								callSetSite(name, name, mode, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '1').then(function(result) {
+								callSetSite(siteId, name, mode, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '1', '', '', '', '1').then(function(result) {
 									ui.hideModal();
 									if (result && result.error) {
 										ui.addNotification(null, E('p', {}, result.error), 'error');
@@ -379,7 +384,7 @@ return view.extend({
 										ui.showModal(_('Redirecting'), [E('p', {}, _('Site created, redirecting to edit page...'))]);
 										setTimeout(function() {
 											ui.hideModal();
-											location.href = L.url('admin/services/nginx-manager/sites/edit', name);
+											location.href = L.url('admin/services/nginx-manager/sites/edit', siteId);
 										}, 500);
 									}
 								});
@@ -417,6 +422,7 @@ return view.extend({
 			]));
 		}
 
+		utils.updateResponsiveTableSizing();
 		return utils.appendFooter(container, utils.FOOTER_OPTIONS);
 	},
 
