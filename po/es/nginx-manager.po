@@ -1680,3 +1680,48 @@ msgstr "Proyecto"
 
 msgid "Technical details"
 msgstr "Detalles técnicos"
+
+msgid "A site with the same normalized ID already exists."
+msgstr "Ya existe un sitio con el mismo ID normalizado. Elige otro nombre."
+
+msgid "ACME service"
+msgstr "Servicio ACME"
+
+msgid "Config template"
+msgstr "Plantilla de configuración"
+
+msgid "DNS plugins"
+msgstr "Complementos de validación DNS"
+
+msgid "HTTP/3"
+msgstr "HTTP/3"
+
+msgid "HTTPS"
+msgstr "Compatibilidad con HTTPS"
+
+msgid "Log size"
+msgstr "Tamaño del registro"
+
+msgid "Log size: %s"
+msgstr "Tamaño del registro: %s"
+
+msgid "Nginx service"
+msgstr "Servicio Nginx"
+
+msgid "OpenSSL"
+msgstr "OpenSSL"
+
+msgid "OpenWrt version"
+msgstr "Versión de OpenWrt"
+
+msgid "Package manager"
+msgstr "Gestor de paquetes"
+
+msgid "Plugin version"
+msgstr "Versión del complemento"
+
+msgid "Scrollable table"
+msgstr "Tabla desplazable"
+
+msgid "site id already exists"
+msgstr "Ya existe un sitio con el mismo ID normalizado. Elige otro nombre."
