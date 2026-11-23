@@ -1674,3 +1674,6 @@ msgstr "Nginx принял конфигурацию; эти предупрежд
 
 msgid "Nginx rejected the configuration. Fix the errors below before reloading."
 msgstr "Nginx отклонил конфигурацию. Исправьте ошибки ниже перед перезагрузкой."
+
+msgid "Raw output"
+msgstr "Исходный вывод"

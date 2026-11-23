@@ -1749,3 +1749,6 @@ msgstr "Nginx aceptó la configuración; estas advertencias no impiden la carga.
 
 msgid "Nginx rejected the configuration. Fix the errors below before reloading."
 msgstr "Nginx rechazó la configuración. Corrige los errores siguientes antes de recargar."
+
+msgid "Raw output"
+msgstr "Salida original"

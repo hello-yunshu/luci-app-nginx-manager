@@ -1706,3 +1706,6 @@ msgstr "Nginx accepted the configuration; these warnings do not block loading."
 
 msgid "Nginx rejected the configuration. Fix the errors below before reloading."
 msgstr "Nginx rejected the configuration. Fix the errors below before reloading."
+
+msgid "Raw output"
+msgstr "Raw output"

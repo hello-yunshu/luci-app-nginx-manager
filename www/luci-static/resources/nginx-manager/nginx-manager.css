@@ -681,6 +681,16 @@ body:has(.floating-toolbar:not(.collapsed)) #maincontent #view:has(.nm-file-tool
 	opacity: .85;
 	overflow-wrap: anywhere;
 }
+/* 逐字原文折叠：与面板里的归类明细互补，需要时展开复制 */
+.nm-test-raw { margin-top: calc(var(--spacing, .25rem) * 4); }
+.nm-test-raw > summary { cursor: pointer; }
+.nm-test-raw > pre {
+	margin: calc(var(--spacing, .25rem) * 2) 0 0;
+	overflow-x: auto;
+	white-space: pre;
+	font-family: var(--font-mono);
+	font-size: .85em;
+}
 /* 窄屏（与共享表头规则同一 600px 断点）：路径改到正文下一行，
  * 避免三列布局在小容器里把消息挤成两行、路径又贴最右的松散感。 */
 @media (max-width: 600px) {

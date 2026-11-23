@@ -219,15 +219,13 @@ return view.extend({
 					testValueEl.removeAttribute('title');
 
 					var output = (result && result.output) || _('No output');
-					var editor = utils.createCodeEditor(output, 'nginx.conf', { readonly: true });
-					ui.showModal(_('Config Test Result'), [
-						/* 结论与计数置顶，warn 明细默认折叠，原始输出仍完整可查 */
-						utils.testOutputPanel(output) || '',
-						editor.container,
-						E('div', { 'class': 'right' }, [
-							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('OK'))
-						])
-					]);
+					/* 结论面板置顶、诊断明细折叠；正文与逐字原文分开，避免警告出现两遍 */
+					ui.showModal(_('Config Test Result'),
+						utils.testOutputModalBody(output).concat([
+							E('div', { 'class': 'right' }, [
+								E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('OK'))
+							])
+						]));
 				}).catch(function(err) {
 					resetBusy(btn);
 					ui.addNotification(null, E('p', {}, _('Error:') + ' ' + (err.message || JSON.stringify(err))));
@@ -240,14 +238,12 @@ return view.extend({
 			'click': function() {
 				return callGetNginxT().then(function(result) {
 					var content = (result && result.content) || '';
-					var editor = utils.createCodeEditor(content, 'nginx.conf', { readonly: true });
-					ui.showModal(_('View Full Config'), [
-						utils.testOutputPanel(content) || '',
-						editor.container,
-						E('div', { 'class': 'right' }, [
-							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
-						])
-					]);
+					ui.showModal(_('View Full Config'),
+						utils.testOutputModalBody(content).concat([
+							E('div', { 'class': 'right' }, [
+								E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
+							])
+						]));
 				});
 			}
 		}, _('View Full Config')));

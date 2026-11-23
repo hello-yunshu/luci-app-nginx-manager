@@ -359,14 +359,12 @@ return view.extend({
 				'click': function() {
 					callGetNginxT().then(function(result) {
 						var content = (result && result.content) || '';
-						var editor = utils.createCodeEditor(content, 'nginx.conf', { readonly: true });
-						ui.showModal(_('nginx -T Output'), [
-							utils.testOutputPanel(content) || '',
-							editor.container,
-							E('div', { 'class': 'right' }, [
-								E('button', { 'type': 'button', 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
-							])
-						]);
+						ui.showModal(_('nginx -T Output'),
+							utils.testOutputModalBody(content).concat([
+								E('div', { 'class': 'right' }, [
+									E('button', { 'type': 'button', 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))
+								])
+							]));
 					});
 				}
 			}, _('View nginx -T')));

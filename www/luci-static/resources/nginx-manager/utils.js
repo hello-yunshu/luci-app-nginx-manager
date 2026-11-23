@@ -68,7 +68,7 @@ function loadSharedCSS() {
 		var link = E('link', {
 			'id': 'nm-shared-css',
 			'rel': 'stylesheet',
-			'href': L.resource('nginx-manager/nginx-manager.css') + '?v=@PKG_FULL_VERSION@&ui=footer-pm-match-1&credentials=1&files-mobile-cards=6&toolbar-clearance=2&test-panel=3'
+			'href': L.resource('nginx-manager/nginx-manager.css') + '?v=@PKG_FULL_VERSION@&ui=footer-pm-match-1&credentials=1&files-mobile-cards=6&toolbar-clearance=2&test-panel=4'
 		});
 		document.head.appendChild(link);
 	}
@@ -313,6 +313,48 @@ function testOutputPanel(output) {
 		'class': 'alert-message nm-test-panel ' + severity,
 		'role': info.passed ? 'status' : 'alert'
 	}, children);
+}
+
+/* 面板已经归类展示的日志行（含 "syntax is ok" 结论行）从原文剔除，
+ * 编辑器只留正文，避免同一段警告在弹窗里出现两遍。 */
+function stripTestDiagnostics(output) {
+	var rest = [];
+	String(output || '').split('\n').forEach(function(raw) {
+		var line = raw.replace(/\s+$/, '');
+		if (line.match(NGINX_TS_ENTRY_RE) || line.match(NGINX_ENTRY_RE))
+			return;
+		if (/syntax is ok/.test(line) || /test is successful/.test(line))
+			return;
+		rest.push(raw);
+	});
+	while (rest.length && !rest[0].trim())
+		rest.shift();
+	while (rest.length && !rest[rest.length - 1].trim())
+		rest.pop();
+	return rest.join('\n');
+}
+
+/* 逐字原文收进折叠：需要复制、核对时间戳或 PID 时再展开。 */
+function rawOutputDetails(output) {
+	return E('details', { 'class': 'nm-test-raw' }, [
+		E('summary', {}, _('Raw output')),
+		E('pre', {}, String(output || ''))
+	]);
+}
+
+/* 弹窗正文统一编排：结论面板置顶（诊断明细折叠），编辑器只放正文，
+ * 逐字原文折叠备查。识别不出日志行时退回纯文本编辑器。 */
+function testOutputModalBody(output) {
+	var panel = testOutputPanel(output);
+	if (!panel)
+		return [createCodeEditor(String(output || ''), 'nginx.conf', { readonly: true }).container];
+
+	var nodes = [panel];
+	var rest = stripTestDiagnostics(output);
+	if (rest)
+		nodes.push(createCodeEditor(rest, 'nginx.conf', { readonly: true }).container);
+	nodes.push(rawOutputDetails(output));
+	return nodes;
 }
 
 function isApplyNoDataError(err) {
@@ -964,6 +1006,7 @@ return baseclass.extend({
 	errorPanel: errorPanel,
 	classifyTestOutput: classifyTestOutput,
 	testOutputPanel: testOutputPanel,
+	testOutputModalBody: testOutputModalBody,
 	safeApply: safeApply,
 	isApplyNoDataError: isApplyNoDataError,
 	validateNameInput: validateNameInput,

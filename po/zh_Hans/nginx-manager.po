@@ -1748,3 +1748,6 @@ msgstr "Nginx 已接受该配置；这些警告不影响加载。"
 
 msgid "Nginx rejected the configuration. Fix the errors below before reloading."
 msgstr "Nginx 拒绝了该配置，请先修正下面的错误再重载。"
+
+msgid "Raw output"
+msgstr "原始输出"
