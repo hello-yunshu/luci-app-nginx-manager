@@ -687,6 +687,8 @@ body:has(.floating-toolbar:not(.collapsed)) #maincontent #view:has(.nm-file-tool
 	.nm-test-list > li { display: block; }
 	.nm-test-level,
 	.nm-test-text { display: inline; }
+	/* 块级化后 flex 的 gap 不再生效，标签与正文之间补回间距 */
+	.nm-test-level { margin-right: .4em; }
 	.nm-test-loc {
 		display: block;
 		margin-top: .15em;

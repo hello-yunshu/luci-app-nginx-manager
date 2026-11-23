@@ -68,7 +68,7 @@ function loadSharedCSS() {
 		var link = E('link', {
 			'id': 'nm-shared-css',
 			'rel': 'stylesheet',
-			'href': L.resource('nginx-manager/nginx-manager.css') + '?v=@PKG_FULL_VERSION@&ui=footer-pm-match-1&credentials=1&files-mobile-cards=6&toolbar-clearance=2&test-panel=2'
+			'href': L.resource('nginx-manager/nginx-manager.css') + '?v=@PKG_FULL_VERSION@&ui=footer-pm-match-1&credentials=1&files-mobile-cards=6&toolbar-clearance=2&test-panel=3'
 		});
 		document.head.appendChild(link);
 	}
