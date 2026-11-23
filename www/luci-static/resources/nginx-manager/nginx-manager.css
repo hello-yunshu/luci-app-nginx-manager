@@ -399,6 +399,14 @@ body:has(.floating-toolbar:not(.collapsed)) #maincontent #view:has(.nm-file-tool
 
 /* 外层滚动容器：表格在窄视口可横向滚动，不撑破文档 */
 .nm-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+/* 主题可能把 section 内的表格拉出容器（Vantage 用负侧边距把表格加宽，并带
+ * !important），滚动容器会把这截裁掉：首列内边距被吃掉，图标和文字贴着卡片
+ * 左缘，还多出一段横向滚动。容器内的表格把宽度和负边距交回容器。 */
+#maincontent .nm-table-scroll > table.table:not(.nm-table-intrinsic-width) {
+	width: 100% !important;
+	margin-left: 0 !important;
+	margin-right: 0 !important;
+}
 /* Sticky headers use the nearest scrollport as their reference. Inside this
  * horizontal scroller that offsets the header over the first data row (e.g.
  * themes that make native .th cells sticky), so keep the header in table flow. */
@@ -426,7 +434,12 @@ body:has(.floating-toolbar:not(.collapsed)) #maincontent #view:has(.nm-file-tool
 	/* Keep readable columns in themes still using a table at tablet widths.
 	 * The sizing class is omitted when the active theme already renders native
 	 * table rows as cards. */
-	.nm-table-scroll > table.table.nm-table-intrinsic-width { width: max-content; min-width: 100%; }
+	.nm-table-scroll > table.table.nm-table-intrinsic-width {
+		width: max-content !important;
+		min-width: 100%;
+		margin-left: 0 !important;
+		margin-right: 0 !important;
+	}
 }
 /* 主题 mobile.css 给 .tr 加了 margin:0 -3px，概览的键值表未套滚动容器，
  * 窄屏每行右侧多出 3px 撑出 section（V8）；插件页内收回负边距。 */
