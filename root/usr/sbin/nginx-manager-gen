@@ -12,6 +12,7 @@ TEST_BEFORE_RELOAD=""
 MAX_BACKUPS=""
 LOCK_FILE="/tmp/nginx-manager-gen.lock"
 NGINX_CONF_PATH=""
+LOG_STATE_DIR="${LOG_STATE_DIR:-/tmp/nginx-manager-log-state}"
 
 log_info() {
 	logger -t nginx-manager -p daemon.info "$1"
@@ -23,6 +24,75 @@ log_warn() {
 
 log_err() {
 	logger -t nginx-manager -p daemon.err "$1"
+}
+
+# Summarize a command's captured output into one bounded, single-line string.
+# `nginx -t` failures and init.d output are multi-line; handing that to `logger`
+# turns a single event into several syslog records that lose their tag and
+# level, so the log parser (and anyone reading `logread`) cannot reconstruct
+# what happened. Collapse to one line and clamp it.
+# The ellipsis is ASCII on purpose: OpenWrt runs without a UTF-8 locale, where
+# `…` counts as three bytes and would break any byte budget.
+summarize_command_output() {
+	printf '%s' "$1" | awk -v max=200 '
+		BEGIN { ORS = "" }
+		{
+			gsub(/\r/, "")
+			gsub(/^[ \t]+/, "")
+			gsub(/[ \t]+$/, "")
+			if ($0 == "")
+				next
+			if (out != "")
+				out = out " | "
+			out = out $0
+			if (length(out) >= max) {
+				printf "%s...", substr(out, 1, max - 3)
+				done = 1
+				exit
+			}
+		}
+		END {
+			if (!done && out != "")
+				printf "%s", out
+		}'
+}
+
+# Emit a message only when its signature changed since the last run.
+# A retry that fails for the same reason must not be re-announced: an apply
+# loop would otherwise bury the real history under identical lines. State lives
+# in /tmp so the first occurrence after a reboot is always reported.
+log_once() {
+	local key="$1" sig="$2" level="$3" msg="$4"
+	local state_file="${LOG_STATE_DIR}/${key}"
+
+	if [ "$(cat "${state_file}" 2>/dev/null)" = "${sig}" ]; then
+		return 0
+	fi
+
+	mkdir -p "${LOG_STATE_DIR}" 2>/dev/null || true
+	printf '%s' "${sig}" > "${state_file}" 2>/dev/null || true
+
+	case "${level}" in
+		err) log_err "${msg}" ;;
+		warn) log_warn "${msg}" ;;
+		*) log_info "${msg}" ;;
+	esac
+}
+
+# Re-arm a key once the condition clears, so the same failure is reported again
+# if it comes back later.
+log_state_reset() {
+	rm -f "${LOG_STATE_DIR}/${1}" 2>/dev/null || true
+}
+
+# log_command_failure <key> <label> <output> [rc]
+# One bounded, deduplicated line for a failed sub-command.
+log_command_failure() {
+	local key="$1" label="$2" output="$3" rc="${4:-}"
+	local detail suffix=""
+	detail="$(summarize_command_output "${output}")"
+	[ -n "${rc}" ] && suffix=" (rc=${rc})"
+	log_once "${key}" "rc:${rc}:${detail}" err "${label}${suffix}${detail:+: ${detail}}"
 }
 
 json_escape() {
@@ -1153,7 +1223,7 @@ apply_config() {
 
 	exec 9>"${LOCK_FILE}"
 	if ! flock -n 9; then
-		log_warn "Another apply process is running, skipping"
+		log_once apply_running locked warn "Another apply process is running, skipping"
 		printf '{"success":false,"error":"another_apply_running"}\n'
 		exec 9>&-
 		return 1
@@ -1176,12 +1246,18 @@ apply_config() {
 			restore_latest_backup
 			if test_nginx_config >/dev/null 2>&1; then
 				reload_nginx >/dev/null 2>&1
+				# The candidate failed and was rolled back, so what is running
+				# now is the restored config - and it just validated. Leaving
+				# "fail" on disk would keep the overview card red while nginx
+				# serves a perfectly loadable configuration.
+				record_test_result "pass"
 			fi
-			log_err "Configuration test failed: ${test_output}"
+			log_command_failure config_test "Configuration test failed" "${test_output}"
 			printf '{"success":false,"error":"config_test_failed","detail":"%s"}\n' "$(json_escape "${test_output}")"
 			exec 9>&-
 			return 1
 		fi
+		log_state_reset config_test
 		record_test_result "pass"
 	fi
 
@@ -1195,13 +1271,14 @@ apply_config() {
 		if [ "${TEST_BEFORE_RELOAD}" != "1" ] && is_nginx_running; then
 			record_test_result "fail"
 		fi
-		log_err "Nginx reload failed: ${reload_output}"
+		log_command_failure nginx_reload "Nginx reload failed" "${reload_output}" "${reload_exit}"
 		printf '{"success":false,"error":"reload_failed","detail":"%s"}\n' "$(json_escape "${reload_output}")"
 		exec 9>&-
 		return 1
 	fi
 
 	date '+%Y-%m-%d %H:%M:%S' > /tmp/nginx-manager-last-reload
+	log_state_reset nginx_reload
 	log_info "Configuration applied and nginx reloaded"
 
 	exec 9>&-
@@ -1413,8 +1490,10 @@ do_test_config() {
 
 	if [ "${test_exit}" -eq 0 ]; then
 		record_test_result "pass"
+		log_state_reset config_test
 	else
 		record_test_result "fail"
+		log_command_failure config_test "Configuration test failed" "${test_output}" "${test_exit}"
 	fi
 
 	printf '{"success":"%s","output":"%s"}\n' \
@@ -1431,12 +1510,13 @@ do_reload() {
 
 	if [ "${reload_exit}" -eq 0 ]; then
 		record_test_result "pass"
+		log_state_reset nginx_reload
 		log_info "Nginx reloaded"
 	else
 		# A failed reload only says something about the config when nginx is up;
 		# on a stopped service it is just "not running", not a config verdict.
 		is_nginx_running && record_test_result "fail"
-		log_err "Nginx reload failed: ${reload_output}"
+		log_command_failure nginx_reload "Nginx reload failed" "${reload_output}" "${reload_exit}"
 	fi
 
 	printf '{"success":"%s","output":"%s"}\n' \
@@ -1453,10 +1533,11 @@ do_restart() {
 
 	if [ "${restart_exit}" -eq 0 ]; then
 		record_test_result "pass"
+		log_state_reset nginx_restart
 		log_info "Nginx restarted"
 	else
 		record_test_result "fail"
-		log_err "Nginx restart failed: ${restart_output}"
+		log_command_failure nginx_restart "Nginx restart failed" "${restart_output}" "${restart_exit}"
 	fi
 
 	printf '{"success":"%s","output":"%s"}\n' \
@@ -1471,11 +1552,12 @@ do_start() {
 
 	if [ "${start_exit}" -eq 0 ]; then
 		record_test_result "pass"
+		log_state_reset nginx_start
 		log_info "Nginx started"
 		date '+%Y-%m-%d %H:%M:%S' > /tmp/nginx-manager-last-reload
 	else
 		record_test_result "fail"
-		log_err "Nginx start failed: ${start_output}"
+		log_command_failure nginx_start "Nginx start failed" "${start_output}" "${start_exit}"
 	fi
 
 	printf '{"success":"%s","output":"%s"}\n' \
