@@ -143,12 +143,17 @@ return view.extend({
 			E('div', { 'class': 'nm-stat-label' }, _('SSL Module'))
 		]));
 
-		var testResultRaw = (status.last_test_result || '').split('\n')[0];
+		var testLines = (status.last_test_result || '').split('\n');
+		var testResultRaw = testLines[0];
+		var testTime = (testLines[1] || '').trim();
 		var testResult = !testResultRaw || testResultRaw === 'unknown' ? _('Unknown') : testResultRaw;
 		var testClass = (!testResultRaw || testResultRaw === 'unknown') ? 'nm-stat-value' :
 			(testResultRaw.indexOf('pass') === 0 ? 'nm-stat-value green' : 'nm-stat-value red');
+		var testValueEl = E('div', { 'class': testClass }, testResult);
+		if (testTime)
+			testValueEl.setAttribute('title', testTime);
 		statsGrid.appendChild(E('div', { 'class': 'cbi-section nm-stat-card' }, [
-			E('div', { 'class': testClass }, testResult),
+			testValueEl,
 			E('div', { 'class': 'nm-stat-label' }, _('Last Config Test'))
 		]));
 
@@ -207,9 +212,17 @@ return view.extend({
 				setBusy(btn);
 				return callTestConfig().then(function(result) {
 					resetBusy(btn);
+					/* Reflect the fresh result without a page reload */
+					var passed = result && (result.success === '1' || result.success === 1 || result.success === true);
+					testValueEl.textContent = passed ? 'pass' : 'fail';
+					testValueEl.className = 'nm-stat-value ' + (passed ? 'green' : 'red');
+					testValueEl.removeAttribute('title');
+
 					var output = (result && result.output) || _('No output');
 					var editor = utils.createCodeEditor(output, 'nginx.conf', { readonly: true });
 					ui.showModal(_('Config Test Result'), [
+						/* 结论与计数置顶，warn 明细默认折叠，原始输出仍完整可查 */
+						utils.testOutputPanel(output) || '',
 						editor.container,
 						E('div', { 'class': 'right' }, [
 							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('OK'))
@@ -229,6 +242,7 @@ return view.extend({
 					var content = (result && result.content) || '';
 					var editor = utils.createCodeEditor(content, 'nginx.conf', { readonly: true });
 					ui.showModal(_('View Full Config'), [
+						utils.testOutputPanel(content) || '',
 						editor.container,
 						E('div', { 'class': 'right' }, [
 							E('button', { 'class': 'btn', 'click': function() { ui.hideModal(); } }, _('Close'))

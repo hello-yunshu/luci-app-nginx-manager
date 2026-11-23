@@ -1650,3 +1650,27 @@ msgstr "предметы"
 
 msgid "Scrollable table"
 msgstr "Таблица с прокруткой"
+
+msgid "Config test passed"
+msgstr "Проверка конфигурации пройдена"
+
+msgid "Config test failed"
+msgstr "Проверка конфигурации не пройдена"
+
+msgid "Errors"
+msgstr "Ошибки"
+
+msgid "Warnings"
+msgstr "Предупреждения"
+
+msgid "Notices"
+msgstr "Уведомления"
+
+msgid "No errors or warnings."
+msgstr "Ошибок и предупреждений нет."
+
+msgid "Nginx accepted the configuration; these warnings do not block loading."
+msgstr "Nginx принял конфигурацию; эти предупреждения не мешают загрузке."
+
+msgid "Nginx rejected the configuration. Fix the errors below before reloading."
+msgstr "Nginx отклонил конфигурацию. Исправьте ошибки ниже перед перезагрузкой."

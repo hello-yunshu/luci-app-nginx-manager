@@ -1682,3 +1682,27 @@ msgstr ""
 
 msgid "Scrollable table"
 msgstr ""
+
+msgid "Config test passed"
+msgstr ""
+
+msgid "Config test failed"
+msgstr ""
+
+msgid "Errors"
+msgstr ""
+
+msgid "Warnings"
+msgstr ""
+
+msgid "Notices"
+msgstr ""
+
+msgid "No errors or warnings."
+msgstr ""
+
+msgid "Nginx accepted the configuration; these warnings do not block loading."
+msgstr ""
+
+msgid "Nginx rejected the configuration. Fix the errors below before reloading."
+msgstr ""

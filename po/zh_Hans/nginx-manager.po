@@ -1724,3 +1724,27 @@ msgstr "技术详情"
 
 msgid "Scrollable table"
 msgstr "可滚动的表格"
+
+msgid "Config test passed"
+msgstr "配置测试通过"
+
+msgid "Config test failed"
+msgstr "配置测试失败"
+
+msgid "Errors"
+msgstr "错误"
+
+msgid "Warnings"
+msgstr "警告"
+
+msgid "Notices"
+msgstr "提示"
+
+msgid "No errors or warnings."
+msgstr "没有错误或警告。"
+
+msgid "Nginx accepted the configuration; these warnings do not block loading."
+msgstr "Nginx 已接受该配置；这些警告不影响加载。"
+
+msgid "Nginx rejected the configuration. Fix the errors below before reloading."
+msgstr "Nginx 拒绝了该配置，请先修正下面的错误再重载。"

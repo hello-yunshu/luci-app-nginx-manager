@@ -646,3 +646,49 @@ body:has(.floating-toolbar:not(.collapsed)) #maincontent #view:has(.nm-file-tool
 		text-align: left;
 	}
 }
+
+/* === Config test output (nginx -t / -T modals) ===
+ * 结论区沿用主题原生 alert-message 外观，插件只负责明细列表排版；
+ * 级别用文字标注，不只依赖颜色。 */
+.nm-test-panel { margin-bottom: calc(var(--spacing, .25rem) * 4); }
+.nm-test-panel > p { margin: calc(var(--spacing, .25rem) * 2) 0 0; }
+.nm-test-panel > details { margin-top: calc(var(--spacing, .25rem) * 2); }
+.nm-test-list {
+	margin: calc(var(--spacing, .25rem) * 2) 0 calc(var(--spacing, .25rem) * 2);
+	padding: 0;
+	list-style: none;
+}
+.nm-test-list > li {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: .4em;
+	padding: calc(var(--spacing, .25rem) * 1) 0;
+}
+.nm-test-level {
+	flex: 0 0 auto;
+	font-family: var(--font-mono);
+	font-size: .75em;
+	letter-spacing: .04em;
+	text-transform: uppercase;
+	opacity: .85;
+}
+.nm-test-text { flex: 1 1 14em; min-width: 0; overflow-wrap: anywhere; }
+.nm-test-loc {
+	flex: 0 1 auto;
+	font-family: var(--font-mono);
+	font-size: .85em;
+	opacity: .85;
+	overflow-wrap: anywhere;
+}
+/* 窄屏（与共享表头规则同一 600px 断点）：路径改到正文下一行，
+ * 避免三列布局在小容器里把消息挤成两行、路径又贴最右的松散感。 */
+@media (max-width: 600px) {
+	.nm-test-list > li { display: block; }
+	.nm-test-level,
+	.nm-test-text { display: inline; }
+	.nm-test-loc {
+		display: block;
+		margin-top: .15em;
+	}
+}

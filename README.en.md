@@ -302,6 +302,11 @@ nginx-manager-gen --restart             # Restart nginx (JSON)
 nginx-manager-gen --start               # Start nginx (JSON)
 ```
 
+> The overview page's "Last Config Test" shows the most recent validation result
+> (`pass` / `fail`, hover for the timestamp). It is updated by every
+> `apply` / `reload` / `restart` / `start` as well as by a manual "Test Config",
+> and is persisted in `/etc/nginx-manager/last-test` so it survives reboots.
+
 ## Building
 
 This project uses GitHub Actions for automated builds:

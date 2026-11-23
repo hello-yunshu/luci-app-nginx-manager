@@ -302,6 +302,10 @@ nginx-manager-gen --restart             # 重启 nginx（JSON）
 nginx-manager-gen --start               # 启动 nginx（JSON）
 ```
 
+> 概览页的「最近配置测试」显示最近一次校验结果（`pass` / `fail`，悬停可看时间）。
+> 每次 `apply` / `reload` / `restart` / `start` 或手动「Test Config」都会更新，
+> 结果持久化在 `/etc/nginx-manager/last-test`，重启后依然可见。
+
 ## 构建
 
 本项目使用 GitHub Actions 自动构建，支持以下目标：

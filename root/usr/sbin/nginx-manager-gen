@@ -245,6 +245,30 @@ test_nginx_config() {
 	return $?
 }
 
+# Persist the outcome of the most recent config validation so the overview page
+# reflects the latest check, no matter whether it came from an automatic apply /
+# reload / restart / start or from a manual "Test Config" click.
+# Stored under /etc so it survives reboots (/tmp is tmpfs and gets wiped).
+# File format (consumed by do_status and the LuCI overview):
+#   line 1: pass|fail
+#   line 2: timestamp
+record_test_result() {
+	local result="$1"
+	local state_dir="/etc/nginx-manager"
+	local state_file="${state_dir}/last-test"
+	local ts
+	ts="$(date '+%Y-%m-%d %H:%M:%S')"
+
+	mkdir -p "${state_dir}" 2>/dev/null || true
+	if ! ( printf '%s\n%s\n' "${result}" "${ts}" > "${state_file}" ) 2>/dev/null; then
+		# Read-only rootfs fallback: at least keep it for the current boot.
+		( printf '%s\n%s\n' "${result}" "${ts}" > /tmp/nginx-manager-last-test ) 2>/dev/null
+	fi
+
+	# Drop the short-lived status cache so the next status read picks this up.
+	rm -f /tmp/nginx-manager-status.json
+}
+
 reload_nginx() {
 	/etc/init.d/nginx reload 2>&1
 	return $?
@@ -1148,6 +1172,7 @@ apply_config() {
 		if ! test_nginx_config >/dev/null 2>&1; then
 			local test_output
 			test_output="$(test_nginx_config 2>&1)"
+			record_test_result "fail"
 			restore_latest_backup
 			if test_nginx_config >/dev/null 2>&1; then
 				reload_nginx >/dev/null 2>&1
@@ -1157,6 +1182,7 @@ apply_config() {
 			exec 9>&-
 			return 1
 		fi
+		record_test_result "pass"
 	fi
 
 	local reload_output
@@ -1164,6 +1190,11 @@ apply_config() {
 	local reload_exit=$?
 
 	if [ "${reload_exit}" -ne 0 ]; then
+		# Without test_before_reload the reload itself is the only validation,
+		# and it only proves anything while nginx is actually running.
+		if [ "${TEST_BEFORE_RELOAD}" != "1" ] && is_nginx_running; then
+			record_test_result "fail"
+		fi
 		log_err "Nginx reload failed: ${reload_output}"
 		printf '{"success":false,"error":"reload_failed","detail":"%s"}\n' "$(json_escape "${reload_output}")"
 		exec 9>&-
@@ -1243,7 +1274,10 @@ do_status() {
 	non_managed_names="$(echo "${non_managed_output}" | sed -n '2p')"
 
 	local last_test="unknown"
-	if [ -f /tmp/nginx-manager-last-test ]; then
+	if [ -f /etc/nginx-manager/last-test ]; then
+		last_test="$(cat /etc/nginx-manager/last-test)"
+	elif [ -f /tmp/nginx-manager-last-test ]; then
+		# Read-only rootfs fallback (or a result recorded before the upgrade).
 		last_test="$(cat /tmp/nginx-manager-last-test)"
 	fi
 
@@ -1378,12 +1412,10 @@ do_test_config() {
 	local test_exit=$?
 
 	if [ "${test_exit}" -eq 0 ]; then
-		echo "pass" > /tmp/nginx-manager-last-test
+		record_test_result "pass"
 	else
-		echo "fail" > /tmp/nginx-manager-last-test
+		record_test_result "fail"
 	fi
-
-	date '+%Y-%m-%d %H:%M:%S' >> /tmp/nginx-manager-last-test
 
 	printf '{"success":"%s","output":"%s"}\n' \
 		"$([ "${test_exit}" -eq 0 ] && echo '1' || echo '0')" \
@@ -1398,8 +1430,12 @@ do_reload() {
 	date '+%Y-%m-%d %H:%M:%S' > /tmp/nginx-manager-last-reload
 
 	if [ "${reload_exit}" -eq 0 ]; then
+		record_test_result "pass"
 		log_info "Nginx reloaded"
 	else
+		# A failed reload only says something about the config when nginx is up;
+		# on a stopped service it is just "not running", not a config verdict.
+		is_nginx_running && record_test_result "fail"
 		log_err "Nginx reload failed: ${reload_output}"
 	fi
 
@@ -1416,8 +1452,10 @@ do_restart() {
 	date '+%Y-%m-%d %H:%M:%S' > /tmp/nginx-manager-last-reload
 
 	if [ "${restart_exit}" -eq 0 ]; then
+		record_test_result "pass"
 		log_info "Nginx restarted"
 	else
+		record_test_result "fail"
 		log_err "Nginx restart failed: ${restart_output}"
 	fi
 
@@ -1432,9 +1470,11 @@ do_start() {
 	local start_exit=$?
 
 	if [ "${start_exit}" -eq 0 ]; then
+		record_test_result "pass"
 		log_info "Nginx started"
 		date '+%Y-%m-%d %H:%M:%S' > /tmp/nginx-manager-last-reload
 	else
+		record_test_result "fail"
 		log_err "Nginx start failed: ${start_output}"
 	fi
 

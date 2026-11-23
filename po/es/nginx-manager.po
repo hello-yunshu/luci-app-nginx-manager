@@ -1725,3 +1725,27 @@ msgstr "Tabla desplazable"
 
 msgid "site id already exists"
 msgstr "Ya existe un sitio con el mismo ID normalizado. Elige otro nombre."
+
+msgid "Config test passed"
+msgstr "La prueba de configuración pasó"
+
+msgid "Config test failed"
+msgstr "La prueba de configuración falló"
+
+msgid "Errors"
+msgstr "Errores"
+
+msgid "Warnings"
+msgstr "Advertencias"
+
+msgid "Notices"
+msgstr "Avisos"
+
+msgid "No errors or warnings."
+msgstr "Sin errores ni advertencias."
+
+msgid "Nginx accepted the configuration; these warnings do not block loading."
+msgstr "Nginx aceptó la configuración; estas advertencias no impiden la carga."
+
+msgid "Nginx rejected the configuration. Fix the errors below before reloading."
+msgstr "Nginx rechazó la configuración. Corrige los errores siguientes antes de recargar."
