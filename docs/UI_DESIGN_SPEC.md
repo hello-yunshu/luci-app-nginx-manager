@@ -10,7 +10,7 @@
 
 | 项 | 本仓取值 |
 |---|---|
-| 路由根 | `admin/services/nginx-manager` — overview / sites / sites-edit / certificates / files / core-config / backups / logs（编辑页无菜单标题，需按路由直达验证） |
+| 路由根 | `admin/services/nginx-manager` — overview / sites / sites/edit（视图 `site-edit.js`，该路由无菜单标题，需按路由直达验证）/ certificates / files / core-config / backups / logs |
 | 视图 | `www/luci-static/resources/view/nginx-manager/*.js` |
 | 共享 CSS | `www/luci-static/resources/nginx-manager/nginx-manager.css` |
 | 注入与缓存键 | `nginx-manager/utils.js`：`+ '?v=@PKG_FULL_VERSION@&ui=footer-pm-match-1&credentials=1&files-mobile-cards=6&toolbar-clearance=2&test-panel=4'` —— 改 CSS 需递增对应 `ui=`/功能后缀 |
