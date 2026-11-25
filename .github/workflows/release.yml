@@ -29,6 +29,8 @@ jobs:
         with:
           fetch-depth: 0
       - id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PKG_VERSION=$(grep '^PKG_VERSION:=' Makefile | cut -d= -f2)
           PKG_RELEASE=$(grep '^PKG_RELEASE:=' Makefile | cut -d= -f2)
@@ -44,8 +46,11 @@ jobs:
             exit 0
           fi
 
-          if git tag -l "$TAG" | grep -q .; then
-            echo "Tag ${TAG} already exists, skipping"
+          # A tag alone does not mean the release finished: a cancelled run can
+          # leave the tag behind, and skipping on tag existence would then never
+          # notify the feed for this version again.
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release ${TAG} already exists, skipping"
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
