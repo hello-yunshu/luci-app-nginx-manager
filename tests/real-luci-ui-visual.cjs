@@ -35,9 +35,14 @@ const themes = [
 	{ id: 'aurora-light', media: 'aurora', theme: 'aurora', colorScheme: 'light', dark: 'false', aurora: 'light' },
 	{ id: 'aurora-dark', media: 'aurora', theme: 'aurora', colorScheme: 'dark', dark: 'true', aurora: 'dark' }
 ];
+const themeSet = process.env.LUCI_UI_THEME_SET || 'all';
+if (!['all', 'bootstrap-only'].includes(themeSet)) throw new Error('Unsupported LUCI_UI_THEME_SET: ' + themeSet);
+const themeCandidates = themeSet === 'bootstrap-only' ? themes.filter(theme => !theme.id.startsWith('aurora-')) : themes;
+if (themeCandidates.length !== (themeSet === 'all' ? 6 : 4)) throw new Error('Unexpected theme count for LUCI_UI_THEME_SET=' + themeSet);
 const smokeOnly = process.env.NGINX_UI_SMOKE_ONLY === '1';
 if (smokeOnly && process.env.GITHUB_ACTIONS === 'true') throw new Error('Smoke-only mode is prohibited in GitHub Actions');
-const selectedThemes = smokeOnly ? themes.filter(theme => theme.id === 'aurora-light') : themes;
+const smokeThemeId = themeSet === 'bootstrap-only' ? 'bootstrap-default-light' : 'aurora-light';
+const selectedThemes = smokeOnly ? themeCandidates.filter(theme => theme.id === smokeThemeId) : themeCandidates;
 const selectedWidths = smokeOnly ? [320, 1280] : widths;
 const selectedShortViewports = smokeOnly ? shortViewports : shortViewports;
 const report = {
@@ -45,11 +50,18 @@ const report = {
 	environment: 'OpenWrt 24.10.8 rootfs with LuCI, uhttpd, rpcd, nginx and Chromium',
 	language, mode: smokeOnly ? 'local-smoke-only' : 'full-matrix', routes: routes.map(r => r.path),
 	widths: selectedWidths, shortViewports: selectedShortViewports,
-	method: 'Initial route state; all registered views; breakpoint-adjacent and common CSS widths; short portrait and landscape; Bootstrap system, explicit Light/Dark, Aurora Light/Dark.',
+	themeSet, themes: selectedThemes.map(theme => theme.id),
+	playwrightVersion: JSON.parse(fs.readFileSync(path.join(path.dirname(require.resolve('playwright')), 'package.json'), 'utf8')).version,
+	method: `Initial route state; all registered views; breakpoint-adjacent and common CSS widths; short portrait and landscape; selected theme set: ${themeSet}.`,
 	dataScenario: 'Two disposable managed sites (enabled and disabled), one missing certificate, one backup fixture, plus files/core configuration/log states.',
 	notCovered: ['manual visual review', 'business interactions and confirmed mutation flows', 'valid certificate/ACME success and full backup-restore lifecycle', 'installed router behavior'], rows: [], errors: []
 };
 fs.mkdirSync(output, { recursive: true });
+const expectedRows = selectedThemes.length * ((selectedWidths.length + selectedShortViewports.length) * routes.length + 1);
+if (!smokeOnly && expectedRows !== (themeSet === 'all' ? 1734 : 1156))
+	throw new Error('Unexpected full matrix row count for LUCI_UI_THEME_SET=' + themeSet + ': ' + expectedRows);
+report.rowsPerTheme = (selectedWidths.length + selectedShortViewports.length) * routes.length + 1;
+report.expectedRows = expectedRows;
 
 function shell(command) {
 	return execFileSync('docker', ['exec', container, 'sh', '-c', command], { encoding: 'utf8' }).trim();
@@ -343,6 +355,7 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 
 (async () => {
 	const browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_EXECUTABLE || undefined });
+	report.browserVersion = browser.version();
 	try {
 	for (const theme of selectedThemes) {
 			shell(`uci set luci.main.mediaurlbase='/luci-static/${theme.media}'; uci set luci.main.theme='${theme.theme}'; uci commit luci; rm -rf /tmp/luci-indexcache* /tmp/luci-modulecache*; /etc/init.d/uhttpd restart >/dev/null 2>&1`);
@@ -358,7 +371,6 @@ async function capture(page, theme, route, width, height, label, checkTitle = tr
 			} finally { await context.close(); }
 		}
 	} finally { await browser.close(); }
-	const expectedRows = selectedThemes.length * ((selectedWidths.length + selectedShortViewports.length) * routes.length + 1);
 	console.log('VISUAL_MATRIX ' + JSON.stringify({ total: report.rows.length, expectedRows, pass: report.rows.filter(r => r.result === 'PASS').length, fail: report.errors.length }));
 	if (report.rows.length !== expectedRows || report.errors.length) process.exitCode = 1;
 })().catch(error => {
