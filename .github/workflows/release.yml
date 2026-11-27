@@ -32,7 +32,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PKG_VERSION=$(grep '^PKG_VERSION:=' Makefile | cut -d= -f2)
+          PKG_VERSION=$(cat VERSION)
           PKG_RELEASE=$(grep '^PKG_RELEASE:=' Makefile | cut -d= -f2)
           TAG="v${PKG_VERSION}-${PKG_RELEASE}"
 

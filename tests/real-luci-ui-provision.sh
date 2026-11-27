@@ -34,7 +34,7 @@ if [ -n "${NGINX_UI_LMO:-}" ]; then
 	docker cp "$NGINX_UI_LMO" "$CONTAINER:/usr/lib/lua/luci/i18n/nginx-manager.zh-cn.lmo"
 fi
 
-PKG_VERSION="$(sed -n 's/^PKG_VERSION:=//p' "$ROOT/Makefile" | head -n1)"
+PKG_VERSION="$(cat "$ROOT/VERSION")"
 PKG_RELEASE="$(sed -n 's/^PKG_RELEASE:=//p' "$ROOT/Makefile" | head -n1)"
 PKG_FULL_VERSION="$PKG_VERSION-r$PKG_RELEASE"
 
